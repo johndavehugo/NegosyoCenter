@@ -141,7 +141,6 @@ function getBusinessDetail($entityNo, $con) {
         j.contact_no AS juri_contact_no,
         j.contact_email AS juri_contact_email,
         j.line_of_industry AS juri_line_of_industry,
-        j.special_category AS juri_special_category,
         e.entity_no AS emp_entity_no,
         e.first_name AS emp_first_name,
         e.middle_name AS emp_middle_name,
@@ -175,7 +174,6 @@ function getBusinessDetail($entityNo, $con) {
                 'contact_no' => $row['juri_contact_no'],
                 'contact_email' => $row['juri_contact_email'],
                 'line_of_industry' => $row['juri_line_of_industry'],
-                'special_category' => $row['juri_special_category'],
                 'street' => $row['juri_street'],
                 'subdivision' => $row['juri_subdivision'],
                 'barangay' => $row['juri_barangay'],
@@ -214,7 +212,6 @@ function getBusinessDetail($entityNo, $con) {
                         'contact_no' => $item['contact_no'] ?? '',
                         'contact_email' => $item['contact_email'] ?? '',
                         'line_of_industry' => $item['line_of_industry'] ?? '',
-                        'special_category' => '',
                         'street' => $item['juri_street'] ?? '',
                         'subdivision' => $item['juri_subdivision'] ?? '',
                         'barangay' => $item['juri_barangay'] ?? '',
@@ -225,6 +222,7 @@ function getBusinessDetail($entityNo, $con) {
                     'employer' => [
                         'entity_no' => $item['employer_entity_no'] ?? '',
                         'full_name' => $item['juri_employer'] ?? '',
+                        'special_category' => '',
                         'street' => $item['emp_street'] ?? '',
                         'subdivision' => $item['emp_subdivision'] ?? '',
                         'barangay' => $item['emp_barangay'] ?? '',
@@ -307,9 +305,9 @@ function importBusiness($entityNo, $con) {
 
         $stmt = $con->prepare("INSERT INTO juridicals
             (entity_no, name, registration_type, bus_status, capitalization,
-             contact_no, contact_email, line_of_industry, special_category,
+             contact_no, contact_email, line_of_industry,
              employer_id, address_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $entityNo,
             $item['juri_name'] ?? '',
@@ -319,7 +317,6 @@ function importBusiness($entityNo, $con) {
             $item['contact_no'] ?? '',
             $item['contact_email'] ?? '',
             $item['line_of_industry'] ?? '',
-            '',
             $employerId,
             $busAddressId,
         ]);

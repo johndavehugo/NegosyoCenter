@@ -1,3 +1,14 @@
+<?php
+
+require_once __DIR__ . '/../../global/industries.php';
+require_once __DIR__ . '/../../global/addresses.php';
+
+?>
+
+
+
+
+
 <div class="modal fade" id="addCustomerModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content" style="background-color: #343a40; color: white;">
@@ -43,32 +54,35 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label>Registration Type</label>
-                                            <select class="form-control" id="addRegType">
-                                                <option value="NEW">NEW</option>
-                                                <option value="RENEWAL">RENEWAL</option>
-                                                <option value="TRANSFER">TRANSFER</option>
+                                            <label>Line of Industry</label>
+                                            <select class="form-control" id="addIndustry">
+                                                <option value="" hidden>Select Industry</option>
+                                                <?php foreach ($industries as $code => $industry):?>
+                                                <option value="<?=$industry?>"><?=$code ?> - <?=$industry?></option>
+                                                <?php endforeach; ?>
                                             </select>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Business Status</label>
-                                            <select class="form-control" id="addBusStatus">
-                                                <option value="ACTIVE">ACTIVE</option>
-                                                <option value="INACTIVE">INACTIVE</option>
-                                                <option value="EXPIRED">EXPIRED</option>
-                                            </select>
-                                        </div>
-                                    </div>
+                                </div>                                                      
+                                <div class="row">                                   
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Capitalization</label>
                                             <input type="number" step="0.01" class="form-control" id="addCapitalization">
                                         </div>
                                     </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Special Category</label>
+                                            <select class="form-control" id="addSpecialCategory">
+                                                <option value="" hidden>Select Special Sector Classification</option>
+                                                <option value="4ps Beneficiary">4ps Beneficiary</option>
+                                                <option value="Solo Parent">Solo Parent</option>
+                                                <option value="Person with Disability">Person with Disability (PWD)</option>
+                                                <option value="Young Entrepreneur">Young Entrepreneur</option>
+                                            </select>
+                                        </div>
+                                    </div>  
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
@@ -83,21 +97,7 @@
                                             <input type="email" class="form-control" id="addEmail">
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Line of Industry</label>
-                                            <input type="text" class="form-control" id="addIndustry">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Special Category</label>
-                                            <input type="text" class="form-control" id="addSpecialCategory">
-                                        </div>
-                                    </div>
-                                </div>
+                                </div>                                                                                               
                                 <button type="button" class="btn btn-primary float-right" onclick="stepper.next()">Next</button>
                             </div>
 
