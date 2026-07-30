@@ -265,23 +265,51 @@ function importBusiness($entityNo, $con) {
         $con->beginTransaction();
 
         $fullName = explode(' ', $item['juri_employer'] ?? '', 3);
+
+         $stmt = $con->prepare("INSERT INTO addresses 
+            (street, subdivision, barangay, city, province, region)
+            VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $item['emp_street'] ?? '',
+            $item['emp_subdivision'] ?? '',
+            $item['emp_barangay'] ?? '',
+            $item['emp_city'] ?? '',
+            $item['emp_province'] ?? '',
+            $item['emp_region'] ?? '',
+        ]);
+        $empAddressId = $con->lastInsertId();
+
         $stmt = $con->prepare("INSERT INTO employers 
             (entity_no, first_name, middle_name, last_name, address_id, special_category)
-            VALUES (?, ?, ?, ?, NULL, ?)");
+            VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $item['employer_entity_no'] ?? '',
             $fullName[0] ?? '',
             $fullName[1] ?? '',
             $fullName[2] ?? '',
+            $empAddressId,
             '',
         ]);
         $employerId = $con->lastInsertId();
 
+        $stmt = $con->prepare("INSERT INTO addresses 
+            (street, subdivision, barangay, city, province, region)
+            VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $item['juri_street'] ?? '',
+            $item['juri_subdivision'] ?? '',
+            $item['juri_barangay'] ?? '',
+            $item['juri_city'] ?? '',
+            $item['juri_province'] ?? '',
+            $item['juri_region'] ?? '',
+        ]);
+        $busAddressId = $con->lastInsertId();
+
         $stmt = $con->prepare("INSERT INTO juridicals
             (entity_no, name, registration_type, bus_status, capitalization,
              contact_no, contact_email, line_of_industry, special_category,
-             employer_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+             employer_id, address_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $entityNo,
             $item['juri_name'] ?? '',
@@ -293,6 +321,7 @@ function importBusiness($entityNo, $con) {
             $item['line_of_industry'] ?? '',
             '',
             $employerId,
+            $busAddressId,
         ]);
 
         $con->commit();
