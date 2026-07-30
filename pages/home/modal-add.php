@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../../global/industries.php';
-require_once __DIR__ . '/../../global/addresses.php';
 
 ?>
 
@@ -130,23 +129,31 @@ require_once __DIR__ . '/../../global/addresses.php';
                                 <div class="row">
                                     <div class="col-md-6">
                                         <h6 class="text-info">Business Address</h6>
+                                        <div class="form-group">
+                                            <label>Region</label>
+                                            <select class="form-control" id="addBusRegion">
+                                                <option value="" hidden>Select Region</option>
+                                            </select>
+                                         </div>
                                         <div class="form-group"><label>UPBLB No</label><input type="text" class="form-control" id="addBusUpblb"></div>
                                         <div class="form-group"><label>Street</label><input type="text" class="form-control" id="addBusStreet"></div>
                                         <div class="form-group"><label>Subdivision</label><input type="text" class="form-control" id="addBusSubdivision"></div>
                                         <div class="form-group"><label>Barangay <span class="text-danger">*</span></label><input type="text" class="form-control" id="addBusBarangay"></div>
                                         <div class="form-group"><label>City <span class="text-danger">*</span></label><input type="text" class="form-control" id="addBusCity"></div>
                                         <div class="form-group"><label>Province <span class="text-danger">*</span></label><input type="text" class="form-control" id="addBusProvince"></div>
-                                        <div class="form-group"><label>Region</label><input type="text" class="form-control" id="addBusRegion"></div>
                                     </div>
                                     <div class="col-md-6">
                                         <h6 class="text-info">Owner Address</h6>
+                                        <div class="form-group">
+                                            <label>Region</label><select class="form-control" id="addEmpRegion">
+                                                <option value="" hidden>Select Region</option>
+                                            </select></div>
                                         <div class="form-group"><label>UPBLB No</label><input type="text" class="form-control" id="addEmpUpblb"></div>
                                         <div class="form-group"><label>Street</label><input type="text" class="form-control" id="addEmpStreet"></div>
                                         <div class="form-group"><label>Subdivision</label><input type="text" class="form-control" id="addEmpSubdivision"></div>
                                         <div class="form-group"><label>Barangay <span class="text-danger">*</span></label><input type="text" class="form-control" id="addEmpBarangay"></div>
                                         <div class="form-group"><label>City <span class="text-danger">*</span></label><input type="text" class="form-control" id="addEmpCity"></div>
                                         <div class="form-group"><label>Province <span class="text-danger">*</span></label><input type="text" class="form-control" id="addEmpProvince"></div>
-                                        <div class="form-group"><label>Region</label><input type="text" class="form-control" id="addEmpRegion"></div>
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-secondary float-left" onclick="stepper.previous()">Previous</button>
