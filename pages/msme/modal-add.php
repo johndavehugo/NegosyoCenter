@@ -7,8 +7,8 @@ require_once __DIR__ . '/../../global/industries.php';
 
 
 
-
-<div class="modal fade" id="addCustomerModal" tabindex="-1" role="dialog" aria-hidden="true">
+<form id="addBusinessForm" method="POST">
+<div class="modal fade" id="addBusinessModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content" style="background-color: #343a40; color: white;">
 
@@ -52,53 +52,47 @@ require_once __DIR__ . '/../../global/industries.php';
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Line of Industry</label>
-                                            <select class="form-control" id="addIndustry">
-                                                <option value="" hidden>Select Industry</option>
-                                                <?php foreach ($industries as $code => $industry):?>
-                                                <option value="<?=$industry?>"><?=$code ?> - <?=$industry?></option>
-                                                <?php endforeach; ?>
-                                            </select>
+                                         <div class="form-group">
+                                            <label>Entity No <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="addEntityNo">
                                         </div>
                                     </div>
                                 </div>                                                      
-                                <div class="row">                                   
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Capitalization</label>
-                                            <input type="number" step="0.01" class="form-control" id="addCapitalization">
+                                    <div class="row">                                   
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Capitalization</label>
+                                                <input type="number" step="0.01" class="form-control" id="addCapitalization">
+                                            </div>
                                         </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Line of Industry</label>
+                                                <select class="form-control" id="addIndustry">
+                                                    <option value="" hidden>Select Industry</option>
+                                                    <?php foreach ($industries as $code => $industry):?>
+                                                    <option value="<?=$industry?>"><?=$code ?> - <?=$industry?></option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                        </div>  
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Special Category</label>
-                                            <select class="form-control" id="addSpecialCategory">
-                                                <option value="" hidden>Select Special Sector Classification</option>
-                                                <option value="4ps Beneficiary">4ps Beneficiary</option>
-                                                <option value="Solo Parent">Solo Parent</option>
-                                                <option value="Person with Disability">Person with Disability (PWD)</option>
-                                                <option value="Young Entrepreneur">Young Entrepreneur</option>
-                                            </select>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Contact No</label>
+                                                <input type="text" class="form-control" id="addContactNo">
+                                            </div>
                                         </div>
-                                    </div>  
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Email</label>
+                                                <input type="email" class="form-control" id="addEmail">
+                                            </div>
+                                        </div>
+                                    </div>                                                                                               
+                                    <button type="button" class="btn btn-primary float-right" onclick="stepper.next()">Next</button>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Contact No</label>
-                                            <input type="text" class="form-control" id="addContactNo">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Email</label>
-                                            <input type="email" class="form-control" id="addEmail">
-                                        </div>
-                                    </div>
-                                </div>                                                                                               
-                                <button type="button" class="btn btn-primary float-right" onclick="stepper.next()">Next</button>
-                            </div>
 
                             <div id="step-owner" class="content" role="tabpanel">
                                 <div class="row">
@@ -118,6 +112,26 @@ require_once __DIR__ . '/../../global/industries.php';
                                         <div class="form-group">
                                             <label>Last Name <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control" id="addLastName">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                         <div class="form-group">
+                                            <label>Entity No <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="addEntityNo">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Special Category</label>
+                                            <select class="form-control" id="addSpecialCategory">
+                                                <option value="" hidden>Select Special Sector Classification</option>
+                                                <option value="4ps Beneficiary">4ps Beneficiary</option>
+                                                <option value="Solo Parent">Solo Parent</option>
+                                                <option value="Person with Disability">Person with Disability (PWD)</option>
+                                                <option value="Young Entrepreneur">Young Entrepreneur</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -190,3 +204,5 @@ require_once __DIR__ . '/../../global/industries.php';
             </div>
         </div>
     </div>
+
+    </form>

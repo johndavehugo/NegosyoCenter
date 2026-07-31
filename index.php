@@ -199,7 +199,7 @@
         });
         $('#submit_login').click(function(e) {
             e.preventDefault();
-            window.location.href = "pages/home/home.php"
+            window.location.href = "pages/msme/msme.php"
 
 
         })

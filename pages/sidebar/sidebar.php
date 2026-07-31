@@ -13,7 +13,7 @@
     <nav class="mt-2">
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
         <li id="module_msme" class="nav-item ">
-          <a href="../home/home.php" class="nav-link sidebar-statistics cursor-e">
+          <a href="../msme/msme.php" class="nav-link sidebar-statistics cursor-e">
             <i class="nav-icon fas fa-xlg fa-chart-line"></i>
             <p class="pt-2">
               MSME

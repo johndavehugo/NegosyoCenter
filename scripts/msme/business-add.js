@@ -51,6 +51,7 @@ $(document).on('change', '#addBusRegion, #addEmpRegion', function() {
 $(document).on('change', '#addBusProvince, #addEmpProvince', function() {
     var prefix = this.id === 'addBusProvince' ? 'addBus' : 'addEmp';
     var provCode = $(this).find(':selected').data('code');
+
     $('#' + prefix + 'Barangay').html('<option value="" hidden>Select Barangay</option>');
     if (provCode) loadCities(prefix, provCode, 'province');
 });
@@ -61,7 +62,7 @@ $(document).on('change', '#addBusCity, #addEmpCity', function() {
     if (cityCode) loadBarangays(prefix, cityCode);
 });
 
-$('#addCustomerModal').on('shown.bs.modal', function() {
+$('#addBusinessModal').on('shown.bs.modal', function() {
     stepper = new Stepper($('.bs-stepper')[0]);
 
     if ($('#addBusRegion option').length < 2) {
@@ -76,6 +77,49 @@ $('#addCustomerModal').on('shown.bs.modal', function() {
     }
 });
 
-$('#addCustomerModal').on('hidden.bs.modal', function() {
+$('#addBusinessModal').on('hidden.bs.modal', function() {
     if (stepper) stepper.reset();
 });
+
+
+function addBusiness() {
+            const data = {
+                //Business
+                juri_name:                         $('input[name=addBusinessName]').val(),
+                juri_entity_no:                    $('input[name=addEntityNo]').val(),
+                line_of_industry:                  $('select[name=addIndustry]').val(),
+                capitalization:                    $('input[name=addCapitalization]').val(),
+                contact_no:                        $('input[name=addContactNo]').val(),
+                contact_email:                     $('input[name=email]').val(),
+                
+                //Owner
+                special_category:                  $('select[name=addSpecialCategory]').val(),
+                employer_first_name:                      $('input[name=addFirstName]').val(),
+                employer_middle_name:                  $('input[name=addMiddleName]').val(),
+                employer_last_name:               $('input[name=addLastName]').val(),
+
+                //juridical address
+                juri_region:                    $('textarea[name=addBusRegion]').val()
+            };
+
+            fetch('../../api/routes.php/business', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    alert(res.message);
+                    $('#addBusinessModal').modal('hide');                                   
+                    $('#tblBusiness').DataTable().ajax.reload();                           
+                    document.getElementById('addBusinessForm').reset();
+                } else {
+                    alert('Error: ' + res.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Network error');
+            });
+        };

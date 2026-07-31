@@ -554,7 +554,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     </div>                      
                     <div>
                         <div class="text-center mb-2">
-        <button type="button" class="btn btn-primary btn-sm" id="btn_add_business" data-toggle="modal" data-target="#addCustomerModal">
+        <button type="button" class="btn btn-primary btn-sm" id="btn_add_business" data-toggle="modal" data-target="#addBusinessModal">
             <i class="fas fa-plus mr-1"></i>Add Business
         </button>
     </div>
