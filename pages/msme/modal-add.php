@@ -48,13 +48,13 @@ require_once __DIR__ . '/../../global/industries.php';
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Business Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="addBusinessName">
+                                            <input type="text" class="form-control" id="addBusinessName" name="addBusinessName">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                          <div class="form-group">
                                             <label>Entity No <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="addEntityNo">
+                                            <input type="text" class="form-control" id="addBusEntityNo" name="addBusEntityNo">
                                         </div>
                                     </div>
                                 </div>                                                      
@@ -62,13 +62,13 @@ require_once __DIR__ . '/../../global/industries.php';
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Capitalization</label>
-                                                <input type="number" step="0.01" class="form-control" id="addCapitalization">
+                                                <input type="number" step="0.01" class="form-control" id="addCapitalization" name="addCapitalization">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Line of Industry</label>
-                                                <select class="form-control" id="addIndustry">
+                                                <select class="form-control" id="addIndustry" name="addIndustry">
                                                     <option value="" hidden>Select Industry</option>
                                                     <?php foreach ($industries as $code => $industry):?>
                                                     <option value="<?=$industry?>"><?=$code ?> - <?=$industry?></option>
@@ -81,13 +81,13 @@ require_once __DIR__ . '/../../global/industries.php';
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Contact No</label>
-                                                <input type="text" class="form-control" id="addContactNo">
+                                                <input type="text" class="form-control" id="addContactNo" name="addContactNo">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Email</label>
-                                                <input type="email" class="form-control" id="addEmail">
+                                                <input type="email" class="form-control" id="addEmail" name="addEmail">
                                             </div>
                                         </div>
                                     </div>                                                                                               
@@ -99,19 +99,19 @@ require_once __DIR__ . '/../../global/industries.php';
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>First Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="addFirstName">
+                                            <input type="text" class="form-control" id="addFirstName" name="addFirstName">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Middle Name</label>
-                                            <input type="text" class="form-control" id="addMiddleName">
+                                            <input type="text" class="form-control" id="addMiddleName" name="addMiddleName">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Last Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="addLastName">
+                                            <input type="text" class="form-control" id="addLastName" name="addLastName">
                                         </div>
                                     </div>
                                 </div>
@@ -119,13 +119,13 @@ require_once __DIR__ . '/../../global/industries.php';
                                     <div class="col-md-6">
                                          <div class="form-group">
                                             <label>Entity No <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="addEntityNo">
+                                            <input type="text" class="form-control" id="addEmpEntityNo" name="addEmpEntityNo">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Special Category</label>
-                                            <select class="form-control" id="addSpecialCategory">
+                                            <select class="form-control" id="addSpecialCategory" name="addSpecialCategory">
                                                 <option value="" hidden>Select Special Sector Classification</option>
                                                 <option value="4ps Beneficiary">4ps Beneficiary</option>
                                                 <option value="Solo Parent">Solo Parent</option>
@@ -145,57 +145,57 @@ require_once __DIR__ . '/../../global/industries.php';
                                         <h6 class="text-info">Business Address</h6>
                                         <div class="form-group">
                                             <label>Region</label>
-                                            <select class="form-control" id="addBusRegion">
+                                            <select class="form-control" id="addBusRegion" name="addBusRegion">
                                                 <option value="" hidden>Select Region</option>
                                             </select>
                                          </div>
                                          <div class="form-group">
-                                            <label>Province</label><select class="form-control" id="addBusProvince">
+                                            <label>Province</label><select class="form-control" id="addBusProvince" name="addBusProvince">
                                                 <option value="" hidden>Select Province</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>City/Municipality <span class="text-danger">*</span></label><select class="form-control" id="addBusCity">
+                                            <label>City/Municipality <span class="text-danger">*</span></label><select class="form-control" id="addBusCity" name="addBusCity">
                                                 <option value="" hidden>Select City</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>Barangay <span class="text-danger">*</span></label><select class="form-control" id="addBusBarangay">
+                                            <label>Barangay <span class="text-danger">*</span></label><select class="form-control" id="addBusBarangay" name="addBusBarangay">
                                                 <option value="" hidden>Select Barangay</option>
                                             </select>
                                         </div>
-                                        <div class="form-group"><label>Street</label><input type="text" class="form-control" id="addBusStreet"></div>
-                                        <div class="form-group"><label>Subdivision</label><input type="text" class="form-control" id="addBusSubdivision"></div>
-                                        <div class="form-group"><label>UPBLB No</label><input type="text" class="form-control" id="addBusUpblb"></div>
+                                        <div class="form-group"><label>Street</label><input type="text" class="form-control" id="addBusStreet" name="addBusStreet"></div>
+                                        <div class="form-group"><label>Subdivision</label><input type="text" class="form-control" id="addBusSubdivision" name="addBusSubdivision"></div>
+                                        <div class="form-group"><label>UPBLB No</label><input type="text" class="form-control" id="addBusUpblb" name="addBusUpblb"></div>
                                     </div>
                                     <div class="col-md-6">
                                         <h6 class="text-info">Owner Address</h6>
                                         <div class="form-group">
-                                            <label>Region</label><select class="form-control" id="addEmpRegion">
+                                            <label>Region</label><select class="form-control" id="addEmpRegion" name="addEmpRegion">
                                                 <option value="" hidden>Select Region</option>
                                             </select></div>
                                         <div class="form-group">
-                                            <label>Province</label><select class="form-control" id="addEmpProvince">
+                                            <label>Province</label><select class="form-control" id="addEmpProvince" name="addEmpProvince">
                                                 <option value="" hidden>Select Province</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>City/Municipality <span class="text-danger">*</span></label><select class="form-control" id="addEmpCity">
+                                            <label>City/Municipality <span class="text-danger">*</span></label><select class="form-control" id="addEmpCity" name="addEmpCity">
                                                 <option value="" hidden>Select City</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>Barangay <span class="text-danger">*</span></label><select class="form-control" id="addEmpBarangay">
+                                            <label>Barangay <span class="text-danger">*</span></label><select class="form-control" id="addEmpBarangay" name="addEmpBarangay">
                                                 <option value="" hidden>Select Barangay</option>
                                             </select>
                                         </div>
-                                        <div class="form-group"><label>Street</label><input type="text" class="form-control" id="addEmpStreet"></div>
-                                        <div class="form-group"><label>Subdivision</label><input type="text" class="form-control" id="addEmpSubdivision"></div>
-                                        <div class="form-group"><label>UPBLB No</label><input type="text" class="form-control" id="addEmpUpblb"></div>
+                                        <div class="form-group"><label>Street</label><input type="text" class="form-control" id="addEmpStreet" name="addEmpStreet"></div>
+                                        <div class="form-group"><label>Subdivision</label><input type="text" class="form-control" id="addEmpSubdivision" name="addEmpSubdivision"></div>
+                                        <div class="form-group"><label>UPBLB No</label><input type="text" class="form-control" id="addEmpUpblb" name="addEmpUpblb"></div>
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-secondary float-left" onclick="stepper.previous()">Previous</button>
-                                <button type="button" class="btn btn-success float-right" id="btnSaveBusiness">Save</button>
+                                <button type="button" class="btn btn-success float-right" id="btnSaveBusiness" onclick="addBusiness()">Save</button>
                             </div>
                         </div>
                     </div>

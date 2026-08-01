@@ -6,15 +6,15 @@ function loadCities(prefix, code, parentType) {
         .done(function (data) {
             var opts = '<option value="" hidden>Select City</option>';
             data.forEach(function (c) {
-                opts += '<option value="' + c.name + '" data-code="' + c.code + '">' + c.name + '</option>';
+                opts += '<option value="' + c.name + '" data-code="' + c.code + '" data-type="' + c.type + '">' + c.name + '</option>';
             });
             $('#' + prefix + 'City').html(opts);
         });
 }
 
-function loadBarangays(prefix, code) {
+function loadBarangays(prefix, code, type) {
     $('#' + prefix + 'Barangay').html('<option value="" hidden>Select Barangay</option>');
-    $.getJSON('../../server-side/address-api.php', { action: 'barangays', code: code })
+    $.getJSON('../../server-side/address-api.php', { action: 'barangays', code: code, type: type })
         .done(function (data) {
             var opts = '<option value="" hidden>Select Barangay</option>';
             data.forEach(function (b) {
@@ -59,7 +59,9 @@ $(document).on('change', '#addBusProvince, #addEmpProvince', function() {
 $(document).on('change', '#addBusCity, #addEmpCity', function() {
     var prefix = this.id === 'addBusCity' ? 'addBus' : 'addEmp';
     var cityCode = $(this).find(':selected').data('code');
-    if (cityCode) loadBarangays(prefix, cityCode);
+    var type = $(this).find(':selected').data('type') || 'city';
+
+    if (cityCode) loadBarangays(prefix, cityCode, type);
 });
 
 $('#addBusinessModal').on('shown.bs.modal', function() {
@@ -86,20 +88,38 @@ function addBusiness() {
             const data = {
                 //Business
                 juri_name:                         $('input[name=addBusinessName]').val(),
-                juri_entity_no:                    $('input[name=addEntityNo]').val(),
+                juri_entity_no:                    $('input[name=addBusEntityNo]').val(),
                 line_of_industry:                  $('select[name=addIndustry]').val(),
                 capitalization:                    $('input[name=addCapitalization]').val(),
                 contact_no:                        $('input[name=addContactNo]').val(),
-                contact_email:                     $('input[name=email]').val(),
+                contact_email:                     $('input[name=addEmail]').val(),
                 
                 //Owner
+                employer_first_name:               $('input[name=addFirstName]').val(),
+                employer_middle_name:              $('input[name=addMiddleName]').val(),
+                employer_last_name:                $('input[name=addLastName]').val(),
+                employer_entity_no:                $('input[name=addEmpEntityNo]').val(),
                 special_category:                  $('select[name=addSpecialCategory]').val(),
-                employer_first_name:                      $('input[name=addFirstName]').val(),
-                employer_middle_name:                  $('input[name=addMiddleName]').val(),
-                employer_last_name:               $('input[name=addLastName]').val(),
 
                 //juridical address
-                juri_region:                    $('textarea[name=addBusRegion]').val()
+                juri_region:                       $('select[name=addBusRegion]').val(),
+                juri_province:                     $('select[name=addBusProvince]').val(),
+                juri_city:                         $('select[name=addBusCity]').val(),
+                juri_barangay:                     $('select[name=addBusBarangay]').val(),
+                juri_street:                       $('input[name=addBusStreet]').val(),
+                juri_subdivision:                  $('input[name=addBusSubdivision]').val(),
+                juri_upblb_num:                    $('input[name=addBusUpblb]').val(),
+
+                //Owner address
+                employer_region:                   $('select[name=addEmpRegion]').val(),
+                employer_province:                 $('select[name=addEmpProvince]').val(),
+                employer_city:                     $('select[name=addEmpCity]').val(),
+                employer_barangay:                 $('select[name=addEmpBarangay]').val(),
+                employer_street:                   $('input[name=addEmpStreet]').val(),
+                employer_subdivision:              $('input[name=addEmpSubdivision]').val(),
+                employer_upblb_num:                $('input[name=addEmpUpblb]').val(),
+               
+
             };
 
             fetch('../../api/routes.php/business', {

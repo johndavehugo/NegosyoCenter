@@ -1,3 +1,5 @@
 
 .codegpt
 .env
+cache/*
+!cache/regions.json

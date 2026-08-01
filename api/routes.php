@@ -36,10 +36,13 @@ switch ($resource) {
         if ($method === 'GET') {
             $controller = new MSMEController();
             $response = $controller->getBusinesses();          
+        } elseif ($method === 'POST') {
+            $controller = new MSMEController();
+            $response = $controller->addBusiness($input);
         } else {
             http_response_code(405);
             $response = ['status' => 'error', 'message' => 
-            'Invalid request method for /negosyo/business. Please use GET.'];
+            'Invalid request method for /business. Please use GET, POST, or PUT.'];
         }
     break;
 
@@ -53,7 +56,7 @@ switch ($resource) {
             http_response_code(404);
             $response = [
                 'status' => 'error',
-                'message' => 'Resource not found. Use /register, /login, or /customers.'
+                'message' => 'Resource not found.'
             ];
             break;
 }
