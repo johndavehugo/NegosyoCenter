@@ -23,8 +23,8 @@ $(function () {
                             return '<div style="display: flex; justify-content: center" class="dropdown"><button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions</button>' +
                                 '<div class="dropdown-menu">' +
                                 '<a class="dropdown-item" href="#" onclick="viewBusiness(\'' + row.juridical.entity_no + '\')">View</a>' +
-                                '<a class="dropdown-item" href="#" onclick="fillUpdateModal(\'' + row.id + '\')">Update</a>' +
-                                '<a class="dropdown-item" href="#" onclick="deleteCustomer(\'' + row.id + '\')">Delete</a>' +
+                                '<a class="dropdown-item" href="#" onclick="fillUpdateModal(\'' + row.juridical.entity_no + '\')">Update</a>' +
+                                '<a class="dropdown-item" href="#" onclick="renewBusiness(\'' + row.id + '\')">Renew</a>' +
                                 '</div></div>';
                         }
                     }

@@ -35,7 +35,11 @@ switch ($resource) {
     case 'business':
         if ($method === 'GET') {
             $controller = new MSMEController();
-            $response = $controller->getBusinesses();          
+            if (isset($segments[2])) {
+                $response = $controller->getBusinessByEntityNo($segments[2]);
+            } else {
+            $response = $controller->getBusinesses();
+            }          
         } elseif ($method === 'POST') {
             $controller = new MSMEController();
             $response = $controller->addBusiness($input);
