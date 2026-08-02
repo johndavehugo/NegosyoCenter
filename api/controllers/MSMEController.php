@@ -306,4 +306,113 @@ class MSMEController {
             return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
         }
     }
+
+
+    public function updateBusiness(array $data) {
+        //Owner Address
+        $employer_region                   = trim($data['employer_region'] ?? '');
+        $employer_province                 = trim($data['employer_province'] ?? '');
+        $employer_city                     = trim($data['employer_city'] ?? '');
+        $employer_barangay                 = trim($data['employer_barangay'] ?? '');
+        $employer_street                   = trim($data['employer_street'] ?? '');
+        $employer_subdivision              = trim($data['employer_subdivision'] ?? '');
+        $employer_upblb_num                = trim($data['employer_upblb_num'] ?? '');
+
+        //Owner
+        $employer_entity_no                = trim($data['employer_entity_no'] ?? '');
+        $employer_first_name               = trim($data['employer_first_name'] ?? '');
+        $employer_middle_name              = trim($data['employer_middle_name'] ?? '');
+        $employer_last_name                = trim($data['employer_last_name'] ?? '');
+        $special_category                  = trim($data['special_category'] ?? '');
+
+        //Business Address
+        $juri_region                       = trim($data['juri_region'] ?? '');
+        $juri_province                     = trim($data['juri_province'] ?? '');
+        $juri_city                         = trim($data['juri_city'] ?? '');
+        $juri_barangay                     = trim($data['juri_barangay'] ?? '');
+        $juri_street                       = trim($data['juri_street'] ?? '');
+        $juri_subdivision                  = trim($data['juri_subdivision'] ?? '');
+        $juri_upblb_num                    = trim($data['juri_upblb_num'] ?? '');
+
+        //Business
+        $juri_entity_no                    = trim($data['juri_entity_no'] ?? '');
+        $juri_name                         = trim($data['juri_name'] ?? '');
+        $line_of_industry                  = trim($data['line_of_industry'] ?? '');
+        $capitalization                    = trim($data['capitalization'] ?? '');
+        $contact_no                        = trim($data['contact_no'] ?? '');
+        $contact_email                     = trim($data['contact_email'] ?? '');
+        
+
+        if (empty($employer_first_name) || empty($employer_last_name) || empty($employer_entity_no) || empty($juri_name) || empty($juri_entity_no)) {
+            return ['status' => 'error', 'message' => "Required fields can't be empty."];
+        }
+
+        try {
+            $stmt = $this->con->prepare("SELECT j.address_id AS juri_address_id,
+                                                e.address_id AS emp_address_id
+                                            FROM juridicals j
+                                            LEFT JOIN employers e ON j.employer_id = e.id
+                                            WHERE j.entity_no = ?");
+            $stmt->execute([$juri_entity_no]);
+            $addressID = $stmt->fetch();
+
+            if (!$addressID) {
+                return ['status' => 'error', 'message' => 'Business not found.'];
+            }
+        } catch (PDOException $e) {
+            return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
+        }
+
+        $emp_address_id = $addressID['emp_address_id'];
+        $juri_address_id = $addressID['juri_address_id'];
+
+
+        $paramsEmpAddress = [$employer_upblb_num, $employer_street, $employer_subdivision, $employer_barangay, $employer_city, $employer_province, $employer_region];
+        $sqlEmpAddress = "UPDATE addresses SET upblb_num= ?, street= ?, subdivision= ?, barangay= ?, city= ?, province= ?, region= ? WHERE id = ?";
+        $paramsEmpAddress[] = $emp_address_id;
+
+        $paramsEmployer = [$employer_first_name, $employer_middle_name, $employer_last_name, $special_category];
+        $sqlEmployer = "UPDATE employers SET first_name = ?, middle_name = ?, last_name = ?, special_category = ? WHERE entity_no = ?";
+        $paramsEmployer[] = $employer_entity_no;
+
+        $paramsJuriAddress = [$juri_upblb_num, $juri_street, $juri_subdivision, $juri_barangay, $juri_city, $juri_province, $juri_region];
+        $sqlJuriAddress = "UPDATE addresses SET upblb_num= ?, street= ?, subdivision= ?, barangay= ?, city= ?, province= ?, region= ? WHERE id = ?";
+        $paramsJuriAddress[] = $juri_address_id;
+
+        $paramsJuridical = [$juri_name, $contact_no, $contact_email, $line_of_industry, $capitalization];
+        $sqlJuridical = "UPDATE juridicals SET name = ?, contact_no = ?, contact_email = ?, line_of_industry = ?, capitalization = ? WHERE entity_no = ?";
+        $paramsJuridical[] = $juri_entity_no;
+
+        try {
+            $this->con->beginTransaction();
+
+            $updEmpAddress = $this->con->prepare($sqlEmpAddress);
+            $updEmpAddress->execute($paramsEmpAddress);
+
+            $updEmployer = $this->con->prepare($sqlEmployer);
+            $updEmployer->execute($paramsEmployer);
+
+            $updJuriAddress = $this->con->prepare($sqlJuriAddress);
+            $updJuriAddress->execute($paramsJuriAddress);
+
+            $updJuridical = $this->con->prepare($sqlJuridical);
+            $updJuridical->execute($paramsJuridical);
+
+
+            $this->con->commit();
+
+            $affected = $updEmpAddress->rowCount() + $updEmployer->rowCount() + $updJuriAddress->rowCount() + $updJuridical->rowCount();
+
+            if ($affected > 0) {
+                return ['status' => 'success', 'message' => 'Business details updated successfully.'];
+            } else {
+                return ['status' => 'error', 'message' => 'No changes were made or business not found.'];
+            }
+        } catch (PDOException $e) {
+            if ($this->con->inTransaction()){
+                $this->con->rollBack();
+            };
+            return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
 }
