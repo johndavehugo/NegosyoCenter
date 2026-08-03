@@ -1,6 +1,6 @@
 <div class="modal fade" id="viewAffectedBusinessesModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content" style="background-color: #343a40; color: white;">
+        <div class="modal-content" style="background-color: #1a3a6b; color: white;">
 
             <div class="modal-header border-secondary">
                 <h5 class="modal-title">Affected Businesses</h5>
