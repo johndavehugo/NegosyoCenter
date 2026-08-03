@@ -619,6 +619,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <?php include 'modal-view.php'; ?>
     <?php include 'modal-add.php'; ?>
     <?php include 'modal-update.php'; ?>
+    <?php include 'modal-renew.php'; ?>
 
     <!-- REQUIRED SCRIPTS -->
 
@@ -665,6 +666,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="../../scripts/msme/business-populate-address.js"> </script>
     <script src="../../scripts/msme/business-add.js"></script>
     <script src="../../scripts/msme/business-update.js"></script>
+    <script src="../../scripts/msme/business-renew.js"></script>
 
 
 </body>
