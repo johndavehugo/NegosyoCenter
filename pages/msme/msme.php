@@ -38,6 +38,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Theme style -->
     <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
     <link rel="stylesheet" href="../../dist/css/user_defined.css">
+    <!-- NCIMS brand overrides — load after AdminLTE -->
+    <link rel="stylesheet" href="../../dist/css/ncims.css">
     <link rel="stylesheet" href="../../plugins/dropzone/min/dropzone.min.css" type="text/css" />
     <link rel="icon" type="image/png" sizes="40x16" href="../../dist/img/splogo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.min.css">

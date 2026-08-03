@@ -1,30 +1,59 @@
 <div class="modal fade" id="renewBusinessModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content" style="background-color: #343a40; color: white;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modal-ncims">
 
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title">Renew Business Registration</h5>
+            <!-- Header -->
+            <div class="modal-header modal-ncims-header">
+                <div class="d-flex align-items-center">
+                    <div class="modal-icon-circle bg-green mr-3">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0">Renew Business Registration</h5>
+                        <small style="color:rgba(255,255,255,.65);">Confirm registration renewal below</small>
+                    </div>
+                </div>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
 
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Business Name</label>
-                    <input type="text" class="form-control" id="renewBusName" readonly>
+            <!-- Body -->
+            <div class="modal-body modal-ncims-body">
+
+                <!-- Summary card (display only) -->
+                <div class="renew-summary-card">
+                    <div class="renew-summary-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="renew-summary-info">
+                        <div class="renew-summary-name" id="renewBusNameDisplay">—</div>
+                        <div class="renew-summary-meta">
+                            <span id="renewBusEntityNoDisplay">—</span>
+                            <span class="renew-summary-dot">•</span>
+                            <span id="renewRegTypeDisplay">—</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Entity No</label>
-                    <input type="text" class="form-control" id="renewBusEntityNo" readonly>
+
+                <!-- Hidden inputs — keep original IDs for existing JS (.val()) -->
+                <input type="hidden" id="renewBusName">
+                <input type="hidden" id="renewBusEntityNo">
+                <input type="hidden" id="renewRegType">
+
+                <div class="renew-notice">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    This will renew the business registration. Please confirm to proceed.
                 </div>
-                <div class="form-group mb-0">
-                    <label>Registration Type</label>
-                    <input type="text" class="form-control" id="renewRegType" readonly>
-                </div>
+
             </div>
 
-            <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="btnRenewBusiness" onclick="renewConfirm()">Renew</button>
+            <!-- Footer -->
+            <div class="modal-footer modal-ncims-footer">
+                <button type="button" class="btn btn-ncims-secondary" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-ncims-save" id="btnRenewBusiness" onclick="renewConfirm()">
+                    <i class="fas fa-sync-alt mr-2"></i>Confirm Renewal
+                </button>
             </div>
 
         </div>
