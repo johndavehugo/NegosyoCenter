@@ -18,11 +18,7 @@ $input  = json_decode(file_get_contents('php://input'), true) ?? [];
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-$input  = json_decode(file_get_contents('php://input'), true) ?? [];
-
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
-$base = '/NegosyoCenter-main/api';
+$base = '/NegosyoCenter/api';
 
 $pathInfo = substr($uri, strlen($base));
 
