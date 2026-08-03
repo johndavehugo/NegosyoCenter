@@ -13,11 +13,12 @@ class CalamityController {
 
     public function getCalamities() {
         try {
-            $stmt = $this->con->prepare("SELECT id, name, calamity_type, declaration_date FROM calamities ORDER BY declaration_date DESC");
+            $stmt = $this->con->prepare("SELECT id, name, calamity_type, declaration_date FROM calamities ORDER BY declaration_date DESC LIMIT 10");
             $stmt->execute();
             return ['status' => 'success', 'data' => $stmt->fetchAll()];
         } catch (PDOException $e) {
-            return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
+            error_log('CalamityController::getCalamities - ' . $e->getMessage());
+            return ['status' => 'error', 'message' => 'Unable to retrieve calamities. Please try again later.'];
         }
     }
 

@@ -36,6 +36,10 @@
                     margin-right: 6px;
                     cursor: pointer;
                 }
+                #addIncidentModal .select2-results__options {
+                    max-height: 250px; /* ~10 items */
+                    overflow-y: auto;
+                }
             </style>
 
             <div class="modal-body">
