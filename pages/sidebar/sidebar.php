@@ -30,6 +30,15 @@
           </a>
         </li>
 
+         <li id="statistics_sidebar" class="nav-item ">
+            <a href="../price-monitoring/price-monitoring.php" class="nav-link sidebar-statistics cursor-e">
+            <i class="nav-icon fas fa-xlg fa-chart-line"></i>
+            <p class="pt-2">
+              PRICE MONITORING
+            </p>
+          </a>
+        </li>
+
       </ul>
     </nav>
   </div>
