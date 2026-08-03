@@ -8,6 +8,9 @@ header('Content-Type: application/json');
 
 
 require_once 'controllers/MSMEController.php';
+require_once 'controllers/CalamityController.php';
+
+
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -57,6 +60,33 @@ switch ($resource) {
         $json = json_decode(file_get_contents('https://vamosmobile.app/api/testjuridical/business'), true);
         $response = ['data' => $json];
         break;
+    case 'calamity':
+    if ($method === 'GET') {
+        $controller = new CalamityController();
+        $action = $_GET['action'] ?? 'calamities';
+        if ($action === 'juridicals') {
+            $response = $controller->getJuridicals();
+        } else {
+            $response = $controller->getCalamities();
+        }
+          } elseif ($method === 'POST') {
+        $controller = new CalamityController();
+        if (($input['type'] ?? '') === 'calamity') {
+            $response = $controller->addCalamity($input);
+        } else {
+            $response = $controller->addIncident($input);
+        }
+    } elseif ($method === 'PUT') {
+        $controller = new CalamityController();
+        $response = $controller->updateIncident($input);
+
+
+    } else {
+        http_response_code(405);
+        $response = ['status' => 'error', 'message' => 'Invalid request method for /calamity. Please use GET, POST, or PUT.'];
+    }
+    break;
+
 
 
     default:
