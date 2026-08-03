@@ -49,6 +49,9 @@ switch ($resource) {
         } elseif ($method === 'PUT') {
             $controller = new MSMEController();
             $response = $controller->updateBusiness($input);
+        } elseif ($method === 'PATCH') {
+            $controller = new MSMEController();
+            $response = $controller->renewBusiness($input);
         } else {
             http_response_code(405);
             $response = ['status' => 'error', 'message' => 

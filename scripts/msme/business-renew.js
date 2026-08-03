@@ -16,3 +16,29 @@ function fillRenewModal(id) {
                    alert('Error: ' + error);
                });
        }
+
+
+       function renewBusiness() {
+            const data = {
+                juri_entity_no: $('#renewBusEntityNo').val(),
+            };
+
+            fetch('../../api/routes.php/business', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.status === 'success') {
+                    $('#renewBusinessModal').modal('hide');
+                    $('#tblBusiness').DataTable().ajax.reload();
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }

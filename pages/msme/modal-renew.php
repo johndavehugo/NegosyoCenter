@@ -24,7 +24,7 @@
 
             <div class="modal-footer border-secondary">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="btnRenewBusiness" onclick="renewConfirm()">Renew</button>
+                <button type="button" class="btn btn-success" id="btnRenewBusiness" onclick="renewBusiness()">Renew</button>
             </div>
 
         </div>

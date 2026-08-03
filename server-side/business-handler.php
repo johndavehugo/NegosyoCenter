@@ -205,7 +205,7 @@ function getBusinessDetail($entityNo, $con) {
                     'juridical' => [
                         'entity_no' => $item['entity_no'],
                         'name' => $item['juri_name'] ?? '',
-                        'registration_type' => $item['type_organization'] ?? '',
+                        'registration_type' => '',
                         'business_status' => $item['status'] ?? '',
                         'capitalization' => '',
                         'msme_category' => $item['juri_category'] ?? '',

@@ -415,4 +415,25 @@ class MSMEController {
             return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
         }
     }
+
+    public function renewBusiness(array $data) {
+        $juri_entity_no              = trim($data['juri_entity_no'] ?? '');
+
+        $entity_no = [$juri_entity_no];
+        
+        $sqlRenew = "UPDATE juridicals SET registration_type = 'RENEWAL' WHERE entity_no = ?";
+
+        try {
+            $renew = $this->con->prepare($sqlRenew);
+            $renew->execute($entity_no);
+
+            if ($renew->rowCount() > 0) {
+                return ['status' => 'success', 'message' => 'Business renewed successfully.'];
+            } else {
+                return ['status' => 'error', 'message' => 'No changes were made or business not found.'];
+            }
+        } catch (PDOException $e) {
+            return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
 }
