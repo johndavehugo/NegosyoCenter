@@ -7,6 +7,7 @@ error_reporting(E_ALL);
 header('Content-Type: application/json');
 
 require_once 'controllers/MSMEController.php';
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 require_once 'controllers/PriceMonitoringController.php';
 =======
@@ -14,6 +15,9 @@ require_once 'controllers/CalamityController.php';
 
 
 >>>>>>> fdffce35ccaf2912249258f60859558a5575d680
+=======
+require_once 'controllers/PriceMonitoringController.php';
+>>>>>>> Stashed changes
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -144,7 +148,6 @@ switch ($resource) {
         $response = ['status' => 'error', 'message' => 'Invalid request method for /calamity. Please use GET, POST, or PUT.'];
     }
     break;
-
 
     default:
         http_response_code(404);

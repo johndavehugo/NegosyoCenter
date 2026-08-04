@@ -95,6 +95,7 @@ function openEditModal(id) {
         });
 }
 
+<<<<<<< Updated upstream
 function deletePrice(id) {
     Swal.fire({
         title: 'Delete entry?',
@@ -108,6 +109,9 @@ function deletePrice(id) {
         if (!result.isConfirmed) {
             return;
         }
+=======
+
+>>>>>>> Stashed changes
 
         fetch(getPriceApiUrl('/' + id), {
             method: 'DELETE'

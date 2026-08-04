@@ -30,7 +30,10 @@
           </a>
         </li>
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
          <li id="module_price_monitoring" class="nav-item has-treeview">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-tags"></i>
@@ -72,6 +75,7 @@
         </li>
 
 
+<<<<<<< Updated upstream
 =======
          <li id="statistics_sidebar" class="nav-item ">
             <a href="../price-monitoring/price-monitoring.php" class="nav-link sidebar-statistics cursor-e">
@@ -83,6 +87,8 @@
         </li>
 
 >>>>>>> fdffce35ccaf2912249258f60859558a5575d680
+=======
+>>>>>>> Stashed changes
       </ul>
     </nav>
   </div>

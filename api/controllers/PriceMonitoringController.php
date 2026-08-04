@@ -16,6 +16,7 @@ class PriceMonitoringController {
      */
     public function getPrices() {
     try {
+<<<<<<< Updated upstream
         $sql = "SELECT
     p.id,
     p.juridical_id,
@@ -56,6 +57,52 @@ LEFT JOIN agencies a ON p.monitored_by_agency_id = a.id";
             'message' => 'Database error: ' . $e->getMessage(),
             'data' => []
         ];
+=======
+
+        $sql = "SELECT
+        p.id,
+        p.commodity_id,
+        p.prevailing_price,
+        p.status,
+        p.monitored_at,
+        p.monitored_by_agency_id,
+
+        c.product_name,
+        cc.name AS category_name,
+        c.brand_name,
+        c.unit_of_measure,
+        c.srp,
+
+        a.code AS agency_code
+
+FROM price_logs p
+
+LEFT JOIN commodities c
+ON p.commodity_id = c.id
+
+LEFT JOIN commodity_categories cc
+ON c.category_id = cc.id
+
+LEFT JOIN agencies a
+ON p.monitored_by_agency_id = a.id";
+
+        $stmt = $this->con->prepare($sql);
+        $stmt->execute();
+
+        return [
+            "status"=>"success",
+            "data"=>$stmt->fetchAll(PDO::FETCH_ASSOC)
+        ];
+
+    } catch(PDOException $e){
+
+        return [
+            "status"=>"error",
+            "message"=>"Database error: ".$e->getMessage(),
+            "data"=>[]
+        ];
+
+>>>>>>> Stashed changes
     }
 }
 
@@ -65,6 +112,7 @@ LEFT JOIN agencies a ON p.monitored_by_agency_id = a.id";
      * @return array
      */
     public function getPriceById($id) {
+<<<<<<< Updated upstream
         try {
             $stmt = $this->con->prepare("SELECT 
                         p.*, 
@@ -96,6 +144,72 @@ LEFT JOIN agencies a ON p.monitored_by_agency_id = a.id";
         }
     }
 
+=======
+
+    try{
+
+        $sql = "SELECT
+
+        p.id,
+        p.commodity_id,
+        p.prevailing_price,
+        p.status,
+        p.monitored_at,
+        p.monitored_by_agency_id,
+
+        c.product_name,
+        cc.name AS category_name,
+        c.brand_name,
+        c.unit_of_measure,
+        c.srp,
+
+        a.code AS agency_code
+
+FROM price_logs p
+
+LEFT JOIN commodities c
+ON p.commodity_id = c.id
+
+LEFT JOIN commodity_categories cc
+ON c.category_id = cc.id
+
+LEFT JOIN agencies a
+ON p.monitored_by_agency_id = a.id
+
+WHERE p.id=?";
+
+        $stmt=$this->con->prepare($sql);
+
+        $stmt->execute([$id]);
+
+        $row=$stmt->fetch(PDO::FETCH_ASSOC);
+
+        if(!$row){
+
+            return [
+                "status"=>"error",
+                "message"=>"Price record not found."
+            ];
+
+        }
+
+        return [
+            "status"=>"success",
+            "data"=>$row
+        ];
+
+    }catch(PDOException $e){
+
+        return [
+            "status"=>"error",
+            "message"=>"Database error: ".$e->getMessage()
+        ];
+
+    }
+
+}
+
+>>>>>>> Stashed changes
     /**
      * Add new price monitoring record
      * @param array $data
@@ -112,7 +226,21 @@ LEFT JOIN agencies a ON p.monitored_by_agency_id = a.id";
         }
 
         try {
+<<<<<<< Updated upstream
             $commodityStmt = $this->con->prepare("SELECT product_name, category_name, brand_name, unit_of_measure, srp, category_id FROM commodities WHERE id = ?");
+=======
+            $commodityStmt = $this->con->prepare("SELECT
+    c.product_name,
+    cc.name AS category_name,
+    c.brand_name,
+    c.unit_of_measure,
+    c.srp,
+    c.category_id
+FROM commodities c
+LEFT JOIN commodity_categories cc
+ON c.category_id=cc.id
+WHERE c.id=?");
+>>>>>>> Stashed changes
             $commodityStmt->execute([$commodity_id]);
             $commodity = $commodityStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -126,6 +254,7 @@ LEFT JOIN agencies a ON p.monitored_by_agency_id = a.id";
 
             $agency_code = $agency['code'] ?? '';
 
+<<<<<<< Updated upstream
             $sql = "INSERT INTO price_logs (commodity_id, monitored_by_agency_id, product_name, category_name, brand_name, unit_of_measure, srp, agency_code, prevailing_price, status) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->con->prepare($sql);
@@ -141,6 +270,28 @@ LEFT JOIN agencies a ON p.monitored_by_agency_id = a.id";
                 $prevailing_price,
                 $status
             ]);
+=======
+            $sql = "INSERT INTO price_logs
+(
+commodity_id,
+monitored_by_agency_id,
+prevailing_price,
+status
+)
+VALUES
+(
+?,?,?,?
+)";
+
+$stmt = $this->con->prepare($sql);
+
+$stmt->execute([
+    $commodity_id,
+    $monitored_by_agency_id,
+    $prevailing_price,
+    $status
+]);
+>>>>>>> Stashed changes
 
             return ['status' => 'success', 'message' => 'Price record has been added.'];
         } catch (PDOException $e) {
@@ -153,6 +304,7 @@ LEFT JOIN agencies a ON p.monitored_by_agency_id = a.id";
      * @param array $data
      * @return array
      */
+<<<<<<< Updated upstream
     public function updatePrice(array $data) {
         $id                   = trim($data['id'] ?? '');
         $commodity_id         = trim($data['commodity_id'] ?? '');
@@ -206,6 +358,58 @@ LEFT JOIN agencies a ON p.monitored_by_agency_id = a.id";
         }
     }
 
+=======
+    public function updatePrice(array $data)
+{
+    $id = trim($data['id'] ?? '');
+    $commodity_id = trim($data['commodity_id'] ?? '');
+    $monitored_by_agency_id = trim($data['monitored_by_agency_id'] ?? '');
+    $prevailing_price = trim($data['prevailing_price'] ?? 0);
+    $status = trim($data['status'] ?? 'WITHIN_SRP');
+
+    if (empty($id)) {
+        return [
+            'status' => 'error',
+            'message' => 'Missing record ID.'
+        ];
+    }
+
+    try {
+
+        $sql = "UPDATE price_logs
+                SET
+                    commodity_id=?,
+                    monitored_by_agency_id=?,
+                    prevailing_price=?,
+                    status=?
+                WHERE id=?";
+
+        $stmt = $this->con->prepare($sql);
+
+        $stmt->execute([
+            $commodity_id,
+            $monitored_by_agency_id,
+            $prevailing_price,
+            $status,
+            $id
+        ]);
+
+        return [
+            'status' => 'success',
+            'message' => 'Price updated successfully.'
+        ];
+
+    } catch (PDOException $e) {
+
+        return [
+            'status' => 'error',
+            'message' => 'Database error: '.$e->getMessage()
+        ];
+
+    }
+}
+
+>>>>>>> Stashed changes
     public function deletePrice($id) {
         if (empty($id)) {
             return ['status' => 'error', 'message' => 'Missing record ID for delete.'];
@@ -233,6 +437,7 @@ LEFT JOIN agencies a ON p.monitored_by_agency_id = a.id";
     }
 
     public function getCommodities() {
+<<<<<<< Updated upstream
         try {
             $stmt = $this->con->prepare("SELECT id, product_name, brand_name, unit_of_measure, category_id, category_name, srp FROM commodities ORDER BY product_name ASC");
             $stmt->execute();
@@ -242,4 +447,45 @@ LEFT JOIN agencies a ON p.monitored_by_agency_id = a.id";
             return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
         }
     }
+=======
+
+    try{
+
+        $sql="SELECT
+
+                c.id,
+                c.product_name,
+                c.brand_name,
+                c.unit_of_measure,
+                c.category_id,
+                cc.name AS category_name,
+                c.srp
+
+            FROM commodities c
+
+            LEFT JOIN commodity_categories cc
+                ON c.category_id=cc.id
+
+            ORDER BY c.product_name";
+
+        $stmt=$this->con->prepare($sql);
+
+        $stmt->execute();
+
+        return [
+            "status"=>"success",
+            "data"=>$stmt->fetchAll(PDO::FETCH_ASSOC)
+        ];
+
+    }catch(PDOException $e){
+
+        return [
+            "status"=>"error",
+            "message"=>"Database error: ".$e->getMessage()
+        ];
+
+    }
+
+}
+>>>>>>> Stashed changes
 }

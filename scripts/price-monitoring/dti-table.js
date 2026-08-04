@@ -30,10 +30,14 @@ function statusBadge(status) {
 }
 
 function renderActionButtons(row) {
+<<<<<<< Updated upstream
     return '<div class="d-flex justify-content-center">' +
         '<button type="button" class="btn btn-info btn-sm mr-1" onclick="openEditModal(' + row.id + ')"><i class="fas fa-pen"></i></button>' +
         '<button type="button" class="btn btn-danger btn-sm" onclick="deletePrice(' + row.id + ')"><i class="fas fa-trash"></i></button>' +
         '</div>';
+=======
+    return '<button type="button" class="btn btn-info btn-sm" onclick="openEditModal(' + row.id + ')"><i class="fas fa-pen"></i></button>';
+>>>>>>> Stashed changes
 }
 
 function getPriceApiUrl(query) {
