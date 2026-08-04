@@ -1,74 +1,62 @@
 <?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
-
 error_reporting(E_ALL);
 
 header('Content-Type: application/json');
 
 require_once 'controllers/MSMEController.php';
-<<<<<<< Updated upstream
-<<<<<<< HEAD
 require_once 'controllers/PriceMonitoringController.php';
-=======
 require_once 'controllers/CalamityController.php';
 
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
->>>>>>> fdffce35ccaf2912249258f60859558a5575d680
-=======
-require_once 'controllers/PriceMonitoringController.php';
->>>>>>> Stashed changes
-
-$method = $_SERVER['REQUEST_METHOD'];
-
-// Parse JSON payload or fallback to standard POST
-$input = json_decode(file_get_contents('php://input'), true) ?? [];
+$input = json_decode(file_get_contents('php://input'), true);
+if (!is_array($input)) {
+    $input = [];
+}
 if (empty($input) && !empty($_POST)) {
     $input = $_POST;
 }
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
-$scriptPath = $_SERVER['SCRIPT_NAME'];
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
+$scriptPath = $_SERVER['SCRIPT_NAME'] ?? '';
 $base = rtrim(dirname($scriptPath), '/\\');
 
-$pathInfo = substr($uri, strlen($base));
-
-$pathInfo = trim($pathInfo, '/');
-
-$segments = explode('/', $pathInfo);
-
-$resource = '';
-if (!empty($segments[0]) && strpos($segments[0], '.php') === false) {
-    $resource = $segments[0];
-} elseif (!empty($segments[1])) {
-    $resource = $segments[1];
+$pathInfo = $uri;
+if ($scriptPath && strpos($pathInfo, $scriptPath) === 0) {
+    $pathInfo = substr($pathInfo, strlen($scriptPath));
+} elseif ($base && strpos($pathInfo, $base) === 0) {
+    $pathInfo = substr($pathInfo, strlen($base));
 }
+$pathInfo = trim($pathInfo, '/');
+$segments = array_values(array_filter(explode('/', $pathInfo), function ($segment) {
+    return $segment !== '';
+}));
 
+$resource = $_GET['resource'] ?? ($segments[0] ?? '');
 switch ($resource) {
-
     case 'business':
+        $controller = new MSMEController();
+
         if ($method === 'GET') {
-            $controller = new MSMEController();
-            if (isset($segments[2])) {
-                $response = $controller->getBusinessByEntityNo($segments[2]);
+            if (isset($segments[1])) {
+                $response = $controller->getBusinessByEntityNo($segments[1]);
             } else {
                 $response = $controller->getBusinesses();
-            }          
+            }
         } elseif ($method === 'POST') {
-            $controller = new MSMEController();
             $response = $controller->addBusiness($input);
         } elseif ($method === 'PUT') {
-            $controller = new MSMEController();
             $response = $controller->updateBusiness($input);
         } else {
             http_response_code(405);
-            $response = ['status' => 'error', 'message' => 
-            'Invalid request method for /business. Please use GET, POST, or PUT.'];
+            $response = [
+                'status' => 'error',
+                'message' => 'Invalid request method for /business. Please use GET, POST, or PUT.'
+            ];
         }
         break;
-
-    // "Belly's ROUTES"
 
     case 'price':
         $controller = new PriceMonitoringController();
@@ -83,7 +71,7 @@ switch ($resource) {
 
                 if (isset($segments[1]) && is_numeric($segments[1])) {
                     $recordId = $segments[1];
-                } elseif (isset($_GET['id']) && !empty($_GET['id'])) {
+                } elseif (isset($_GET['id'])) {
                     $recordId = $_GET['id'];
                 }
 
@@ -107,13 +95,43 @@ switch ($resource) {
                 $response = $controller->deletePrice($recordId);
             } else {
                 http_response_code(400);
-                $response = ['status' => 'error', 'message' => 'Missing ID for delete.'];
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Missing ID for delete.'
+                ];
             }
         } else {
             http_response_code(405);
             $response = [
-                'status' => 'error', 
+                'status' => 'error',
                 'message' => 'Invalid request method for /price.'
+            ];
+        }
+        break;
+
+    case 'calamity':
+        $controller = new CalamityController();
+
+        if ($method === 'GET') {
+            $action = $_GET['action'] ?? 'calamities';
+            if ($action === 'juridicals') {
+                $response = $controller->getJuridicals();
+            } else {
+                $response = $controller->getCalamities();
+            }
+        } elseif ($method === 'POST') {
+            if (($input['type'] ?? '') === 'calamity') {
+                $response = $controller->addCalamity($input);
+            } else {
+                $response = $controller->addIncident($input);
+            }
+        } elseif ($method === 'PUT') {
+            $response = $controller->updateIncident($input);
+        } else {
+            http_response_code(405);
+            $response = [
+                'status' => 'error',
+                'message' => 'Invalid request method for /calamity. Please use GET, POST, or PUT.'
             ];
         }
         break;
@@ -122,32 +140,6 @@ switch ($resource) {
         $json = json_decode(file_get_contents('https://vamosmobile.app/api/testjuridical/business'), true);
         $response = ['data' => $json];
         break;
-    case 'calamity':
-    if ($method === 'GET') {
-        $controller = new CalamityController();
-        $action = $_GET['action'] ?? 'calamities';
-        if ($action === 'juridicals') {
-            $response = $controller->getJuridicals();
-        } else {
-            $response = $controller->getCalamities();
-        }
-          } elseif ($method === 'POST') {
-        $controller = new CalamityController();
-        if (($input['type'] ?? '') === 'calamity') {
-            $response = $controller->addCalamity($input);
-        } else {
-            $response = $controller->addIncident($input);
-        }
-    } elseif ($method === 'PUT') {
-        $controller = new CalamityController();
-        $response = $controller->updateIncident($input);
-
-
-    } else {
-        http_response_code(405);
-        $response = ['status' => 'error', 'message' => 'Invalid request method for /calamity. Please use GET, POST, or PUT.'];
-    }
-    break;
 
     default:
         http_response_code(404);

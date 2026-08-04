@@ -5,10 +5,20 @@ var priceMonitoringReferences = {
 
 function getPriceApiUrl(query) {
     var pathBase = window.location.pathname.split('/pages/')[0];
+
     if (!pathBase) {
         pathBase = window.location.pathname.split('/').slice(0, 2).join('/');
     }
-    return window.location.origin + pathBase + '/api/routes.php/price' + (query || '');
+
+    query = query || '';
+
+    if (query.startsWith('/')) {
+        query = '&id=' + query.substring(1);
+    } else if (query.startsWith('?')) {
+        query = '&' + query.substring(1);
+    }
+
+    return window.location.origin + pathBase + '/api/routes.php?resource=price' + query;
 }
 
 function renderAgencyOptions(agencies) {
@@ -68,19 +78,35 @@ function resetEditForm() {
 }
 
 function openEditModal(id) {
+
+    console.log("Opening Edit Modal. ID =", id);
+
     fetch(getPriceApiUrl('/' + id))
         .then(function (response) {
+
+            console.log("HTTP Status:", response.status);
+
             if (!response.ok) {
                 throw new Error('Server returned status ' + response.status);
             }
+
             return response.json();
+
         })
         .then(function (result) {
+
+            console.log("API Response:", result);
+
             if (result.status !== 'success') {
-                return Swal.fire('Error', result.message || 'Unable to load entry.', 'error');
+                return Swal.fire(
+                    'Error',
+                    result.message || 'Unable to load entry.',
+                    'error'
+                );
             }
 
             var row = result.data;
+
             $('#edit_entry_id').val(row.id);
             $('#edit_monitored_by_agency_id').val(row.monitored_by_agency_id).trigger('change');
             $('#edit_commodity_id').val(row.commodity_id).trigger('change');
@@ -88,51 +114,24 @@ function openEditModal(id) {
             $('#edit_status').val(row.status);
 
             $('#modalEditPrice').modal('show');
+
         })
         .catch(function (error) {
-            console.error('Error loading price entry:', error);
-            Swal.fire('Error', 'Unable to fetch entry details.', 'error');
+
+            console.error(error);
+
+            Swal.fire(
+                'Error',
+                error.message,
+                'error'
+            );
+
         });
+
 }
 
-<<<<<<< Updated upstream
-function deletePrice(id) {
-    Swal.fire({
-        title: 'Delete entry?',
-        text: 'This action cannot be undone.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Delete',
-        cancelButtonText: 'Cancel',
-        reverseButtons: true
-    }).then(function (result) {
-        if (!result.isConfirmed) {
-            return;
-        }
-=======
 
->>>>>>> Stashed changes
 
-        fetch(getPriceApiUrl('/' + id), {
-            method: 'DELETE'
-        })
-        .then(function (response) { return response.json(); })
-        .then(function (result) {
-            if (result.status === 'success') {
-                Swal.fire('Deleted', result.message, 'success');
-                if (typeof loadPriceData === 'function') {
-                    loadPriceData();
-                }
-            } else {
-                Swal.fire('Error', result.message || 'Unable to delete entry.', 'error');
-            }
-        })
-        .catch(function (error) {
-            console.error('Delete failed:', error);
-            Swal.fire('Error', 'Network error during delete.', 'error');
-        });
-    });
-}
 
 function submitAddPrice(event) {
     event.preventDefault();
@@ -204,7 +203,20 @@ function submitEditPrice(event) {
 }
 
 $(function () {
+
     loadReferenceData();
+
     $('#formAddPrice').on('submit', submitAddPrice);
+
     $('#formEditPrice').on('submit', submitEditPrice);
+
+    // Open Edit Modal
+    $(document).on('click', '.btn-edit', function () {
+
+        var id = $(this).data('id');
+
+        openEditModal(id);
+
+    });
+
 });
