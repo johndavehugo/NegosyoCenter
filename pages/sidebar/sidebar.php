@@ -30,6 +30,47 @@
           </a>
         </li>
 
+         <li id="module_price_monitoring" class="nav-item has-treeview">
+          <a href="#" class="nav-link">
+            <i class="nav-icon fas fa-tags"></i>
+            <p class="pt-2">
+              PRICE MONITORING
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview pl-3">
+            <li class="nav-item">
+              <a href="../price-monitoring/da.php" class="nav-link">
+                <i class="fas fa-seedling nav-icon text-sm"></i>
+                <p>DA - Agriculture</p>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="../price-monitoring/doe.php" class="nav-link">
+                <i class="fas fa-gas-pump nav-icon text-sm"></i>
+                <p>DOE - Petroleum</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="../price-monitoring/dti.php" class="nav-link">
+                <i class="fas fa-store nav-icon text-sm"></i>
+                <p>DTI - Basic Necessities</p>
+              </a>
+            </li>
+            
+            
+
+            <li class="nav-item">
+              <a href="../price-monitoring/other-agency.php" class="nav-link">
+                <i class="fas fa-building nav-icon text-sm"></i>
+                <p>Other Agencies</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+
       </ul>
     </nav>
   </div>
