@@ -22,7 +22,7 @@
         </li>
 
         <li id="statistics_sidebar" class="nav-item ">
-          <a class="nav-link sidebar-statistics cursor-e">
+          <a href="../calamity/calamity.php" class="nav-link sidebar-statistics cursor-e">
             <i class="nav-icon fas fa-xlg fa-chart-line"></i>
             <p class="pt-2">
               CALAMITY MONITORING
@@ -30,6 +30,7 @@
           </a>
         </li>
 
+<<<<<<< HEAD
          <li id="module_price_monitoring" class="nav-item has-treeview">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-tags"></i>
@@ -71,6 +72,17 @@
         </li>
 
 
+=======
+         <li id="statistics_sidebar" class="nav-item ">
+            <a href="../price-monitoring/price-monitoring.php" class="nav-link sidebar-statistics cursor-e">
+            <i class="nav-icon fas fa-xlg fa-chart-line"></i>
+            <p class="pt-2">
+              PRICE MONITORING
+            </p>
+          </a>
+        </li>
+
+>>>>>>> fdffce35ccaf2912249258f60859558a5575d680
       </ul>
     </nav>
   </div>
