@@ -23,7 +23,7 @@ function fillRenewModal(id) {
                 juri_entity_no: $('#renewBusEntityNo').val(),
             };
 
-            fetch('../../api/routes.php/business', {
+            fetch('../../api/routes.php/business/renew', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'

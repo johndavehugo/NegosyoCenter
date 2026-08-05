@@ -618,6 +618,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     
     <?php include 'modal-view.php'; ?>
     <?php include 'modal-add.php'; ?>
+    <?php include 'modal-owner-add.php'; ?>
     <?php include 'modal-update.php'; ?>
     <?php include 'modal-renew.php'; ?>
 
@@ -657,6 +658,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     <!-- new  -->
     <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+    <script src="../../plugins/select2/js/select2.min.js"></script>
 
 
 
@@ -667,6 +669,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="../../scripts/msme/business-add.js"></script>
     <script src="../../scripts/msme/business-update.js"></script>
     <script src="../../scripts/msme/business-renew.js"></script>
+    <script src="../../scripts/msme/owner-add.js"></script>
 
 
 </body>

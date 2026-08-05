@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/db_connect.php';
+require_once __DIR__ . '/../global/name-utils.php';
 
 header('Content-Type: application/json');
 
@@ -262,33 +263,47 @@ function importBusiness($entityNo, $con) {
     try {
         $con->beginTransaction();
 
-        $fullName = explode(' ', $item['juri_employer'] ?? '', 3);
+        $checkBus = $con->prepare("SELECT COUNT(*) FROM juridicals WHERE entity_no = ?");
+        $checkBus->execute([$entityNo]);
+        if ($checkBus->fetchColumn() > 0) {
+            $con->rollBack();
+            return ['status' => 'error', 'message' => 'Business already exists locally.'];
+        }
 
-         $stmt = $con->prepare("INSERT INTO addresses 
-            (street, subdivision, barangay, city, province, region)
-            VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $item['emp_street'] ?? '',
-            $item['emp_subdivision'] ?? '',
-            $item['emp_barangay'] ?? '',
-            $item['emp_city'] ?? '',
-            $item['emp_province'] ?? '',
-            $item['emp_region'] ?? '',
-        ]);
-        $empAddressId = $con->lastInsertId();
+        $empEntityNo = $item['employer_entity_no'] ?? '';
+        $findEmp = $con->prepare("SELECT id FROM employers WHERE entity_no = ?");
+        $findEmp->execute([$empEntityNo]);
+        $employerId = $findEmp->fetchColumn();
 
-        $stmt = $con->prepare("INSERT INTO employers 
-            (entity_no, first_name, middle_name, last_name, address_id, special_category)
-            VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $item['employer_entity_no'] ?? '',
-            $fullName[0] ?? '',
-            $fullName[1] ?? '',
-            $fullName[2] ?? '',
-            $empAddressId,
-            '',
-        ]);
-        $employerId = $con->lastInsertId();
+        if (!$employerId) {
+            $name = splitFullName($item['juri_employer'] ?? '');
+
+            $stmt = $con->prepare("INSERT INTO addresses 
+                (street, subdivision, barangay, city, province, region)
+                VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $item['emp_street'] ?? '',
+                $item['emp_subdivision'] ?? '',
+                $item['emp_barangay'] ?? '',
+                $item['emp_city'] ?? '',
+                $item['emp_province'] ?? '',
+                $item['emp_region'] ?? '',
+            ]);
+            $empAddressId = $con->lastInsertId();
+
+            $stmt = $con->prepare("INSERT INTO employers 
+                (entity_no, first_name, middle_name, last_name, address_id, special_category)
+                VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $empEntityNo,
+                $name['first_name'],
+                $name['middle_name'],
+                $name['last_name'],
+                $empAddressId,
+                '',
+            ]);
+            $employerId = $con->lastInsertId();
+        }
 
         $stmt = $con->prepare("INSERT INTO addresses 
             (street, subdivision, barangay, city, province, region)

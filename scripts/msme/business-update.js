@@ -77,7 +77,7 @@ function updateBusiness() {
                 //Juridical Address
                 juri_region: $('#updBusRegion').val(),
                 juri_province: $('#updBusProvince').val(),
-                juri_city: $('upddBusCity').val(),
+                juri_city: $('updBusCity').val(),
                 juri_barangay: $('#updBusBarangay').val(),
                 juri_street: $('#updBusStreet').val(),
                 juri_subdivision: $('#updBusSubdivision').val(),

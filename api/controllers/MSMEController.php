@@ -1,12 +1,15 @@
 <?php
 
 require_once dirname(__DIR__) . '/../config/db_connect.php';
+require_once dirname(__DIR__) . '/../global/name-utils.php';
 
 
-class MSMEController {
+class MSMEController
+{
     private $con;
 
-    public function __construct() {
+    public function __construct()
+    {
         global $con;
         $this->con = $con;
     }
@@ -16,7 +19,8 @@ class MSMEController {
      * @return array 
      */
 
-    public function getBusinesses() {
+    public function getBusinesses()
+    {
         try {
             $stmt = $this->con->prepare("SELECT 
                 j.entity_no AS juri_entity_no,
@@ -63,41 +67,41 @@ class MSMEController {
                 ]));
 
                 $businesses[] = [
-                'juridical' => [
-                    'entity_no' => $row['juri_entity_no'],
-                    'name' => $row['juri_name'],
-                    'registration_type' => $row['juri_registration_type'],
-                    'business_status' => $row['juri_business_status'],
-                    'capitalization' => $row['juri_capitalization'],
-                    'msme_category' => $row['juri_msme_category'],
-                    'contact_no' => $row['juri_contact_no'],
-                    'contact_email' => $row['juri_contact_email'],
-                    'line_of_industry' => $row['juri_line_of_industry'],
-                    'upblb_num' => $row['juri_upblb_num'],
-                    'street' => $row['juri_street'],
-                    'subdivision' => $row['juri_subdivision'],
-                    'barangay' => $row['juri_barangay'],
-                    'city' => $row['juri_city'],
-                    'province' => $row['juri_province'],
-                    'region' => $row['juri_region'],
-                ],
-                'employer' => [
-                    'entity_no' => $row['emp_entity_no'],
-                    'first_name' => $row['emp_first_name'],
-                    'middle_name' => $row['emp_middle_name'],
-                    'last_name' => $row['emp_last_name'],
-                    'special_category' => $row['emp_special_category'],
-                    'upblb_num' => $row['emp_upblb_num'],
-                    'street' => $row['emp_street'],
-                    'subdivision' => $row['emp_subdivision'],
-                    'barangay' => $row['emp_barangay'],
-                    'city' => $row['emp_city'],
-                    'province' => $row['emp_province'],
-                    'region' => $row['emp_region'],
-                    'full_name' => $fullName,
-                ],
-            ];
-        }
+                    'juridical' => [
+                        'entity_no' => $row['juri_entity_no'],
+                        'name' => $row['juri_name'],
+                        'registration_type' => $row['juri_registration_type'],
+                        'business_status' => $row['juri_business_status'],
+                        'capitalization' => $row['juri_capitalization'],
+                        'msme_category' => $row['juri_msme_category'],
+                        'contact_no' => $row['juri_contact_no'],
+                        'contact_email' => $row['juri_contact_email'],
+                        'line_of_industry' => $row['juri_line_of_industry'],
+                        'upblb_num' => $row['juri_upblb_num'],
+                        'street' => $row['juri_street'],
+                        'subdivision' => $row['juri_subdivision'],
+                        'barangay' => $row['juri_barangay'],
+                        'city' => $row['juri_city'],
+                        'province' => $row['juri_province'],
+                        'region' => $row['juri_region'],
+                    ],
+                    'employer' => [
+                        'entity_no' => $row['emp_entity_no'],
+                        'first_name' => $row['emp_first_name'],
+                        'middle_name' => $row['emp_middle_name'],
+                        'last_name' => $row['emp_last_name'],
+                        'special_category' => $row['emp_special_category'],
+                        'upblb_num' => $row['emp_upblb_num'],
+                        'street' => $row['emp_street'],
+                        'subdivision' => $row['emp_subdivision'],
+                        'barangay' => $row['emp_barangay'],
+                        'city' => $row['emp_city'],
+                        'province' => $row['emp_province'],
+                        'region' => $row['emp_region'],
+                        'full_name' => $fullName,
+                    ],
+                ];
+            }
             return ['status' => 'success', 'data' => $businesses];
         } catch (PDOException $e) {
             return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
@@ -105,9 +109,10 @@ class MSMEController {
     }
 
 
-    public function getBusinessByEntityNo($entityNo) {
-    try {
-        $stmt = $this->con->prepare("SELECT
+    public function getBusinessByEntityNo($entityNo)
+    {
+        try {
+            $stmt = $this->con->prepare("SELECT
             j.entity_no AS juri_entity_no,
             j.name AS juri_name,
             j.registration_type AS juri_registration_type,
@@ -141,132 +146,104 @@ class MSMEController {
             LEFT JOIN addresses a ON j.address_id = a.id
             LEFT JOIN addresses ea ON e.address_id = ea.id
             WHERE j.entity_no = ?");
-        $stmt->execute([$entityNo]);
-        $row = $stmt->fetch();
+            $stmt->execute([$entityNo]);
+            $row = $stmt->fetch();
 
-        if (!$row) {
-            return ['status' => 'error', 'message' => 'Business not found.'];
-        }
+            if (!$row) {
+                return ['status' => 'error', 'message' => 'Business not found.'];
+            }
 
-        $fullName = implode(' ', array_filter([
-            trim($row['emp_first_name'] ?? ''),
-            trim($row['emp_middle_name'] ?? ''),
-            trim($row['emp_last_name'] ?? '')
-        ]));
+            $fullName = implode(' ', array_filter([
+                trim($row['emp_first_name'] ?? ''),
+                trim($row['emp_middle_name'] ?? ''),
+                trim($row['emp_last_name'] ?? '')
+            ]));
 
-        return [
-            'status' => 'success',
-            'data' => [
-                'juridical' => [
-                    'entity_no' => $row['juri_entity_no'],
-                    'name' => $row['juri_name'],
-                    'registration_type' => $row['juri_registration_type'],
-                    'business_status' => $row['juri_business_status'],
-                    'capitalization' => $row['juri_capitalization'],
-                    'msme_category' => $row['juri_msme_category'],
-                    'contact_no' => $row['juri_contact_no'],
-                    'contact_email' => $row['juri_contact_email'],
-                    'line_of_industry' => $row['juri_line_of_industry'],
-                    'upblb_num' => $row['juri_upblb_num'],
-                    'street' => $row['juri_street'],
-                    'subdivision' => $row['juri_subdivision'],
-                    'barangay' => $row['juri_barangay'],
-                    'city' => $row['juri_city'],
-                    'province' => $row['juri_province'],
-                    'region' => $row['juri_region'],
+            return [
+                'status' => 'success',
+                'data' => [
+                    'juridical' => [
+                        'entity_no' => $row['juri_entity_no'],
+                        'name' => $row['juri_name'],
+                        'registration_type' => $row['juri_registration_type'],
+                        'business_status' => $row['juri_business_status'],
+                        'capitalization' => $row['juri_capitalization'],
+                        'msme_category' => $row['juri_msme_category'],
+                        'contact_no' => $row['juri_contact_no'],
+                        'contact_email' => $row['juri_contact_email'],
+                        'line_of_industry' => $row['juri_line_of_industry'],
+                        'upblb_num' => $row['juri_upblb_num'],
+                        'street' => $row['juri_street'],
+                        'subdivision' => $row['juri_subdivision'],
+                        'barangay' => $row['juri_barangay'],
+                        'city' => $row['juri_city'],
+                        'province' => $row['juri_province'],
+                        'region' => $row['juri_region'],
                     ],
-                'employer' => [
-                    'entity_no' => $row['emp_entity_no'],
-                    'first_name' => $row['emp_first_name'],
-                    'middle_name' => $row['emp_middle_name'],
-                    'last_name' => $row['emp_last_name'],
-                    'special_category' => $row['emp_special_category'],
-                    'upblb_num' => $row['emp_upblb_num'],
-                    'street' => $row['emp_street'],
-                    'subdivision' => $row['emp_subdivision'],
-                    'barangay' => $row['emp_barangay'],
-                    'city' => $row['emp_city'],
-                    'province' => $row['emp_province'],
-                    'region' => $row['emp_region'],
-                    'full_name' => $fullName,
-                ],
-            ]
-        ];
+                    'employer' => [
+                        'entity_no' => $row['emp_entity_no'],
+                        'first_name' => $row['emp_first_name'],
+                        'middle_name' => $row['emp_middle_name'],
+                        'last_name' => $row['emp_last_name'],
+                        'special_category' => $row['emp_special_category'],
+                        'upblb_num' => $row['emp_upblb_num'],
+                        'street' => $row['emp_street'],
+                        'subdivision' => $row['emp_subdivision'],
+                        'barangay' => $row['emp_barangay'],
+                        'city' => $row['emp_city'],
+                        'province' => $row['emp_province'],
+                        'region' => $row['emp_region'],
+                        'full_name' => $fullName,
+                    ],
+                ]
+            ];
         } catch (PDOException $e) {
             return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
         }
-    }   
+    }
 
-    public function addBusiness(array $data) {
+    public function addBusiness(array $data)
+    {
 
-    //Owner Address
-        $employer_region                   = trim($data['employer_region'] ?? '');
-        $employer_province                 = trim($data['employer_province'] ?? '');
-        $employer_city                     = trim($data['employer_city'] ?? '');
-        $employer_barangay                 = trim($data['employer_barangay'] ?? '');
-        $employer_street                   = trim($data['employer_street'] ?? '');
-        $employer_subdivision              = trim($data['employer_subdivision'] ?? '');
-        $employer_upblb_num                = trim($data['employer_upblb_num'] ?? '');
-
-        //Owner
-        $employer_first_name               = trim($data['employer_first_name'] ?? '');
-        $employer_middle_name              = trim($data['employer_middle_name'] ?? '');
-        $employer_last_name                = trim($data['employer_last_name'] ?? '');
-        $employer_entity_no                = trim($data['employer_entity_no'] ?? '');
-        $special_category                  = trim($data['special_category'] ?? '');
+        $empID = (int) ($data['employer_id'] ?? 0);
+        if ($empID <= 0) {
+            return ['status' => 'error', 'message' => 'Owner not found — add the owner first.'];
+        }
 
         //Business Address
-        $juri_region                       = trim($data['juri_region'] ?? '');
-        $juri_province                     = trim($data['juri_province'] ?? '');
-        $juri_city                         = trim($data['juri_city'] ?? '');
-        $juri_barangay                     = trim($data['juri_barangay'] ?? '');
-        $juri_street                       = trim($data['juri_street'] ?? '');
-        $juri_subdivision                  = trim($data['juri_subdivision'] ?? '');
-        $juri_upblb_num                    = trim($data['juri_upblb_num'] ?? '');
+        $juri_region = trim($data['juri_region'] ?? '');
+        $juri_province = trim($data['juri_province'] ?? '');
+        $juri_city = trim($data['juri_city'] ?? '');
+        $juri_barangay = trim($data['juri_barangay'] ?? '');
+        $juri_street = trim($data['juri_street'] ?? '');
+        $juri_subdivision = trim($data['juri_subdivision'] ?? '');
+        $juri_upblb_num = trim($data['juri_upblb_num'] ?? '');
 
         //Business
-        $juri_name                         = trim($data['juri_name'] ?? '');
-        $juri_entity_no                    = trim($data['juri_entity_no'] ?? '');
-        $line_of_industry                  = trim($data['line_of_industry'] ?? '');
-        $capitalization                    = trim($data['capitalization'] ?? '');
-        $contact_no                        = trim($data['contact_no'] ?? '');
-        $contact_email                     = trim($data['contact_email'] ?? '');
-        
+        $juri_name = trim($data['juri_name'] ?? '');
+        $juri_entity_no = trim($data['juri_entity_no'] ?? '');
+        $line_of_industry = trim($data['line_of_industry'] ?? '');
+        $capitalization = trim($data['capitalization'] ?? '');
+        $contact_no = trim($data['contact_no'] ?? '');
+        $contact_email = trim($data['contact_email'] ?? '');
 
-        if (empty($employer_first_name) || empty($employer_last_name) || empty($employer_entity_no) || empty($juri_name) || empty($juri_entity_no)) {
-            return ['status' => 'error', 'message' => "Required fields can't be empty."];
-        }
 
         $stmtCheckBusName = $this->con->prepare("SELECT COUNT(*) FROM juridicals WHERE name = ?");
         $stmtCheckBusName->execute([$juri_name]);
         $count = $stmtCheckBusName->fetchColumn();
         if ($count > 0) {
             return ['status' => 'error', 'message' => 'Business Name already taken.'];
-        };
+        }
+        ;
 
         $stmtBusCheckEntity = $this->con->prepare("SELECT COUNT(*) FROM juridicals WHERE entity_no = ?");
         $stmtBusCheckEntity->execute([$juri_entity_no]);
         $count = $stmtBusCheckEntity->fetchColumn();
         if ($count > 0) {
             return ['status' => 'error', 'message' => "Business' Entity Number already in use."];
-        };
+        }
+        ;
 
-        $stmtEmpCheckEntity = $this->con->prepare("SELECT COUNT(*) FROM employers WHERE entity_no = ?");
-        $stmtEmpCheckEntity->execute([$employer_entity_no]);
-        $count = $stmtEmpCheckEntity->fetchColumn();
-        if ($count > 0) {
-            return ['status' => 'error', 'message' => "Owner's Entity Number already in use."];
-        };
-
-        $sqlEmpAddress = "INSERT INTO addresses
-                   (upblb_num, street, subdivision, barangay, city, province, region)
-                VALUES
-                   (?, ?, ?, ?, ?, ?, ?)";
-
-        $sqlEmployer = "INSERT INTO employers
-                   (entity_no, first_name, middle_name, last_name, special_category, address_id)
-                VALUES
-                   (?, ?, ?, ?, ?, ?)";
 
         $sqlJuriAddress = "INSERT INTO addresses
                    (upblb_num, street, subdivision, barangay, city, province, region)
@@ -277,19 +254,10 @@ class MSMEController {
                    (entity_no, name, registration_type, bus_status, contact_no, contact_email, line_of_industry, capitalization, employer_id, address_id)
                 VALUES
                    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                   
+
         try {
             $this->con->beginTransaction();
 
-
-            $insEmpAddress = $this->con->prepare($sqlEmpAddress);
-            $insEmpAddress->execute([$employer_upblb_num, $employer_street, $employer_subdivision, $employer_barangay, $employer_city, $employer_province, $employer_region]);
-            $empAddressID = $this->con->lastInsertId();
-        
-            $insEmployer = $this->con->prepare($sqlEmployer);
-            $insEmployer->execute([$employer_entity_no, $employer_first_name, $employer_middle_name, $employer_last_name, $special_category, $empAddressID]);
-            $empID = $this->con->lastInsertId();
-        
             $insJuriAddress = $this->con->prepare($sqlJuriAddress);
             $insJuriAddress->execute([$juri_upblb_num, $juri_street, $juri_subdivision, $juri_barangay, $juri_city, $juri_province, $juri_region]);
             $juriAddressID = $this->con->lastInsertId();
@@ -307,41 +275,41 @@ class MSMEController {
         }
     }
 
-
-    public function updateBusiness(array $data) {
+    public function updateBusiness(array $data)
+    {
         //Owner Address
-        $employer_region                   = trim($data['employer_region'] ?? '');
-        $employer_province                 = trim($data['employer_province'] ?? '');
-        $employer_city                     = trim($data['employer_city'] ?? '');
-        $employer_barangay                 = trim($data['employer_barangay'] ?? '');
-        $employer_street                   = trim($data['employer_street'] ?? '');
-        $employer_subdivision              = trim($data['employer_subdivision'] ?? '');
-        $employer_upblb_num                = trim($data['employer_upblb_num'] ?? '');
+        $employer_region = trim($data['employer_region'] ?? '');
+        $employer_province = trim($data['employer_province'] ?? '');
+        $employer_city = trim($data['employer_city'] ?? '');
+        $employer_barangay = trim($data['employer_barangay'] ?? '');
+        $employer_street = trim($data['employer_street'] ?? '');
+        $employer_subdivision = trim($data['employer_subdivision'] ?? '');
+        $employer_upblb_num = trim($data['employer_upblb_num'] ?? '');
 
         //Owner
-        $employer_entity_no                = trim($data['employer_entity_no'] ?? '');
-        $employer_first_name               = trim($data['employer_first_name'] ?? '');
-        $employer_middle_name              = trim($data['employer_middle_name'] ?? '');
-        $employer_last_name                = trim($data['employer_last_name'] ?? '');
-        $special_category                  = trim($data['special_category'] ?? '');
+        $employer_entity_no = trim($data['employer_entity_no'] ?? '');
+        $employer_first_name = trim($data['employer_first_name'] ?? '');
+        $employer_middle_name = trim($data['employer_middle_name'] ?? '');
+        $employer_last_name = trim($data['employer_last_name'] ?? '');
+        $special_category = trim($data['special_category'] ?? '');
 
         //Business Address
-        $juri_region                       = trim($data['juri_region'] ?? '');
-        $juri_province                     = trim($data['juri_province'] ?? '');
-        $juri_city                         = trim($data['juri_city'] ?? '');
-        $juri_barangay                     = trim($data['juri_barangay'] ?? '');
-        $juri_street                       = trim($data['juri_street'] ?? '');
-        $juri_subdivision                  = trim($data['juri_subdivision'] ?? '');
-        $juri_upblb_num                    = trim($data['juri_upblb_num'] ?? '');
+        $juri_region = trim($data['juri_region'] ?? '');
+        $juri_province = trim($data['juri_province'] ?? '');
+        $juri_city = trim($data['juri_city'] ?? '');
+        $juri_barangay = trim($data['juri_barangay'] ?? '');
+        $juri_street = trim($data['juri_street'] ?? '');
+        $juri_subdivision = trim($data['juri_subdivision'] ?? '');
+        $juri_upblb_num = trim($data['juri_upblb_num'] ?? '');
 
         //Business
-        $juri_entity_no                    = trim($data['juri_entity_no'] ?? '');
-        $juri_name                         = trim($data['juri_name'] ?? '');
-        $line_of_industry                  = trim($data['line_of_industry'] ?? '');
-        $capitalization                    = trim($data['capitalization'] ?? '');
-        $contact_no                        = trim($data['contact_no'] ?? '');
-        $contact_email                     = trim($data['contact_email'] ?? '');
-        
+        $juri_entity_no = trim($data['juri_entity_no'] ?? '');
+        $juri_name = trim($data['juri_name'] ?? '');
+        $line_of_industry = trim($data['line_of_industry'] ?? '');
+        $capitalization = trim($data['capitalization'] ?? '');
+        $contact_no = trim($data['contact_no'] ?? '');
+        $contact_email = trim($data['contact_email'] ?? '');
+
 
         if (empty($employer_first_name) || empty($employer_last_name) || empty($employer_entity_no) || empty($juri_name) || empty($juri_entity_no)) {
             return ['status' => 'error', 'message' => "Required fields can't be empty."];
@@ -409,23 +377,34 @@ class MSMEController {
                 return ['status' => 'error', 'message' => 'No changes were made or business not found.'];
             }
         } catch (PDOException $e) {
-            if ($this->con->inTransaction()){
+            if ($this->con->inTransaction()) {
                 $this->con->rollBack();
-            };
+            }
+            ;
             return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
         }
     }
 
-    public function renewBusiness(array $data) {
-        $juri_entity_no              = trim($data['juri_entity_no'] ?? '');
+    //------------------------------- BUSINESS PATCH -----------------------------------
 
-        $entity_no = [$juri_entity_no];
-        
+    public function patchBusiness(string $action, array $data)
+    {
+        return match ($action) {
+            'renew' => $this->renewBusiness($data),
+            default => ['status' => 'error', 'message' => "Unknown PATCH action for /business."],
+        };
+    }
+
+
+    private function renewBusiness(array $data)
+    {
+        $juri_entity_no = trim($data['juri_entity_no'] ?? '');
+
         $sqlRenew = "UPDATE juridicals SET registration_type = 'RENEWAL' WHERE entity_no = ?";
 
         try {
             $renew = $this->con->prepare($sqlRenew);
-            $renew->execute($entity_no);
+            $renew->execute([$juri_entity_no]);
 
             if ($renew->rowCount() > 0) {
                 return ['status' => 'success', 'message' => 'Business renewed successfully.'];
@@ -435,5 +414,120 @@ class MSMEController {
         } catch (PDOException $e) {
             return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
         }
+    }
+
+    //----------------------------- Employers ------------------------------
+
+    public function getEmployers()
+    {
+        try {
+            $stmt = $this->con->prepare("SELECT * FROM employers");
+            $stmt->execute();
+            $employers = $stmt->fetchAll();
+            return ['status' => 'success', 'data' => $employers];
+        } catch (PDOException $e) {
+            return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+
+    public function addEmployer(array $data)
+    {
+        //Owner Address
+        $region = trim($data['region'] ?? '');
+        $province = trim($data['province'] ?? '');
+        $city = trim($data['city'] ?? '');
+        $barangay = trim($data['barangay'] ?? '');
+        $street = trim($data['street'] ?? '');
+        $subdivision = trim($data['subdivision'] ?? '');
+        $upblb_num = trim($data['upblb_num'] ?? '');
+
+        //Owner
+        $entity_no = trim($data['entity_no'] ?? '');
+        $first_name = trim($data['first_name'] ?? '');
+        $middle_name = trim($data['middle_name'] ?? '');
+        $last_name = trim($data['last_name'] ?? '');
+        $special_category = trim($data['special_category'] ?? '');
+
+        if (empty($entity_no) || empty($first_name) || empty($last_name) || empty($special_category)) {
+            return ['status' => 'error', 'message' => "Required fields can't be empty"];
+        }
+
+        $sqlcheckEntity = $this->con->prepare("SELECT COUNT(*) FROM employers WHERE entity_no = ?");
+        $sqlcheckEntity->execute([$entity_no]);
+        $count = $sqlcheckEntity->fetchColumn();
+        if ($count > 0) {
+            return ['status' => 'error', 'message' => 'Entity number already in use.'];
+        }
+
+        $sqlEmpAddress = "INSERT INTO addresses (upblb_num, street, subdivision, barangay, city, province, region) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        $sqlEmployer = "INSERT INTO employers (entity_no, first_name, middle_name, last_name, special_category, address_id) VALUES (?, ?, ?, ?, ?, ?)";
+
+        try {
+            $this->con->beginTransaction();
+
+            $insEmpAddress = $this->con->prepare($sqlEmpAddress);
+            $insEmpAddress->execute([$upblb_num, $street, $subdivision, $barangay, $city, $province, $region]);
+            $empAddressID = $this->con->lastInsertId();
+
+            $insEmployer = $this->con->prepare($sqlEmployer);
+            $insEmployer->execute([$entity_no, $first_name, $middle_name, $last_name, $special_category, $empAddressID]);
+            $this->con->commit();
+            return ['status' => 'success', 'message' => 'Employer has been added.'];
+        } catch (PDOException $e) {
+            if ($this->con->inTransaction()) {
+                $this->con->rollBack();
+            }
+            return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+
+    public function searchEmployers(string $q)
+    {
+        try {
+            $like = '%' . $q . '%';
+            $stmt = $this->con->prepare(
+                "SELECT e.*, a.upblb_num, a.street, a.subdivision, a.barangay, a.city, a.province, a.region
+                    FROM employers e
+                    LEFT JOIN addresses a ON e.address_id = a.id
+                    WHERE e.entity_no LIKE ? OR CONCAT(e.first_name, ' ', e.last_name) LIKE ?
+                    ORDER BY e.last_name, e.first_name
+                    LIMIT 20"
+            );
+            $stmt->execute([$like, $like]);
+            return ['status' => 'success', 'data' => $stmt->fetchAll()];
+        } catch (PDOException $e) {
+            return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+
+    public function searchScimsEmployers(string $q)
+    {
+        $scimsRaw = @file_get_contents('https://vamosmobile.app/api/testjuridical/business');
+        if (!$scimsRaw) {
+            return ['status' => 'error', 'message' => 'Cannot connect to SCIMS API.'];
+        }
+
+        $results = [];
+        foreach (json_decode($scimsRaw, true)['data'] ?? [] as $item) {
+            $en = $item['employer_entity_no'] ?? '';
+            if (!$en) continue;
+            if (stripos($en, $q) === false && stripos($item['juri_employer'] ?? '', $q) === false) continue;
+
+            $name = splitFullName($item['juri_employer'] ?? '');
+            $results[] = [
+                'entity_no'   => $en,
+                'first_name'  => $name['first_name'],
+                'middle_name' => $name['middle_name'],
+                'last_name'   => $name['last_name'],
+                'region'      => $item['emp_region'] ?? '',
+                'province'    => $item['emp_province'] ?? '',
+                'city'        => $item['emp_city'] ?? '',
+                'barangay'    => $item['emp_barangay'] ?? '',
+                'street'      => $item['emp_street'] ?? '',
+                'subdivision' => $item['emp_subdivision'] ?? '',
+            ];
+        }
+        return ['status' => 'success', 'data' => array_slice($results, 0, 20)];
     }
 }

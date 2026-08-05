@@ -1,5 +1,6 @@
 
 .codegpt
 .env
+AGENTS.md
 cache/*
 !cache/regions.json
