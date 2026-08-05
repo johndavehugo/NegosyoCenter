@@ -16,7 +16,6 @@ function initSelect2Update() {
         width: '100%',
         theme: 'bootstrap4'
     });
-
     $('#updateIncidentJuridical').select2({
         dropdownParent: $('#updateIncidentModal'),
         placeholder: 'Search business name or entity no...',
@@ -24,10 +23,9 @@ function initSelect2Update() {
         width: '100%',
         theme: 'bootstrap4'
     });
-
     $('#updateIncidentNature').select2({
         dropdownParent: $('#updateIncidentModal'),
-        placeholder: 'Search nature of damage...',
+        placeholder: 'Select nature of damage...',
         allowClear: true,
         width: '100%',
         theme: 'bootstrap4'
@@ -63,7 +61,8 @@ function fillUpdateIncident(incidentId) {
     $.when(loadCalamities, loadBusinesses).done(function () {
         initSelect2Update();
 
-        $.getJSON('../../api/routes.php/calamity?action=detail&incident_id=' + incidentId)
+        // Detail lives in calamity-handler.php, not routes.php
+        $.getJSON('../../server-side/calamity-handler.php?action=detail&incident_id=' + incidentId)
             .done(function (res) {
                 if (res.status === 'success' && res.data) {
                     var d = res.data;
@@ -88,15 +87,29 @@ $('#updateIncidentModal').on('hidden.bs.modal', function () {
 });
 
 function updateIncident() {
+    var id          = $('#updateIncidentId').val();
+    var calamityId  = $('#updateIncidentCalamity').val();
+    var juridicalId = $('#updateIncidentJuridical').val();
+    var date        = $('#updateIncidentDate').val();
+    var nature      = $('#updateIncidentNature').val();
+    var cost        = $('#updateIncidentCost').val();
+    var status      = $('#updateIncidentStatus').val();
+    var remarks     = $('#updateIncidentRemarks').val();
+
+    if (!id || !calamityId || !juridicalId || !date || !nature || cost === '') {
+        Swal.fire('Warning', 'Please fill in all required fields.', 'warning');
+        return;
+    }
+
     const data = {
-        id:                        $('#updateIncidentId').val(),
-        calamity_id:               $('#updateIncidentCalamity').val(),
-        juridical_id:              $('#updateIncidentJuridical').val(),
-        date_occurred:             $('#updateIncidentDate').val(),
-        nature_of_damage:          $('#updateIncidentNature').val(),
-        estimated_cost_of_damages: $('#updateIncidentCost').val(),
-        status:                    $('#updateIncidentStatus').val(),
-        remarks:                   $('#updateIncidentRemarks').val(),
+        id:                        id,
+        calamity_id:               calamityId,
+        juridical_id:              juridicalId,
+        date_occurred:             date,
+        nature_of_damage:          nature,
+        estimated_cost_of_damages: cost,
+        status:                    status,
+        remarks:                   remarks,
     };
 
     fetch('../../api/routes.php/calamity', {
@@ -109,8 +122,8 @@ function updateIncident() {
         if (res.status === 'success') {
             Swal.fire('Success!', res.message, 'success');
             $('#updateIncidentModal').modal('hide');
-            $('#tblCalamityIncidents').DataTable().ajax.reload();
-            if (typeof affectedDataTable !== 'undefined' && affectedDataTable) {
+            reloadCalamityTable();
+            if (affectedDataTable) {
                 affectedDataTable.ajax.reload();
             }
         } else {
@@ -119,6 +132,6 @@ function updateIncident() {
     })
     .catch(err => {
         console.error(err);
-        Swal.fire('Error', 'Network error', 'error');
+        Swal.fire('Error', 'Network error. Please try again.', 'error');
     });
 }

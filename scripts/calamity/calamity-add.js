@@ -16,7 +16,6 @@ function initSelect2Add() {
         width: '100%',
         theme: 'bootstrap4'
     });
-
     $('#addIncidentJuridical').select2({
         dropdownParent: $('#addIncidentModal'),
         placeholder: 'Search business name or entity no...',
@@ -24,10 +23,9 @@ function initSelect2Add() {
         width: '100%',
         theme: 'bootstrap4'
     });
-
     $('#addIncidentNature').select2({
         dropdownParent: $('#addIncidentModal'),
-        placeholder: 'Search nature of damage...',
+        placeholder: 'Select nature of damage...',
         allowClear: true,
         width: '100%',
         theme: 'bootstrap4'
@@ -37,8 +35,9 @@ function initSelect2Add() {
 $(document).on('click', '#btn_add_incident', function () {
     destroySelect2Add();
 
+    // Use .done() not .then() so $.when() can track them correctly
     var loadCalamities = $.getJSON('../../api/routes.php/calamity?action=calamities')
-        .then(function (res) {
+        .done(function (res) {
             var opts = '<option value=""></option>';
             if (res.status === 'success') {
                 res.data.forEach(function (c) {
@@ -49,7 +48,7 @@ $(document).on('click', '#btn_add_incident', function () {
         });
 
     var loadBusinesses = $.getJSON('../../api/routes.php/calamity?action=juridicals')
-        .then(function (res) {
+        .done(function (res) {
             var opts = '<option value=""></option>';
             if (res.status === 'success') {
                 res.data.forEach(function (b) {
@@ -59,7 +58,6 @@ $(document).on('click', '#btn_add_incident', function () {
             $('#addIncidentJuridical').html(opts);
         });
 
-    // Wait for both API calls to finish, then init all Select2 instances
     $.when(loadCalamities, loadBusinesses).done(function () {
         initSelect2Add();
     });
@@ -71,14 +69,27 @@ $('#addIncidentModal').on('hidden.bs.modal', function () {
 });
 
 function addIncident() {
+    var calamityId  = $('#addIncidentCalamity').val();
+    var juridicalId = $('#addIncidentJuridical').val();
+    var date        = $('#addIncidentDate').val();
+    var nature      = $('#addIncidentNature').val();
+    var cost        = $('#addIncidentCost').val();
+    var status      = $('#addIncidentStatus').val();
+    var remarks     = $('#addIncidentRemarks').val();
+
+    if (!calamityId || !juridicalId || !date || !nature || cost === '') {
+        Swal.fire('Warning', 'Please fill in all required fields.', 'warning');
+        return;
+    }
+
     const data = {
-        calamity_id:               $('#addIncidentCalamity').val(),
-        juridical_id:              $('#addIncidentJuridical').val(),
-        date_occurred:             $('#addIncidentDate').val(),
-        nature_of_damage:          $('#addIncidentNature').val(),
-        estimated_cost_of_damages: $('#addIncidentCost').val(),
-        status:                    $('#addIncidentStatus').val(),
-        remarks:                   $('#addIncidentRemarks').val(),
+        calamity_id:               calamityId,
+        juridical_id:              juridicalId,
+        date_occurred:             date,
+        nature_of_damage:          nature,
+        estimated_cost_of_damages: cost,
+        status:                    status,
+        remarks:                   remarks,
     };
 
     fetch('../../api/routes.php/calamity', {
@@ -91,13 +102,13 @@ function addIncident() {
         if (res.status === 'success') {
             Swal.fire('Success!', res.message, 'success');
             $('#addIncidentModal').modal('hide');
-            $('#tblCalamityIncidents').DataTable().ajax.reload();
+            reloadCalamityTable();
         } else {
             Swal.fire('Error', res.message, 'error');
         }
     })
     .catch(err => {
         console.error(err);
-        Swal.fire('Error', 'Network error', 'error');
+        Swal.fire('Error', 'Network error. Please try again.', 'error');
     });
 }

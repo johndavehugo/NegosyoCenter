@@ -99,6 +99,45 @@ class CalamityController {
         }
     }
   
+    public function getCalamityDetail(int $id) {
+        try {
+            $stmt = $this->con->prepare("SELECT id, name, calamity_type, declaration_date, description FROM calamities WHERE id = ?");
+            $stmt->execute([$id]);
+            $row = $stmt->fetch();
+            if (!$row) {
+                return ['status' => 'error', 'message' => 'Calamity not found.'];
+            }
+            return ['status' => 'success', 'data' => $row];
+        } catch (PDOException $e) {
+            error_log('CalamityController::getCalamityDetail - ' . $e->getMessage());
+            return ['status' => 'error', 'message' => 'Unable to retrieve calamity. Please try again later.'];
+        }
+    }
+
+    public function updateCalamity(array $data) {
+        $id               = intval($data['id'] ?? 0);
+        $name             = trim($data['name'] ?? '');
+        $calamity_type    = trim($data['calamity_type'] ?? '');
+        $declaration_date = trim($data['declaration_date'] ?? '');
+        $description      = trim($data['description'] ?? '');
+
+        if (!$id) {
+            return ['status' => 'error', 'message' => 'Calamity ID is required.'];
+        }
+        if (empty($name) || empty($calamity_type) || empty($declaration_date)) {
+            return ['status' => 'error', 'message' => "Required fields can't be empty."];
+        }
+
+        try {
+            $stmt = $this->con->prepare("UPDATE calamities SET name = ?, calamity_type = ?, declaration_date = ?, description = ? WHERE id = ?");
+            $stmt->execute([$name, $calamity_type, $declaration_date, $description, $id]);
+            return ['status' => 'success', 'message' => 'Calamity has been updated.'];
+        } catch (PDOException $e) {
+            error_log('CalamityController::updateCalamity - ' . $e->getMessage());
+            return ['status' => 'error', 'message' => 'Unable to update calamity. Please try again later.'];
+        }
+    }
+
     public function updateIncident(array $data) {
         $id                        = trim($data['id'] ?? '');
         $juridical_id              = trim($data['juridical_id'] ?? '');

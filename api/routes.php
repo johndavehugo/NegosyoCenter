@@ -66,10 +66,13 @@ switch ($resource) {
         $action = $_GET['action'] ?? 'calamities';
         if ($action === 'juridicals') {
             $response = $controller->getJuridicals();
+        } elseif ($action === 'calamity_detail') {
+            $calamity_id = intval($_GET['calamity_id'] ?? 0);
+            $response = $controller->getCalamityDetail($calamity_id);
         } else {
             $response = $controller->getCalamities();
         }
-          } elseif ($method === 'POST') {
+    } elseif ($method === 'POST') {
         $controller = new CalamityController();
         if (($input['type'] ?? '') === 'calamity') {
             $response = $controller->addCalamity($input);
@@ -78,9 +81,11 @@ switch ($resource) {
         }
     } elseif ($method === 'PUT') {
         $controller = new CalamityController();
-        $response = $controller->updateIncident($input);
-
-
+        if (($input['type'] ?? '') === 'calamity') {
+            $response = $controller->updateCalamity($input);
+        } else {
+            $response = $controller->updateIncident($input);
+        }
     } else {
         http_response_code(405);
         $response = ['status' => 'error', 'message' => 'Invalid request method for /calamity. Please use GET, POST, or PUT.'];

@@ -39,13 +39,14 @@ if ($action === 'affected') {
     $orderColumn = intval($_GET['order'][0]['column'] ?? 0);
     $orderDir = $_GET['order'][0]['dir'] ?? 'asc';
 
-    $columns = ['j.name', 'j.entity_no', 'CONCAT(e.first_name, " ", e.middle_name, " ", e.last_name)', 'ci.date_occurred', 'ci.nature_of_damage', 'ci.estimated_cost_of_damages', 'ci.status'];
-    $orderBy = $columns[$orderColumn] ?? 'ci.date_occurred';
+    $columns = ['j.name', 'j.entity_no', 'CONCAT(e.first_name, " ", e.middle_name, " ", e.last_name)', 'c.declaration_date', 'ci.nature_of_damage', 'ci.estimated_cost_of_damages', 'ci.status'];
+    $orderBy = $columns[$orderColumn] ?? 'c.declaration_date';
     $orderDir = strtoupper($orderDir) === 'DESC' ? 'DESC' : 'ASC';
 
     $baseQuery = "FROM calamity_incidents ci
         LEFT JOIN juridicals j ON ci.juridical_id = j.id
         LEFT JOIN employers e ON j.employer_id = e.id
+        LEFT JOIN calamities c ON ci.calamity_id = c.id
         WHERE ci.calamity_id = $calamityId";
 
     $totalStmt = $con->query("SELECT COUNT(*) $baseQuery");
@@ -57,7 +58,7 @@ if ($action === 'affected') {
         $like = '%' . $search . '%';
 
         $stmt = $con->prepare("SELECT
-            ci.id, ci.date_occurred, ci.nature_of_damage,
+            ci.id, c.declaration_date, ci.nature_of_damage,
             ci.estimated_cost_of_damages, ci.status, ci.remarks,
             j.entity_no AS juri_entity_no, j.name AS juri_name,
             e.first_name, e.middle_name, e.last_name
@@ -77,7 +78,7 @@ if ($action === 'affected') {
         $recordsFiltered = $countStmt->fetchColumn();
     } else {
         $stmt = $con->prepare("SELECT
-            ci.id, ci.date_occurred, ci.nature_of_damage,
+            ci.id, c.declaration_date, ci.date_occurred, ci.nature_of_damage,
             ci.estimated_cost_of_damages, ci.status, ci.remarks,
             j.entity_no AS juri_entity_no, j.name AS juri_name,
             e.first_name, e.middle_name, e.last_name
@@ -93,15 +94,15 @@ if ($action === 'affected') {
     foreach ($rows as $row) {
         $fullName = trim(implode(' ', array_filter([$row['first_name'] ?? '', $row['middle_name'] ?? '', $row['last_name'] ?? ''])));
         $data[] = [
-            'id' => $row['id'],
-            'date_occurred' => $row['date_occurred'],
-            'nature_of_damage' => $row['nature_of_damage'],
-            'estimated_cost_of_damages' => $row['estimated_cost_of_damages'],
-            'status' => $row['status'],
-            'remarks' => $row['remarks'],
-            'entity_no' => $row['juri_entity_no'],
-            'business_name' => $row['juri_name'],
-            'owner_full_name' => $fullName,
+            'id'                       => $row['id'],
+            'declaration_date'         => $row['date_occurred'],
+            'nature_of_damage'         => $row['nature_of_damage'],
+            'estimated_cost_of_damages'=> $row['estimated_cost_of_damages'],
+            'status'                   => $row['status'],
+            'remarks'                  => $row['remarks'],
+            'entity_no'                => $row['juri_entity_no'],
+            'business_name'            => $row['juri_name'],
+            'owner_full_name'          => $fullName,
         ];
     }
 
@@ -121,8 +122,8 @@ $search = $_GET['search']['value'] ?? '';
 $orderColumn = intval($_GET['order'][0]['column'] ?? 0);
 $orderDir = $_GET['order'][0]['dir'] ?? 'asc';
 
-$columns = ['c.name', 'c.calamity_type', 'c.declaration_date', 'affected_count'];
-$orderBy = $columns[$orderColumn] ?? 'c.declaration_date';
+$columns = ['c.name', 'c.calamity_type', 'c.declaration_date', 'c.id'];
+$orderBy = $columns[$orderColumn] ?? 'c.name';
 $orderDir = strtoupper($orderDir) === 'DESC' ? 'DESC' : 'ASC';
 
 $baseQuery = "FROM calamities c
