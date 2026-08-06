@@ -207,4 +207,85 @@ class PriceMonitoringController {
             return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
         }
     }
+
+
+   public function getCategories(){
+    
+    try {
+        $sql = "SELECT
+                    c.id AS category_id, c.agency_id,
+                    c.name AS category_name,
+                    a.name AS agency_name
+                FROM commodity_categories c
+                INNER JOIN agencies a
+                    ON c.agency_id = a.id 
+                ORDER BY c.name ASC
+        ";
+
+        $stmt = $this->con->prepare($sql);
+        $stmt->execute();
+
+        $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return [
+            "status" => "success",
+            "data" => $categories
+        ];
+
+    } catch (PDOException $e) {
+        error_log("PriceMonitoringController::getCategories() - " . $e->getMessage());
+
+        return [
+            "status" => "error",
+            "message" => "Unable to retrieve categories."
+        ];
+    }
+}
+
+public function addCategory(array $data) {
+    $name      = trim($data['name'] ?? '');
+    $agency_id = trim($data['agency_id'] ?? '');
+
+
+    if (empty($name) || empty($agency_id)) {
+        return ['status' => 'error', 'message' => "Category name and agency selection are required."];
+    }
+
+    try {
+
+        $sql = "INSERT INTO commodity_categories (name, agency_id) VALUES (?, ?)";
+        $stmt = $this->con->prepare($sql);
+        $stmt->execute([$name, $agency_id]);
+
+        return [
+            'status' => 'success', 
+            'message' => 'Category has been added successfully.'
+        ];
+    } catch (PDOException $e) {
+        error_log("PriceMonitoringController::addCategory() - " . $e->getMessage());
+        return [
+            'status' => 'error', 
+            'message' => 'Database error: Unable to add category.'
+        ];
+    }
+}
+
+public function updateCategory(array $data) {
+    $id        = trim($data['category_id'] ?? '');
+    $name      = trim($data['name'] ?? '');
+    $agency_id = trim($data['agency_id'] ?? '');
+
+    if (empty($id) || empty($name) || empty($agency_id)) {
+        return ['status' => 'error', 'message' => 'Category ID, name, and agency are required.'];
+    }
+
+    try {
+        $stmt = $this->con->prepare("UPDATE commodity_categories SET name = ?, agency_id = ? WHERE id = ?");
+        $stmt->execute([$name, $agency_id, $id]);
+        return ['status' => 'success', 'message' => 'Category updated successfully.'];
+    } catch (PDOException $e) {
+        error_log("PriceMonitoringController::updateCategory() - " . $e->getMessage());
+        return ['status' => 'error', 'message' => 'Database error: Unable to update category.'];
+    }
+}
 }

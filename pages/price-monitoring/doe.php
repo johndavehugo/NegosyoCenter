@@ -129,12 +129,7 @@
                         <div class="card-header">
                             <h3 class="card-title mt-1"><i class="fa-solid fa-fire-flame-simple mr-1"></i> DOE Petroleum & LPG Prevailing Price Monitoring</h3>
                             <div class="card-tools">
-                                <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalAddPrice">
-                                    <i class="fa-solid fa-plus mr-1"></i> Add DOE Entry
-                                </button>
-                                <button class="btn btn-success btn-sm" onclick="exportExcelReport()">
-                                    <i class="fa-solid fa-file-excel mr-1"></i> Export Report
-                                </button>
+
                             </div>
                         </div>
 

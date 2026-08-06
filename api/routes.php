@@ -58,6 +58,8 @@ switch ($resource) {
         }
         break;
 
+    // Belly's Routes
+
     case 'price':
         $controller = new PriceMonitoringController();
 
@@ -108,6 +110,60 @@ switch ($resource) {
             ];
         }
         break;
+
+    case 'price-monitoring':
+    $controller = new PriceMonitoringController();
+
+    if ($method === 'GET') {
+        $action = $_GET['action'] ?? 'commodity_categories';
+
+        switch ($action) {
+            case 'commodity_categories':
+                $response = $controller->getCategories();
+                break;
+            default:
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Invalid action.'
+                ];
+                break;
+        }
+
+    } elseif ($method === 'POST') {
+        $action = $input['action'] ?? $_POST['action'] ?? '';
+
+        switch ($action) {
+            case 'add_category':
+                $response = $controller->addCategory($input ?? $_POST);
+                break;
+            default:
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Invalid action for POST request.'
+                ];
+                break;
+                
+        }
+        
+        } elseif ($method === 'PUT') {
+        $response = $controller->updateCategory($input);
+
+    } else {
+        http_response_code(405);
+        $response = [
+            'status' => 'error',
+            'message' => 'Invalid request method for /price-monitoring. Please use GET, POST, PUT, or DELETE.'
+        ];
+    }
+
+
+
+
+    break;
+
+
+
+    // End of Belly's routes
 
     case 'calamity':
         $controller = new CalamityController();

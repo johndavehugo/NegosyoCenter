@@ -54,28 +54,35 @@
                         <li class="nav-item">
                             <a href="../price-monitoring/dti.php" class="nav-link">
                                 <i class="fas fa-store nav-icon"></i>
-                                <p>DTI - Basic Necessities</p>
+                                <p>DTI Price Monitoring</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
                             <a href="../price-monitoring/da.php" class="nav-link">
                                 <i class="fas fa-seedling nav-icon"></i>
-                                <p>DA - Agriculture</p>
+                                <p>DA Price Monitoring</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
                             <a href="../price-monitoring/doe.php" class="nav-link">
                                 <i class="fas fa-gas-pump nav-icon"></i>
-                                <p>DOE - Petroleum</p>
+                                <p>DOE Price Monitoring</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="../price-monitoring/other-agency.php" class="nav-link">
-                                <i class="fas fa-building nav-icon"></i>
-                                <p>Other Agencies</p>
+                            <a href="../price-monitoring/category.php" class="nav-link">
+                                <i class=""></i>
+                                <p>Categories</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="../price-monitoring/commodity.php" class="nav-link">
+                                <i class=""></i>
+                                <p>Commodities</p>
                             </a>
                         </li>
 

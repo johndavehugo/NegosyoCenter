@@ -131,12 +131,7 @@
                                 <i class="fa-solid fa-seedling mr-1"></i> Agricultural Commodity Prevailing Price Monitoring
                             </h3>
                             <div class="card-tools">
-                                <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalAddPrice">
-                                    <i class="fa-solid fa-plus mr-1"></i> Add DA Entry
-                                </button>
-                                <button class="btn btn-outline-success btn-sm" onclick="exportExcelReport()">
-                                    <i class="fa-solid fa-file-excel mr-1"></i> Export Report
-                                </button>
+
                             </div>
                         </div>
 
