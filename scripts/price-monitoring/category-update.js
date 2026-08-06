@@ -28,8 +28,12 @@ $(document).on('click', '.btn-edit', function () {
             $('#updateCategoryId').val(row.category_id);
             $('#updateCategoryName').val(row.category_name);
             $('#updateCategoryAgency').val(row.agency_id);
-            $('#updateCategoryModal').modal('show');
-        });
+            $('#updateCategoryModal').appendTo("body").modal('show');
+        })
+        .catch(function (err) {
+        console.error(err);
+        Swal.fire('Error', 'Failed to load agencies.', 'error');
+    });
 });
 // Reset form when modal is closed
 $('#updateCategoryModal').on('hidden.bs.modal', function () {
