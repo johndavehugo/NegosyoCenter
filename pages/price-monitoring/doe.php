@@ -148,17 +148,17 @@
                             <div class="table-responsive">
                                 <table id="tblPriceMonitoring" class="table table-bordered table-striped datatable w-100">
                                     <thead>
-                                        <tr>
-                                            <th>Product Name</th>
-                                            <th>Category</th>
-                                            <th>Commodity / Product</th>
-                                            <th>Establishment</th>
-                                            <th>SRP (₱)</th>
-                                            <th>Prevailing Price (₱)</th>
-                                            <th>Variance / Status</th>
-                                            <th class="text-center" style="width: 120px;">Actions</th>
-                                        </tr>
-                                    </thead>
+    <tr>
+    <th>Product Name</th>
+    <th>Category</th>
+    <th>Brand / Unit</th>
+    <th>Agency</th>
+    <th>SRP (₱)</th>
+    <th>Prevailing Price (₱)</th>
+    <th>Status</th>
+    <th class="text-center" style="width: 120px;">Actions</th>
+</tr>
+</thead>
                                     <tbody>
                                         <!-- Data loaded via DataTables AJAX -->
                                     </tbody>
@@ -196,7 +196,8 @@
                             <div class="col-md-4 form-group">
                                 <label>Agency Jurisdiction</label>
                                 <input type="text" class="form-control" value="DOE" readonly>
-                                <input type="hidden" name="agency" value="DOE">
+
+<input type="hidden" name="agency_id" value="3">
                             </div>
                             <div class="col-md-4 form-group">
                                 <label>Category <span class="text-danger">*</span></label>
@@ -210,10 +211,7 @@
                                 <label>Commodity / Product Description <span class="text-danger">*</span></label>
                                 <input type="text" name="item_description" class="form-control" placeholder="e.g., Unleaded Gasoline (91 RON), Diesel Fuel" required>
                             </div>
-                            <div class="col-md-12 form-group">
-                                <label>Gas Station / Outlet Name <span class="text-danger">*</span></label>
-                                <input type="text" name="store_name" class="form-control" placeholder="e.g., Shell Station - Locsin St., Petron Highway" required>
-                            </div>
+                            
                             <div class="col-md-6 form-group">
                                 <label>DOE / Guide Price (₱) <span class="text-danger">*</span></label>
                                 <input type="number" step="0.01" name="srp_price" class="form-control" placeholder="0.00" required>
@@ -243,6 +241,16 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
+
+                <form id="formEditPrice">
+
+    <input type="hidden" name="price_id">
+    <input type="hidden" name="commodity_id">
+    <input type="hidden" name="agency_id">
+
+    <!-- your existing fields -->
+
+</form>
                 <form id="formEditPrice">
                     <input type="hidden" id="edit_entry_id" name="entry_id">
                     <div class="modal-body">
@@ -264,10 +272,7 @@
                                 <label>Commodity / Product Description <span class="text-danger">*</span></label>
                                 <input type="text" id="edit_item_description" name="item_description" class="form-control" required>
                             </div>
-                            <div class="col-md-12 form-group">
-                                <label>Gas Station / Outlet Name <span class="text-danger">*</span></label>
-                                <input type="text" id="edit_store_name" name="store_name" class="form-control" required>
-                            </div>
+                            
                             <div class="col-md-6 form-group">
                                 <label>DOE / Guide Price (₱) <span class="text-danger">*</span></label>
                                 <input type="number" step="0.01" id="edit_srp_price" name="srp_price" class="form-control" required>
@@ -296,5 +301,6 @@
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap4.js"></script>
     <script src="https://cdn.datatables.net/responsive/3.0.2/js/dataTables.responsive.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>
+    <script src="../../scripts/price-monitoring/doe-table.js"></script>
 
     

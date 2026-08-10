@@ -160,7 +160,7 @@
                                             <th>Product Name</th>
                                             <th>Category</th>
                                             <th>Commodity / Item</th>
-                                            <th>Establishment</th>
+                                            <th>Agency</th>
                                             <th>SRP (₱)</th>
                                             <th>Prevailing Price (₱)</th>
                                             <th>Variance / Status</th>
@@ -230,10 +230,7 @@
                             <label>Unit Measurement <span class="text-danger">*</span></label>
                             <input type="text" name="unit" class="form-control" placeholder="e.g., kg, pc, pack, sack" required>
                         </div>
-                        <div class="col-md-12 form-group">
-                            <label>Store / Public Market Stall Name <span class="text-danger">*</span></label>
-                            <input type="text" name="store_name" class="form-control" placeholder="e.g., Stall #12 Public Market, City Supermarket" required>
-                        </div>
+                        <
                         <div class="col-md-6 form-group">
                             <label>Official DA SRP (₱) <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" name="srp_price" class="form-control" placeholder="0.00" required>
@@ -267,6 +264,19 @@
                 <input type="hidden" id="edit_entry_id" name="entry_id">
                 <input type="hidden" id="edit_agency" name="agency" value="DA">
 
+                <input type="hidden"
+       id="edit_commodity_id"
+       name="commodity_id">
+
+<input type="hidden"
+       id="edit_monitored_by_agency_id"
+       name="monitored_by_agency_id"
+       value="2">
+
+<input type="hidden"
+       id="edit_status"
+       name="status">
+
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6 form-group">
@@ -286,13 +296,18 @@
                             <label>Unit Measurement</label>
                             <input type="text" id="edit_unit" name="unit" class="form-control" placeholder="e.g., kg, pc, pack" required>
                         </div>
-                        <div class="col-md-12 form-group">
-                            <label>Store / Public Market Stall Name</label>
-                            <input type="text" id="edit_store_name" name="store_name" class="form-control" required>
-                        </div>
+                        
                         <div class="col-md-6 form-group">
                             <label>DA SRP (₱)</label>
-                            <input type="number" step="0.01" id="edit_srp_price" name="srp_price" class="form-control" required>
+<input
+    type="number"
+    step="0.01"
+    min="0"
+    id="edit_srp_price"
+    name="srp_price"
+    class="form-control"
+    required
+>
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Prevailing Monitored Price (₱)</label>
@@ -318,5 +333,9 @@
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap4.js"></script>
     <script src="https://cdn.datatables.net/responsive/3.0.2/js/dataTables.responsive.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>
+    <script src="../../scripts/price-monitoring/da-table.js?v=20260808"></script>
+<script src="../../scripts/price-monitoring/da-actions.js"></script>
+
+<script src="../../scripts/price-monitoring/da-forms.js"></script>
 
     
