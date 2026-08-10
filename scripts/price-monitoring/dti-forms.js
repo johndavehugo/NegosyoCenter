@@ -3,13 +3,13 @@ var priceMonitoringReferences = {
     commodities: []
 };
 
-
-/* =========================================================
-   API URL
-   ========================================================= */
+var DTI_CONFIG = {
+    resource: 'price',
+    addModal: '#modalAddPrice',
+    editModal: '#modalEditPrice'
+};
 
 function getPriceApiUrl(query) {
-
     var pathBase = window.location.pathname.split('/pages/')[0];
 
     if (!pathBase) {
@@ -21,34 +21,112 @@ function getPriceApiUrl(query) {
 
     query = query || '';
 
-    if (query.startsWith('/')) {
+    if (query.charAt(0) === '/') {
         query = '&id=' + query.substring(1);
-    } 
-    else if (query.startsWith('?')) {
+    } else if (query.charAt(0) === '?') {
         query = '&' + query.substring(1);
     }
 
     return window.location.origin +
         pathBase +
-        '/api/routes.php?resource=price' +
+        '/api/routes.php?resource=' +
+        DTI_CONFIG.resource +
         query;
 }
 
+function apiRequest(url, options) {
+    options = options || {};
 
-/* =========================================================
-   LOAD AGENCIES
-   ========================================================= */
+    options.headers = Object.assign({
+        'Accept': 'application/json'
+    }, options.headers || {});
+
+    return fetch(url, options)
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error(
+                    'Server returned HTTP ' + response.status
+                );
+            }
+
+            return response.text();
+        })
+        .then(function(text) {
+            if (!text) {
+                throw new Error(
+                    'The server returned an empty response.'
+                );
+            }
+
+            try {
+                return JSON.parse(text);
+            } catch (error) {
+                console.error(
+                    'Invalid API response:',
+                    text
+                );
+
+                throw new Error(
+                    'The server returned an invalid response.'
+                );
+            }
+        });
+}
+
+function getValue(selector) {
+    return $(selector).val();
+}
+
+function setValue(selector, value) {
+    $(selector).val(
+        value === null || value === undefined
+            ? ''
+            : value
+    );
+}
+
+function showMessage(title, message, icon) {
+    Swal.fire(
+        title,
+        message,
+        icon
+    );
+}
+
+function refreshPriceTable() {
+    if (typeof loadPriceData === 'function') {
+        loadPriceData();
+    }
+}
+
+function calculateDTIStatus(srp, prevailing) {
+    srp = parseFloat(srp);
+    prevailing = parseFloat(prevailing);
+
+    if (isNaN(srp) || isNaN(prevailing)) {
+        return '';
+    }
+
+    if (prevailing > srp) {
+        return 'OVERPRICED';
+    }
+
+    if (prevailing < srp) {
+        return 'BELOW_SRP';
+    }
+
+    return 'WITHIN_SRP';
+}
 
 function renderAgencyOptions(agencies) {
+    var html =
+        '<option value="">-- Select Agency --</option>';
 
-    var html = '<option value="">-- Select Agency --</option>';
-
-    agencies.forEach(function (agency) {
-
+    agencies.forEach(function(agency) {
         var label =
             agency.code ||
             agency.name ||
-            ('Agency #' + agency.id);
+            'Agency #' + agency.id;
 
         html +=
             '<option value="' + agency.id + '">' +
@@ -56,26 +134,18 @@ function renderAgencyOptions(agencies) {
             '</option>';
     });
 
-    $('#add_monitored_by_agency_id')
-        .html(html);
+    $('#add_monitored_by_agency_id').html(html);
 }
 
-
-/* =========================================================
-   LOAD COMMODITIES
-   ========================================================= */
-
 function renderCommodityOptions(commodities) {
-
     var html =
         '<option value="">-- Select Commodity --</option>';
 
-    commodities.forEach(function (commodity) {
-
+    commodities.forEach(function(commodity) {
         var label =
             commodity.product_name ||
             commodity.item_description ||
-            ('Commodity #' + commodity.id);
+            'Commodity #' + commodity.id;
 
         if (commodity.category_name) {
             label +=
@@ -88,49 +158,19 @@ function renderCommodityOptions(commodities) {
             '</option>';
     });
 
-    $('#add_commodity_id')
-        .html(html);
+    $('#add_commodity_id').html(html);
 }
 
-
-/* =========================================================
-   LOAD REFERENCE DATA
-   ========================================================= */
-
 function loadReferenceData() {
-
     Promise.all([
-
-        fetch(
+        apiRequest(
             getPriceApiUrl('?action=agencies')
-        ).then(function (response) {
-
-            if (!response.ok) {
-                throw new Error(
-                    'Unable to load agencies.'
-                );
-            }
-
-            return response.json();
-        }),
-
-        fetch(
+        ),
+        apiRequest(
             getPriceApiUrl('?action=commodities')
-        ).then(function (response) {
-
-            if (!response.ok) {
-                throw new Error(
-                    'Unable to load commodities.'
-                );
-            }
-
-            return response.json();
-        })
-
+        )
     ])
-
-    .then(function (responses) {
-
+    .then(function(responses) {
         var agencies =
             responses[0].data || [];
 
@@ -144,30 +184,21 @@ function loadReferenceData() {
             commodities;
 
         renderAgencyOptions(agencies);
-
         renderCommodityOptions(commodities);
 
-        /*
-         * Select2 ONLY for Add form.
-         *
-         * Edit form uses normal text inputs.
-         */
         $('#add_monitored_by_agency_id, #add_commodity_id')
             .select2({
                 theme: 'bootstrap4',
                 width: '100%'
             });
-
     })
-
-    .catch(function (error) {
-
+    .catch(function(error) {
         console.error(
-            'Unable to load reference data:',
+            'Reference data error:',
             error
         );
 
-        Swal.fire(
+        showMessage(
             'Error',
             'Unable to load DTI reference data.',
             'error'
@@ -175,15 +206,8 @@ function loadReferenceData() {
     });
 }
 
-
-/* =========================================================
-   RESET ADD FORM
-   ========================================================= */
-
 function resetAddForm() {
-
-    var form =
-        $('#formAddPrice')[0];
+    var form = $('#formAddPrice')[0];
 
     if (form) {
         form.reset();
@@ -198,269 +222,131 @@ function resetAddForm() {
         .trigger('change');
 }
 
-
-/* =========================================================
-   RESET EDIT FORM
-   ========================================================= */
-
 function resetEditForm() {
-
-    var form =
-        $('#formEditPrice')[0];
+    var form = $('#formEditPrice')[0];
 
     if (form) {
         form.reset();
     }
 
-    $('#edit_entry_id').val('');
-
-    $('#edit_category').val('');
-
-    $('#edit_unit').val('');
-
-    $('#edit_item_description').val('');
-
-    $('#edit_srp_price').val('');
-
-    $('#edit_prevailing_price').val('');
-
-    $('#edit_monitored_by_agency_id').val('');
-
-    $('#edit_commodity_id').val('');
+    setValue('#edit_entry_id', '');
+    setValue('#edit_monitored_by_agency_id', '');
+    setValue('#edit_commodity_id', '');
+    setValue('#edit_category', '');
+    setValue('#edit_unit', '');
+    setValue('#edit_item_description', '');
+    setValue('#edit_srp_price', '');
+    setValue('#edit_prevailing_price', '');
 }
 
-
-/* =========================================================
-   DETERMINE STATUS
-   ========================================================= */
-
-function calculateDTIStatus(srp, prevailing) {
-
-    srp = parseFloat(srp);
-    prevailing = parseFloat(prevailing);
-
-
-    if (
-        Number.isNaN(srp) ||
-        Number.isNaN(prevailing)
-    ) {
-
-        return '';
-
-    }
-
-
-    if (prevailing > srp) {
-
-        return 'OVERPRICED';
-
-    }
-
-
-    if (prevailing < srp) {
-
-        return 'BELOW_SRP';
-
-    }
-
-
-    return 'WITHIN_SRP';
-
-}
-
-/* =========================================================
-   OPEN EDIT MODAL
-   ========================================================= */
-
-function openEditModal(id) {
-
-    console.log(
-        'Opening DTI Edit Modal. ID =',
-        id
+function fillEditForm(row) {
+    setValue(
+        '#edit_entry_id',
+        row.id
     );
 
-    fetch(
+    setValue(
+        '#edit_monitored_by_agency_id',
+        row.monitored_by_agency_id
+    );
+
+    setValue(
+        '#edit_commodity_id',
+        row.commodity_id
+    );
+
+    setValue(
+        '#edit_category',
+        row.category_name ||
+        row.category ||
+        ''
+    );
+
+    setValue(
+        '#edit_unit',
+        row.unit_of_measure ||
+        row.unit ||
+        row.packaging ||
+        ''
+    );
+
+    setValue(
+        '#edit_item_description',
+        row.product_name ||
+        row.item_description ||
+        row.commodity_name ||
+        ''
+    );
+
+    setValue(
+        '#edit_srp_price',
+        row.srp !== undefined &&
+        row.srp !== null
+            ? row.srp
+            : (
+                row.srp_price !== undefined
+                    ? row.srp_price
+                    : ''
+            )
+    );
+
+    setValue(
+        '#edit_prevailing_price',
+        row.prevailing_price
+    );
+}
+
+function openEditModal(id) {
+    if (!id) {
+        showMessage(
+            'Error',
+            'No price entry ID was provided.',
+            'error'
+        );
+
+        return;
+    }
+
+    apiRequest(
         getPriceApiUrl('/' + id)
     )
-
-    .then(function (response) {
-
-        console.log(
-            'HTTP Status:',
-            response.status
-        );
-
-        if (!response.ok) {
-
+    .then(function(result) {
+        if (result.status !== 'success') {
             throw new Error(
-                'Server returned status ' +
-                response.status
+                result.message ||
+                'Unable to load DTI price entry.'
             );
         }
 
-        return response.json();
-    })
-
-    .then(function (result) {
-
-        console.log(
-            'DTI Edit API Response:',
-            result
+        fillEditForm(
+            result.data || {}
         );
 
-        if (
-            result.status !== 'success'
-        ) {
-
-            Swal.fire(
-                'Error',
-                result.message ||
-                'Unable to load DTI price entry.',
-                'error'
-            );
-
-            return;
-        }
-
-        var row =
-            result.data || {};
-
-            console.log(
-    '[DTI] COMPLETE EDIT ROW:',
-    JSON.stringify(row, null, 2)
-);
-
-        /*
-         * Basic IDs
-         */
-
-        $('#edit_entry_id')
-            .val(row.id || '');
-
-        $('#edit_monitored_by_agency_id')
-            .val(
-                row.monitored_by_agency_id || ''
-            );
-
-        $('#edit_commodity_id')
-            .val(
-                row.commodity_id || ''
-            );
-
-
-        /*
-         * CATEGORY
-         *
-         * Support multiple possible API
-         * field names.
-         */
-
-        $('#edit_category')
-            .val(
-                row.category_name ||
-                row.category ||
-                ''
-            );
-
-
-        /*
-         * UNIT / PACKAGING
-         */
-
-        $('#edit_unit')
-            .val(
-                row.unit_of_measure ||
-                row.unit ||
-                row.packaging ||
-                ''
-            );
-
-
-        /*
-         * PRODUCT NAME
-         */
-
-        $('#edit_item_description')
-            .val(
-                row.product_name ||
-                row.item_description ||
-                row.commodity_name ||
-                ''
-            );
-
-
-        /*
-         * DTI SRP
-         *
-         * IMPORTANT:
-         * This is NOT readonly anymore.
-         */
-
-        $('#edit_srp_price')
-            .val(
-                row.srp !== undefined
-                    ? row.srp
-                    : (
-                        row.srp_price !== undefined
-                            ? row.srp_price
-                            : ''
-                    )
-            );
-
-
-        /*
-         * PREVAILING PRICE
-         */
-
-        $('#edit_prevailing_price')
-            .val(
-                row.prevailing_price !== undefined
-                    ? row.prevailing_price
-                    : ''
-            );
-
-
-        /*
-         * Show modal
-         */
-
-        $('#modalEditPrice')
+        $(DTI_CONFIG.editModal)
             .modal('show');
-
     })
-
-    .catch(function (error) {
-
+    .catch(function(error) {
         console.error(
-            'Unable to open DTI edit modal:',
+            'Open edit error:',
             error
         );
 
-        Swal.fire(
+        showMessage(
             'Error',
             error.message ||
-            'Unable to load DTI price entry.',
+            'Unable to open DTI price entry.',
             'error'
         );
     });
 }
 
-
-/* =========================================================
-   SUBMIT ADD PRICE
-   ========================================================= */
-
-function submitAddPrice(event) {
-
-    event.preventDefault();
-
-    var payload = {
-
+function getAddPricePayload() {
+    return {
         commodity_id:
-            $('#add_commodity_id').val(),
+            getValue('#add_commodity_id'),
 
         monitored_by_agency_id:
-            $('#add_monitored_by_agency_id').val(),
+            getValue('#add_monitored_by_agency_id'),
 
         prevailing_price:
             $('#formAddPrice')
@@ -472,45 +358,53 @@ function submitAddPrice(event) {
                 .find('[name="status"]')
                 .val()
     };
+}
 
-
+function validateAddPrice(payload) {
     if (!payload.commodity_id) {
-
-        Swal.fire(
+        showMessage(
             'Required',
             'Please select a commodity.',
             'warning'
         );
 
-        return;
+        return false;
     }
 
-
     if (!payload.monitored_by_agency_id) {
-
-        Swal.fire(
+        showMessage(
             'Required',
             'Please select an agency.',
             'warning'
         );
 
-        return;
+        return false;
     }
 
-
     if (!payload.prevailing_price) {
-
-        Swal.fire(
+        showMessage(
             'Required',
             'Please enter the prevailing price.',
             'warning'
         );
 
+        return false;
+    }
+
+    return true;
+}
+
+function submitAddPrice(event) {
+    event.preventDefault();
+
+    var payload =
+        getAddPricePayload();
+
+    if (!validateAddPrice(payload)) {
         return;
     }
 
-
-    fetch(
+    apiRequest(
         getPriceApiUrl(),
         {
             method: 'POST',
@@ -524,262 +418,74 @@ function submitAddPrice(event) {
                 JSON.stringify(payload)
         }
     )
-
-    .then(function (response) {
-
-        return response.json();
-    })
-
-    .then(function (result) {
-
-        if (
-            result.status === 'success'
-        ) {
-
-            Swal.fire(
-                'Saved',
+    .then(function(result) {
+        if (result.status !== 'success') {
+            throw new Error(
                 result.message ||
-                'DTI price entry saved successfully.',
-                'success'
-            );
-
-            $('#modalAddPrice')
-                .modal('hide');
-
-            resetAddForm();
-
-            if (
-                typeof loadPriceData ===
-                'function'
-            ) {
-
-                loadPriceData();
-            }
-
-        } else {
-
-            Swal.fire(
-                'Error',
-                result.message ||
-                'Unable to save DTI price entry.',
-                'error'
+                'Unable to save DTI price entry.'
             );
         }
+
+        showMessage(
+            'Saved',
+            result.message ||
+            'DTI price entry saved successfully.',
+            'success'
+        );
+
+        $(DTI_CONFIG.addModal)
+            .modal('hide');
+
+        resetAddForm();
+        refreshPriceTable();
     })
-
-    .catch(function (error) {
-
+    .catch(function(error) {
         console.error(
-            'Add request failed:',
+            'Add price error:',
             error
         );
 
-        Swal.fire(
+        showMessage(
             'Error',
-            'Network error while saving DTI price entry.',
+            error.message ||
+            'Unable to save DTI price entry.',
             'error'
         );
     });
 }
 
-
-/* =========================================================
-   SUBMIT EDIT PRICE
-========================================================= */
-
-function submitEditPrice(event) {
-
-    event.preventDefault();
-
-    var id =
-        $('#edit_entry_id').val();
-
-    var commodityId =
-        $('#edit_commodity_id').val();
-
-    var agencyId =
-        $('#edit_monitored_by_agency_id').val();
-
-    var category =
-        $('#edit_category').val().trim();
-
-    var unit =
-        $('#edit_unit').val().trim();
-
-    var productName =
-        $('#edit_item_description').val().trim();
-
+function getEditPricePayload() {
     var srp =
-        parseFloat($('#edit_srp_price').val());
+        parseFloat(
+            getValue('#edit_srp_price')
+        );
 
     var prevailing =
-        parseFloat($('#edit_prevailing_price').val());
-
-
-    console.log('[DTI] UPDATE VALUES:', {
-        id: id,
-        commodity_id: commodityId,
-        monitored_by_agency_id: agencyId,
-        category: category,
-        unit: unit,
-        product_name: productName,
-        srp: srp,
-        prevailing_price: prevailing
-    });
-
-
-    /* =====================================================
-       VALIDATION
-    ===================================================== */
-
-    if (!id) {
-
-        Swal.fire(
-            'Error',
-            'Price entry ID is missing.',
-            'error'
+        parseFloat(
+            getValue('#edit_prevailing_price')
         );
 
-        return;
-    }
-
-
-    if (!commodityId) {
-
-        Swal.fire(
-            'Error',
-            'Commodity ID is missing.',
-            'error'
-        );
-
-        return;
-    }
-
-
-    if (!agencyId) {
-
-        Swal.fire(
-            'Error',
-            'Agency ID is missing.',
-            'error'
-        );
-
-        return;
-    }
-
-
-    if (!category) {
-
-        Swal.fire(
-            'Required',
-            'Please enter the category.',
-            'warning'
-        );
-
-        $('#edit_category').focus();
-
-        return;
-    }
-
-
-    if (!unit) {
-
-        Swal.fire(
-            'Required',
-            'Please enter the unit / packaging.',
-            'warning'
-        );
-
-        $('#edit_unit').focus();
-
-        return;
-    }
-
-
-    if (!productName) {
-
-        Swal.fire(
-            'Required',
-            'Please enter the commodity / product description.',
-            'warning'
-        );
-
-        $('#edit_item_description').focus();
-
-        return;
-    }
-
-
-    if (isNaN(srp) || srp < 0) {
-
-        Swal.fire(
-            'Required',
-            'Please enter a valid DTI SRP / guide price.',
-            'warning'
-        );
-
-        $('#edit_srp_price').focus();
-
-        return;
-    }
-
-
-    if (isNaN(prevailing) || prevailing < 0) {
-
-        Swal.fire(
-            'Required',
-            'Please enter a valid prevailing monitored price.',
-            'warning'
-        );
-
-        $('#edit_prevailing_price').focus();
-
-        return;
-    }
-
-
-    /* =====================================================
-       CALCULATE STATUS
-    ===================================================== */
-
-    var status =
-        calculateDTIStatus(
-            srp,
-            prevailing
-        );
-
-
-    console.log(
-        '[DTI] Calculated Status:',
-        status
-    );
-
-
-    /* =====================================================
-       BUILD COMPLETE PAYLOAD
-    ===================================================== */
-
-    var payload = {
-
-        id: id,
+    return {
+        id:
+            getValue('#edit_entry_id'),
 
         commodity_id:
-            commodityId,
+            getValue('#edit_commodity_id'),
 
         monitored_by_agency_id:
-            agencyId,
+            getValue('#edit_monitored_by_agency_id'),
 
         category:
-            category,
+            getValue('#edit_category').trim(),
 
         unit:
-            unit,
+            getValue('#edit_unit').trim(),
 
         item_description:
-            productName,
+            getValue('#edit_item_description').trim(),
 
         product_name:
-            productName,
+            getValue('#edit_item_description').trim(),
 
         srp:
             srp,
@@ -791,244 +497,216 @@ function submitEditPrice(event) {
             prevailing,
 
         status:
-            status
+            calculateDTIStatus(
+                srp,
+                prevailing
+            )
     };
+}
 
+function validateEditPrice(payload) {
+    if (!payload.id) {
+        showMessage(
+            'Error',
+            'Price entry ID is missing.',
+            'error'
+        );
 
-    console.log(
-        '[DTI] UPDATE PAYLOAD:',
-        payload
-    );
+        return false;
+    }
 
+    if (!payload.commodity_id) {
+        showMessage(
+            'Error',
+            'Commodity ID is missing.',
+            'error'
+        );
 
-    /* =====================================================
-       SEND PUT REQUEST
-    ===================================================== */
+        return false;
+    }
 
-    fetch(
+    if (!payload.monitored_by_agency_id) {
+        showMessage(
+            'Error',
+            'Agency ID is missing.',
+            'error'
+        );
+
+        return false;
+    }
+
+    if (!payload.category) {
+        showMessage(
+            'Required',
+            'Please enter the category.',
+            'warning'
+        );
+
+        $('#edit_category').focus();
+
+        return false;
+    }
+
+    if (!payload.unit) {
+        showMessage(
+            'Required',
+            'Please enter the unit / packaging.',
+            'warning'
+        );
+
+        $('#edit_unit').focus();
+
+        return false;
+    }
+
+    if (!payload.product_name) {
+        showMessage(
+            'Required',
+            'Please enter the commodity / product description.',
+            'warning'
+        );
+
+        $('#edit_item_description').focus();
+
+        return false;
+    }
+
+    if (isNaN(payload.srp) || payload.srp < 0) {
+        showMessage(
+            'Required',
+            'Please enter a valid DTI SRP / guide price.',
+            'warning'
+        );
+
+        $('#edit_srp_price').focus();
+
+        return false;
+    }
+
+    if (
+        isNaN(payload.prevailing_price) ||
+        payload.prevailing_price < 0
+    ) {
+        showMessage(
+            'Required',
+            'Please enter a valid prevailing monitored price.',
+            'warning'
+        );
+
+        $('#edit_prevailing_price').focus();
+
+        return false;
+    }
+
+    return true;
+}
+
+function submitEditPrice(event) {
+    event.preventDefault();
+
+    var payload =
+        getEditPricePayload();
+
+    if (!validateEditPrice(payload)) {
+        return;
+    }
+
+    apiRequest(
         getPriceApiUrl(),
         {
             method: 'PUT',
 
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type':
+                    'application/json'
             },
 
             body:
                 JSON.stringify(payload)
         }
     )
-
-    .then(function(response) {
-
-        console.log(
-            '[DTI] UPDATE HTTP STATUS:',
-            response.status
-        );
-
-        return response.text();
-    })
-
-    .then(function(text) {
-
-        console.log(
-            '[DTI] UPDATE RAW RESPONSE:',
-            text
-        );
-
-
-        if (!text) {
-
-            throw new Error(
-                'The server returned an empty response.'
-            );
-        }
-
-
-        var result;
-
-        try {
-
-            result =
-                JSON.parse(text);
-
-        } catch (error) {
-
-            console.error(
-                '[DTI] INVALID JSON FROM SERVER:',
-                text
-            );
-
-            throw new Error(
-                'PHP returned an invalid response. Check routes.php and PriceMonitoringController.php.'
-            );
-        }
-
-
-        return result;
-    })
-
     .then(function(result) {
-
-        console.log(
-            '[DTI] UPDATE RESULT:',
-            result
-        );
-
-
-        if (
-            result.status === 'success'
-        ) {
-
-            Swal.fire(
-                'Updated',
+        if (result.status !== 'success') {
+            throw new Error(
                 result.message ||
-                'DTI price entry updated successfully.',
-                'success'
-            );
-
-
-            $('#modalEditPrice')
-                .modal('hide');
-
-
-            resetEditForm();
-
-
-            if (
-                typeof loadPriceData ===
-                'function'
-            ) {
-
-                loadPriceData();
-            }
-
-
-        } else {
-
-            console.error(
-                '[DTI] UPDATE FAILED:',
-                result
-            );
-
-
-            Swal.fire(
-                'Update Failed',
-                result.message ||
-                'Unable to update DTI price entry.',
-                'error'
+                'Unable to update DTI price entry.'
             );
         }
 
+        showMessage(
+            'Updated',
+            result.message ||
+            'DTI price entry updated successfully.',
+            'success'
+        );
+
+        $(DTI_CONFIG.editModal)
+            .modal('hide');
+
+        resetEditForm();
+        refreshPriceTable();
     })
-
     .catch(function(error) {
-
         console.error(
-            '[DTI] UPDATE ERROR:',
+            'Update price error:',
             error
         );
 
-
-        Swal.fire(
-            'Error',
+        showMessage(
+            'Update Failed',
             error.message ||
-            'Network error while updating DTI price entry.',
+            'Unable to update DTI price entry.',
             'error'
         );
     });
 }
 
+function updateDTIStatusPreview() {
+    var srp =
+        parseFloat(
+            getValue('#edit_srp_price')
+        );
 
+    var prevailing =
+        parseFloat(
+            getValue('#edit_prevailing_price')
+        );
 
-/* =========================================================
-   DOCUMENT READY
-========================================================= */
+    return calculateDTIStatus(
+        srp,
+        prevailing
+    );
+}
 
-$(function () {
+function handleEditButtonClick() {
+    openEditModal(
+        $(this).data('id')
+    );
+}
 
-    /*
-     * Load dropdown/reference data
-     */
+function initializeDTIForms() {
     loadReferenceData();
 
+    $('#formAddPrice')
+        .on('submit', submitAddPrice);
 
-    /*
-     * ADD
-     */
-    $('#formAddPrice').on(
-        'submit',
-        submitAddPrice
-    );
+    $('#formEditPrice')
+        .on('submit', submitEditPrice);
 
+    $(document)
+        .on(
+            'click',
+            '.btn-edit',
+            handleEditButtonClick
+        );
 
-    /*
-     * EDIT
-     */
-    $('#formEditPrice').on(
-        'submit',
-        submitEditPrice
-    );
+    $('#edit_srp_price, #edit_prevailing_price')
+        .on(
+            'input',
+            updateDTIStatusPreview
+        );
+}
 
-
-    /*
-     * OPEN EDIT MODAL
-     */
-    $(document).on(
-        'click',
-        '.btn-edit',
-        function () {
-
-            var id = $(this).data('id');
-
-            if (!id) {
-
-                Swal.fire(
-                    'Error',
-                    'No price entry ID was provided.',
-                    'error'
-                );
-
-                return;
-            }
-
-            openEditModal(id);
-        }
-    );
-
-
-    /*
-     * RECALCULATE STATUS WHILE TYPING
-     *
-     * This does NOT save automatically.
-     */
-    $('#edit_srp_price, #edit_prevailing_price').on(
-        'input',
-        function () {
-
-            var srp = parseFloat(
-                $('#edit_srp_price').val()
-            );
-
-            var prevailing = parseFloat(
-                $('#edit_prevailing_price').val()
-            );
-
-            var status = calculateDTIStatus(
-                srp,
-                prevailing
-            );
-
-            console.log(
-                '[DTI] SRP:',
-                srp,
-                'Prevailing:',
-                prevailing,
-                'Status:',
-                status
-            );
-        }
-    );
-
+$(function() {
+    initializeDTIForms();
 });
