@@ -660,8 +660,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="../../plugins/select2/js/select2.min.js"></script>
 
 
-
-    <script src="../../scripts/common/select-utils.js"></script>
+    
     <script src="../../scripts/common/address.js"> </script>
     <script src="../../scripts/msme/business-table.js"> </script>
     <script src="../../scripts/msme/business-view.js"></script>

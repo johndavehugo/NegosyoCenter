@@ -18,7 +18,6 @@ if (res.status === 'success' && res.data) {
     $('#viewSpecialSector').text(e.special_category || '—');
     $('#viewEntityNo').text(j.entity_no || '—');
     $('#viewOwnerEntityNo').text(e.entity_no || '—');
-    $('#viewOwnerAddress').text([e.street, e.subdivision, e.barangay, e.city, e.province].filter(Boolean).join(', ') || '—');
 } else {
     alert('Business not found.');
 }
