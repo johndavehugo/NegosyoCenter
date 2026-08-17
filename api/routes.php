@@ -62,37 +62,6 @@ switch ($resource) {
         }
         break;
 
-    case 'employer':
-        if ($method === 'GET') {
-            $controller = new MSMEController();
-            if (($segments[2] ?? '') === 'search') {
-                $response = $controller->searchEmployers($_GET['q'] ?? '');
-            } else {
-                $response = $controller->getEmployers();
-            }
-        } elseif ($method === 'POST') {
-            $controller = new MSMEController();
-            $response = $controller->addEmployer($input);
-        } else {
-            http_response_code(405);
-            $response = [
-                'status' => 'error',
-                'message' =>
-                    'Invalid request method for /business'
-            ];
-        }
-        break;
-
-     case 'scims':
-        if ($method === 'GET' && ($segments[2] ?? '') === 'employers') {
-            $controller = new MSMEController();
-            $response = $controller->searchScimsEmployers($_GET['q'] ?? '');
-        } else {
-            $json = json_decode(file_get_contents('https://vamosmobile.app/api/testjuridical/business'), true);
-            $response = ['data' => $json];
-        }
-        break;
-
     case 'calamity':
         if ($method === 'GET') {
             $controller = new CalamityController();

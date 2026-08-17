@@ -35,6 +35,16 @@ require_once __DIR__ . '/../../global/industries.php';
                         <div class="bs-stepper-content">
                             <div id="step-business" class="content" role="tabpanel">
                                 <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label>Search Business</label>
+                                            <select class="form-control" id="scimsBusSearch"></select>
+                                            <small class="form-text text-muted">Pick a business to prefill the
+                                                details.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Business Name <span class="text-danger">*</span></label>
@@ -63,8 +73,9 @@ require_once __DIR__ . '/../../global/industries.php';
                                             <label>Line of Industry</label>
                                             <select class="form-control" id="addIndustry" name="addIndustry">
                                                 <option value="" hidden>Select Industry</option>
-                                                <?php foreach ($industries as $code => $industry): ?>
-                                                    <option value="<?= $industry ?>"><?= $code ?> - <?= $industry ?>
+                                                <?php foreach ($industries as $industry): ?>
+                                                    <option value="<?= strtoupper($industry) ?>">
+                                                        <?= strtoupper($industry) ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
@@ -143,53 +154,82 @@ require_once __DIR__ . '/../../global/industries.php';
 
                             <div id="step-owner" class="content" role="tabpanel">
                                 <div class="row">
-                                    <div class="col-md-8">
+                                    <div class="col-md-6">
                                         <div class="form-group">
-                                            <label>Search Owner</label>
-                                            <select class="form-control" id="ownerSearch"></select>
+                                            <label>Owner Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="addOwnerName"
+                                                name="addOwnerName">
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="form-group">
-                                            <label>&nbsp;</label>
-                                            <button type="button" class="btn btn-outline-info btn-block"
-                                                onclick="openOwnerModal()">
-                                                <i class="fas fa-user-plus mr-1"></i>Add New Owner
-                                            </button>
+                                            <label>Entity No <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="addEmpEntityNo"
+                                                name="addEmpEntityNo">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Special Category</label>
+                                            <select class="form-control" id="addSpecialCategory"
+                                                name="addSpecialCategory">
+                                                <option value="" hidden>Select Special Sector Classification</option>
+                                                <option value="None">None</option>
+                                                <option value="4ps Beneficiary">4ps Beneficiary</option>
+                                                <option value="Solo Parent">Solo Parent</option>
+                                                <option value="Person with Disability">Person with Disability (PWD)
+                                                </option>
+                                                <option value="Young Entrepreneur">Young Entrepreneur</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="card bg-transparent border-secondary mb-3" id="ownerSummary"
-                                    style="display: none;">
+                                <div class="card bg-transparent border-secondary mb-3">
                                     <div class="card-header border-secondary">
-                                        <i class="fas fa-user text-info mr-2"></i>Selected Owner
+                                        <i class="fas fa-map-marker-alt text-info mr-2"></i>Owner Address
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
-                                            <div class="col-md-6"> <!-- LEFT: identity -->
-                                                <p class="mb-1"><strong>Name:</strong> <span
-                                                        id="ownerSummaryName">—</span></p>
-                                                <p class="mb-1"><strong>Entity No:</strong> <span
-                                                        id="ownerSummaryEntity">—</span></p>
-                                                <p class="mb-0"><strong>Special Category:</strong> <span
-                                                        id="ownerSummaryCategory">—</span></p>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Region</label>
+                                                    <select class="form-control" id="addEmpRegion" name="addEmpRegion">
+                                                        <option value="" hidden>Select Region</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Province</label>
+                                                    <select class="form-control" id="addEmpProvince"
+                                                        name="addEmpProvince">
+                                                        <option value="" hidden>Select Province</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>City/Municipality</label>
+                                                    <select class="form-control" id="addEmpCity" name="addEmpCity">
+                                                        <option value="" hidden>Select City</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Barangay</label>
+                                                    <select class="form-control" id="addEmpBarangay"
+                                                        name="addEmpBarangay">
+                                                        <option value="" hidden>Select Barangay</option>
+                                                    </select>
+                                                </div>
                                             </div>
-                                            <div class="col-md-6"> <!-- RIGHT: address -->
-                                                <p class="mb-1"><strong>Region:</strong> <span
-                                                        id="ownerSummaryRegion">—</span></p>
-                                                <p class="mb-1"><strong>Province:</strong> <span
-                                                        id="ownerSummaryProvince">—</span></p>
-                                                <p class="mb-1"><strong>City:</strong> <span
-                                                        id="ownerSummaryCity">—</span></p>
-                                                <p class="mb-1"><strong>Barangay:</strong> <span
-                                                        id="ownerSummaryBarangay">—</span></p>
-                                                <p class="mb-1"><strong>Street:</strong> <span
-                                                        id="ownerSummaryStreet">—</span></p>
-                                                <p class="mb-1"><strong>Subdivision:</strong> <span
-                                                        id="ownerSummarySubdivision">—</span></p>
-                                                <p class="mb-0"><strong>UPBLB No:</strong> <span
-                                                        id="ownerSummaryUpblb">—</span></p>
+                                            <div class="col-md-6">
+                                                <div class="form-group"><label>Street</label><input type="text"
+                                                        class="form-control" id="addEmpStreet" name="addEmpStreet">
+                                                </div>
+                                                <div class="form-group"><label>Subdivision</label><input type="text"
+                                                        class="form-control" id="addEmpSubdivision"
+                                                        name="addEmpSubdivision"></div>
+                                                <div class="form-group"><label>UPBLB No</label><input type="text"
+                                                        class="form-control" id="addEmpUpblb" name="addEmpUpblb"></div>
                                             </div>
                                         </div>
                                     </div>

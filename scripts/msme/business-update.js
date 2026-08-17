@@ -1,9 +1,10 @@
 var updStepper;
 
+address.cascade('#updBusRegion', '#updBusProvince', '#updBusCity', '#updBusBarangay');
+address.cascade('#updEmpRegion', '#updEmpProvince', '#updEmpCity', '#updEmpBarangay');
+
 $('#updateBusinessModal').on('shown.bs.modal', function() {
     updStepper = new Stepper($('.upd-stepper')[0]);
-    ensureRegions('#updBusRegion');
-    ensureRegions('#updEmpRegion');
 });
 
 
@@ -43,8 +44,8 @@ async function fillUpdateModal(id) {
                 $('#updEmpUpblb').val(business.employer.upblb_num);
                 
                 $('#updateBusinessModal').modal('show');
-                await prefillAddress('updBus', business.juridical);
-                await prefillAddress('updEmp', business.employer);
+                await address.prefill('#updBusRegion', '#updBusProvince', '#updBusCity', '#updBusBarangay', business.juridical);
+                await address.prefill('#updEmpRegion', '#updEmpProvince', '#updEmpCity', '#updEmpBarangay', business.employer);
             } else {
                 alert(data.message);
             }
@@ -77,7 +78,7 @@ function updateBusiness() {
                 //Juridical Address
                 juri_region: $('#updBusRegion').val(),
                 juri_province: $('#updBusProvince').val(),
-                juri_city: $('updBusCity').val(),
+                juri_city: $('#updBusCity').val(),
                 juri_barangay: $('#updBusBarangay').val(),
                 juri_street: $('#updBusStreet').val(),
                 juri_subdivision: $('#updBusSubdivision').val(),
