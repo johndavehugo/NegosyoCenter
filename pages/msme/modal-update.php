@@ -4,7 +4,6 @@ require_once __DIR__ . '/../../global/industries.php';
 
 ?>
 
-
 <form id="updateBusinessForm" method="POST">
     <div class="modal fade" id="updateBusinessModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
@@ -64,8 +63,10 @@ require_once __DIR__ . '/../../global/industries.php';
                                             <label>Line of Industry</label>
                                             <select class="form-control" id="updIndustry" name="updIndustry">
                                                 <option value="" hidden>Select Industry</option>
-                                                <?php foreach ($industries as $code => $industry): ?>
-                                                    <option value="<?= $industry ?>"><?= $code ?> - <?= $industry ?></option>
+                                                <?php foreach ($industries as $industry): ?>
+                                                    <option value="<?= strtoupper($industry) ?>">
+                                                        <?= strtoupper($industry) ?>
+                                                    </option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>
@@ -108,13 +109,13 @@ require_once __DIR__ . '/../../global/industries.php';
                                                     </select>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label>City/Municipality <span class="text-danger">*</span></label>
+                                                    <label>City/Municipality</label>
                                                     <select class="form-control" id="updBusCity" name="updBusCity">
                                                         <option value="" hidden>Select City</option>
                                                     </select>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label>Barangay <span class="text-danger">*</span></label>
+                                                    <label>Barangay</label>
                                                     <select class="form-control" id="updBusBarangay"
                                                         name="updBusBarangay">
                                                         <option value="" hidden>Select Barangay</option>
@@ -144,28 +145,13 @@ require_once __DIR__ . '/../../global/industries.php';
 
                             <div id="upd-step-owner" class="content" role="tabpanel">
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="form-group">
-                                            <label>First Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="updFirstName"
-                                                name="updFirstName">
+                                            <label>Owner Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="updOwnerName"
+                                                name="updEmpFullName">
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>Middle Name</label>
-                                            <input type="text" class="form-control" id="updMiddleName"
-                                                name="updMiddleName">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>Last Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="updLastName" name="updLastName">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Entity No <span class="text-danger">*</span></label>
@@ -173,12 +159,15 @@ require_once __DIR__ . '/../../global/industries.php';
                                                 name="updEmpEntityNo" readonly>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Special Category</label>
                                             <select class="form-control" id="updSpecialCategory"
                                                 name="updSpecialCategory">
                                                 <option value="" hidden>Select Special Sector Classification</option>
+                                                <option value="None">None</option>
                                                 <option value="4ps Beneficiary">4ps Beneficiary</option>
                                                 <option value="Solo Parent">Solo Parent</option>
                                                 <option value="Person with Disability">Person with Disability (PWD)
@@ -210,13 +199,13 @@ require_once __DIR__ . '/../../global/industries.php';
                                                     </select>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label>City/Municipality <span class="text-danger">*</span></label>
+                                                    <label>City/Municipality</label>
                                                     <select class="form-control" id="updEmpCity" name="updEmpCity">
                                                         <option value="" hidden>Select City</option>
                                                     </select>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label>Barangay <span class="text-danger">*</span></label>
+                                                    <label>Barangay</label>
                                                     <select class="form-control" id="updEmpBarangay"
                                                         name="updEmpBarangay">
                                                         <option value="" hidden>Select Barangay</option>
@@ -251,5 +240,4 @@ require_once __DIR__ . '/../../global/industries.php';
             </div>
         </div>
     </div>
-
 </form>

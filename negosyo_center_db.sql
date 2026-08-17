@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 17, 2026 at 05:16 AM
+-- Generation Time: Aug 17, 2026 at 06:48 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -35,7 +35,7 @@ CREATE TABLE `addresses` (
   `barangay` varchar(100) DEFAULT NULL,
   `city` varchar(100) DEFAULT NULL,
   `province` varchar(100) DEFAULT NULL,
-  `region` varchar(50) DEFAULT NULL,
+  `region` varchar(100) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -48,11 +48,13 @@ INSERT INTO `addresses` (`id`, `upblb_num`, `street`, `subdivision`, `barangay`,
 ('addr-01a00db7-91b8-762e-8c0a-a5df96812144', '', '', '', '', '', '', '', '2026-08-17 03:15:29'),
 ('addr-23f6fc-1d90-5a0c76cb-c7a8', '', '', '', 'Barangay IV', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:14:37'),
 ('addr-5340f9-ac48-931b724a-c8c7', '', 'F.C LEDESMA AVE.', '', 'Barangay II', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:13:49'),
+('addr-72b807-713c-3ab6ba6c-2ba4', 'enk', 'grove st', 'cheeseball', 'Suligan', 'Tabuan-Lasa', 'Basilan', 'Bangsamoro Autonomous Region In Muslim Mindanao (BARMM)', '2026-08-17 03:22:48'),
 ('addr-a37f49-6e25-3ab02132-b568', '', '', '', 'Rizal', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:13:28'),
 ('addr-c30504-230c-71902c84-6aba', '', 'RIZAL ST.', '', 'Barangay V', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:00:39'),
 ('addr-c56a0a-74fc-925506b2-a5ea', '', '', '', 'Rizal', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:13:28'),
 ('addr-d02419-852f-e6861d03-e3ea', '', 'LOCSIN ST.,', '', 'Barangay IV', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:14:37'),
 ('addr-d348f7-dfce-2d1d86d0-4613', '', '', '', 'Palampas', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:15:29'),
+('addr-e8decc-8db5-7bfe3e86-8b2f', 'belly', 'hey', 'there', 'Butansapa', 'Mogpog', 'Marinduque', 'MIMAROPA Region', '2026-08-17 03:22:48'),
 ('addr-fe1f3a-bfd2-4cee0ee2-b84b', '', 'F.C. LEDESMA AVE.', '', 'Barangay II', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:13:49');
 
 -- --------------------------------------------------------
@@ -128,6 +130,7 @@ CREATE TABLE `employers` (
 INSERT INTO `employers` (`id`, `entity_no`, `full_name`, `address_id`, `created_at`, `updated_at`, `special_category`) VALUES
 ('emp-051ec8-9c8b-d9fa5350-e86f', 'GGTQBX1285', 'LUMINISCENT INC.', 'addr-01a00db7-91b8-762e-8c0a-a5df96812144', '2026-08-17 03:15:29', '2026-08-17 03:15:29', 'None'),
 ('emp-16986e-5175-4bac270a-8f8f', 'UDBNQA4863', 'EVANGELINE Y. RAMAS', 'addr-a37f49-6e25-3ab02132-b568', '2026-08-17 03:13:28', '2026-08-17 03:13:28', 'None'),
+('emp-3fb7b9-e5e2-148d32a8-e337', 'JSGDHX0554', 'mia eyy', 'addr-72b807-713c-3ab6ba6c-2ba4', '2026-08-17 03:22:48', '2026-08-17 03:52:45', 'Young Entrepreneur'),
 ('emp-825fe4-9e95-256634cb-a24f', 'UCAWQC8632', 'VIPER\'S MUSCLE AND FITNESS GYM', 'addr-23f6fc-1d90-5a0c76cb-c7a8', '2026-08-17 03:14:37', '2026-08-17 03:14:37', 'None'),
 ('emp-8bbd88-c0f7-16a7db84-e163', 'DFEAHF7704', 'GLOBAL AUTHENTIC WEAR CORP.', 'addr-01a00da9-fc0f-7ff3-af4a-a225881c8a5c', '2026-08-17 03:00:39', '2026-08-17 03:00:39', 'None'),
 ('emp-fb7186-4db6-a295fba0-5a11', 'IAGOQR3354', 'CLICKPOINT SARI-SARI STORE', 'addr-fe1f3a-bfd2-4cee0ee2-b84b', '2026-08-17 03:13:49', '2026-08-17 03:13:49', 'None');
@@ -164,7 +167,8 @@ INSERT INTO `juridicals` (`id`, `entity_no`, `employer_id`, `address_id`, `name`
 ('neg-01a00db5-ba4e-72fb-9f68-84fc274e0a1d', 'WKWUHR4133', 'emp-16986e-5175-4bac270a-8f8f', 'addr-c56a0a-74fc-925506b2-a5ea', 'EVANGELINE Y. RAMAS - SARISARI', 'NEW', 'ACTIVE', '09212121079', 'ramasvangie@gmail.com', 'WHOLESALE AND RETAIL TRADE', 0.00, '2026-08-17 03:13:28', '2026-08-17 03:13:28'),
 ('neg-01a00db6-0d0f-7201-a0ff-f68c231e5830', 'QXKGVX7632', 'emp-fb7186-4db6-a295fba0-5a11', 'addr-5340f9-ac48-931b724a-c8c7', 'CLICKPOINT SARI-SARI STORE', 'NEW', 'ACTIVE', '09166349898', '-', 'WHOLESALE AND RETAIL TRADE', 0.00, '2026-08-17 03:13:49', '2026-08-17 03:13:49'),
 ('neg-01a00db6-c5c1-7cb4-80f6-670aba5d5de5', 'PXIJKB7604', 'emp-825fe4-9e95-256634cb-a24f', 'addr-d02419-852f-e6861d03-e3ea', 'VIPER\'S MUSCLE AND FITNESS GYM', 'NEW', 'ACTIVE', '.', '.', 'OTHER COMMUNITY, SOCIAL AND PERSONAL SERVICE ACTIVITIES', 0.00, '2026-08-17 03:14:37', '2026-08-17 03:14:37'),
-('neg-01a00db7-91b8-7248-b895-52fdfb6893da', 'BVBPWF6784', 'emp-051ec8-9c8b-d9fa5350-e86f', 'addr-d348f7-dfce-2d1d86d0-4613', 'LUMINISCENT INC.-GAISANO CAPITAL', 'NEW', 'ACTIVE', '09153531877', 'sayingga98@gmail.com', 'WHOLESALE AND RETAIL TRADE', 0.00, '2026-08-17 03:15:29', '2026-08-17 03:15:29');
+('neg-01a00db7-91b8-7248-b895-52fdfb6893da', 'BVBPWF6784', 'emp-051ec8-9c8b-d9fa5350-e86f', 'addr-d348f7-dfce-2d1d86d0-4613', 'LUMINISCENT INC.-GAISANO CAPITAL', 'NEW', 'ACTIVE', '09153531877', 'sayingga98@gmail.com', 'WHOLESALE AND RETAIL TRADE', 0.00, '2026-08-17 03:15:29', '2026-08-17 03:15:29'),
+('neg-01a00dbe-46a6-7712-b958-8a27d579a59d', 'AAUKTT6112', 'emp-3fb7b9-e5e2-148d32a8-e337', 'addr-e8decc-8db5-7bfe3e86-8b2f', 'Epoy Flower Shop', 'NEW', 'ACTIVE', '111111111111111111111', 'epoy', 'FISHING', 9999999999999.99, '2026-08-17 03:22:48', '2026-08-17 03:53:19');
 
 --
 -- Indexes for dumped tables

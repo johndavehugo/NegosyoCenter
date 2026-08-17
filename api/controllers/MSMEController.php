@@ -345,9 +345,7 @@ class MSMEController
 
         //Owner
         $employer_entity_no = trim($data['employer_entity_no'] ?? '');
-        $employer_first_name = trim($data['employer_first_name'] ?? '');
-        $employer_middle_name = trim($data['employer_middle_name'] ?? '');
-        $employer_last_name = trim($data['employer_last_name'] ?? '');
+        $employer_full_name = trim($data['employer_full_name'] ?? '');
         $special_category = trim($data['special_category'] ?? '');
 
         //Business Address
@@ -368,7 +366,7 @@ class MSMEController
         $contact_email = trim($data['contact_email'] ?? '');
 
 
-        if (empty($employer_first_name) || empty($employer_last_name) || empty($employer_entity_no) || empty($juri_name) || empty($juri_entity_no)) {
+        if (empty($employer_full_name) || empty($juri_name) || empty($juri_entity_no) || empty($employer_entity_no)) {
             return ['status' => 'error', 'message' => "Required fields can't be empty."];
         }
 
@@ -396,8 +394,8 @@ class MSMEController
         $sqlEmpAddress = "UPDATE addresses SET upblb_num= ?, street= ?, subdivision= ?, barangay= ?, city= ?, province= ?, region= ? WHERE id = ?";
         $paramsEmpAddress[] = $emp_address_id;
 
-        $paramsEmployer = [$employer_first_name, $employer_middle_name, $employer_last_name, $special_category];
-        $sqlEmployer = "UPDATE employers SET first_name = ?, middle_name = ?, last_name = ?, special_category = ? WHERE entity_no = ?";
+        $paramsEmployer = [$employer_full_name, $special_category];
+        $sqlEmployer = "UPDATE employers SET full_name = ?, special_category = ? WHERE entity_no = ?";
         $paramsEmployer[] = $employer_entity_no;
 
         $paramsJuriAddress = [$juri_upblb_num, $juri_street, $juri_subdivision, $juri_barangay, $juri_city, $juri_province, $juri_region];
