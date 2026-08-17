@@ -1,13 +1,14 @@
-function fillRenewModal(id) {
+function fillStatusModal(id) {
     fetch('../../api/routes.php/business/' + id)
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
                 const business = data.data;
-                $('#renewBusName').val(business.juridical.name);
-                $('#renewBusEntityNo').val(business.juridical.entity_no);
-                $('#renewRegType').val(business.juridical.registration_type);
-                $('#renewBusinessModal').modal('show');
+                $('#statusBusName').val(business.juridical.name);
+                $('#statusBusEntityNo').val(business.juridical.entity_no);
+                $('#statusCurStatus').val(business.juridical.business_status);
+                $('#statusNewStatus').val('');
+                $('#statusBusinessModal').modal('show');
             } else {
                 alert(data.message);
             }
@@ -18,12 +19,13 @@ function fillRenewModal(id) {
 }
 
 
-function renewBusiness() {
+function changeBusinessStatus() {
     const data = {
-        juri_entity_no: $('#renewBusEntityNo').val(),
+        juri_entity_no: $('#statusBusEntityNo').val(),
+        juri_bus_status: $('#statusNewStatus').val(),
     };
 
-    fetch('../../api/routes.php/business/renew', {
+    fetch('../../api/routes.php/business/status', {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json'
@@ -34,7 +36,7 @@ function renewBusiness() {
         .then(data => {
             alert(data.message);
             if (data.status === 'success') {
-                $('#renewBusinessModal').modal('hide');
+                $('#statusBusinessModal').modal('hide');
                 $('#tblBusiness').DataTable().ajax.reload();
             }
         })

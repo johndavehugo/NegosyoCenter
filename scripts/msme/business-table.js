@@ -25,6 +25,7 @@ $(function () {
                                 '<a class="dropdown-item" href="#" onclick="viewBusiness(\'' + row.juridical.entity_no + '\')">View</a>' +
                                 '<a class="dropdown-item" href="#" onclick="fillUpdateModal(\'' + row.juridical.entity_no + '\')">Update</a>' +
                                 '<a class="dropdown-item" href="#" onclick="fillRenewModal(\'' + row.juridical.entity_no + '\')">Renew</a>' +
+                                '<a class="dropdown-item" href="#" onclick="fillStatusModal(\'' + row.juridical.entity_no + '\')">Change Status</a>' +
                                 '</div></div>';
                         }
                     }
