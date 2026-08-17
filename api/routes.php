@@ -60,37 +60,6 @@ switch ($resource) {
         }
         break;
 
-    case 'employer':
-        if ($method === 'GET') {
-            $controller = new MSMEController();
-            if (($segments[2] ?? '') === 'search') {
-                $response = $controller->searchEmployers($_GET['q'] ?? '');
-            } else {
-                $response = $controller->getEmployers();
-            }
-        } elseif ($method === 'POST') {
-            $controller = new MSMEController();
-            $response = $controller->addEmployer($input);
-        } else {
-            http_response_code(405);
-            $response = [
-                'status' => 'error',
-                'message' =>
-                    'Invalid request method for /business'
-            ];
-        }
-        break;
-
-     case 'scims':
-        if ($method === 'GET' && ($segments[2] ?? '') === 'employers') {
-            $controller = new MSMEController();
-            $response = $controller->searchScimsEmployers($_GET['q'] ?? '');
-        } else {
-            $json = json_decode(file_get_contents('https://vamosmobile.app/api/testjuridical/business'), true);
-            $response = ['data' => $json];
-        }
-        break;
-
     case 'calamity':
         if ($method === 'GET') {
             $controller = new CalamityController();
@@ -117,95 +86,6 @@ switch ($resource) {
             $response = ['status' => 'error', 'message' => 'Invalid request method for /calamity. Please use GET, POST, or PUT.'];
         }
         break;
-
-
-                case 'price':
-
-    $controller = new PriceMonitoringController();
-
-    if ($method === 'GET') {
-
-        $action = $_GET['action'] ?? '';
-
-        
-        if ($action === 'agencies') {
-
-            $response = $controller->getAgencies();
-
-        
-        } elseif ($action === 'commodities') {
-
-            $response = $controller->getCommodities(
-                $_GET['agency_id'] ?? null
-            );
-
-        
-        } elseif (
-            isset($_GET['id']) &&
-            $_GET['id'] !== ''
-        ) {
-
-            $response = $controller->getPriceById(
-                $_GET['id']
-            );
- 
-       
-        } else {
-
-            $agencyId = $_GET['agency_id']
-    ?? $_GET['monitored_by_agency_id']
-    ?? null;
-
-$response = $controller->getPrices($agencyId);
-        }
-
-    } elseif ($method === 'POST') {
-
-        
-        $response = $controller->addPrice($input);
-
-    } elseif ($method === 'PUT') {
-
-        
-        $response = $controller->updatePrice($input);
-
-    } elseif ($method === 'DELETE') {
-
-        
-        $id = $_GET['id'] ?? ($segments[2] ?? null);
-
-        if (
-            $id === null ||
-            $id === '' ||
-            !is_numeric($id)
-        ) {
-
-            http_response_code(400);
-
-            $response = [
-                'status' => 'error',
-                'message' => 'Missing or invalid price ID.'
-            ];
-
-        } else {
-
-            $response = $controller->deletePrice(
-                (int)$id
-            );
-        }
-
-    } else {
-
-        http_response_code(405);
-
-        $response = [
-            'status' => 'error',
-            'message' =>
-                'Invalid request method for /price.'
-        ];
-    }
-
-    break;
 
 
     

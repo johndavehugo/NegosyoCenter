@@ -657,13 +657,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     <!-- new  -->
     <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+    <script src="../../plugins/select2/js/select2.min.js"></script>
 
 
 
     <script src="../../scripts/common/select-utils.js"></script>
-    <script src="../../scripts/common/address-prefill.js"> </script>
+    <script src="../../scripts/common/address.js"> </script>
     <script src="../../scripts/msme/business-table.js"> </script>
-    <script src="../../scripts/msme/business-populate-address.js"> </script>
+    <script src="../../scripts/msme/business-view.js"></script>
     <script src="../../scripts/msme/business-add.js"></script>
     <script src="../../scripts/msme/business-update.js"></script>
     <script src="../../scripts/msme/business-renew.js"></script>
