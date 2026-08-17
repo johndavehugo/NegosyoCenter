@@ -1,839 +1,367 @@
 <?php
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
+
 error_reporting(E_ALL);
 
 header('Content-Type: application/json');
 
 require_once 'controllers/MSMEController.php';
-require_once 'controllers/PriceMonitoringController.php';
 require_once 'controllers/CalamityController.php';
+require_once 'controllers/PriceMonitoringController.php';
 
+$method = $_SERVER['REQUEST_METHOD'];
 
-/* =========================================================
-   REQUEST METHOD
-========================================================= */
+$input = json_decode(file_get_contents('php://input'), true) ?? [];
 
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
+$base = '/NegosyoCenter/api';
 
-/* =========================================================
-   READ REQUEST INPUT
-========================================================= */
+$pathInfo = substr($uri, strlen($base));
 
-$input = [];
+$pathInfo = trim($pathInfo, '/');
 
-/*
- * JSON requests
- */
-$rawInput = file_get_contents('php://input');
+$segments = explode('/', $pathInfo);
 
-if (!empty($rawInput)) {
-
-    $jsonInput = json_decode($rawInput, true);
-
-    if (is_array($jsonInput)) {
-        $input = $jsonInput;
-    }
+$resource = '';
+if (!empty($segments[0]) && strpos($segments[0], '.php') === false) {
+    $resource = $segments[0];
+} elseif (!empty($segments[1])) {
+    $resource = $segments[1];
 }
-
-
-/*
- * FormData / application-x-www-form-urlencoded
- *
- * PHP places FormData fields into $_POST.
- */
-if (!empty($_POST)) {
-
-    $input = array_merge(
-        $input,
-        $_POST
-    );
-}
-
-
-/* =========================================================
-   DETERMINE ROUTE
-========================================================= */
-
-$uri = parse_url(
-    $_SERVER['REQUEST_URI'] ?? '/',
-    PHP_URL_PATH
-) ?? '/';
-
-$scriptPath =
-    $_SERVER['SCRIPT_NAME'] ?? '';
-
-$base =
-    rtrim(
-        dirname($scriptPath),
-        '/\\'
-    );
-
-
-$pathInfo = $uri;
-
-
-/*
- * Remove routes.php from path
- */
-if (
-    $scriptPath &&
-    strpos($pathInfo, $scriptPath) === 0
-) {
-
-    $pathInfo =
-        substr(
-            $pathInfo,
-            strlen($scriptPath)
-        );
-
-}
-
-
-/*
- * Otherwise remove base directory
- */
-elseif (
-    $base &&
-    strpos($pathInfo, $base) === 0
-) {
-
-    $pathInfo =
-        substr(
-            $pathInfo,
-            strlen($base)
-        );
-}
-
-
-/*
- * Split path into segments
- */
-$pathInfo =
-    trim(
-        $pathInfo,
-        '/'
-    );
-
-
-$segments =
-    array_values(
-        array_filter(
-            explode('/', $pathInfo),
-            function ($segment) {
-
-                return $segment !== '';
-
-            }
-        )
-    );
-
-
-/*
- * Resource can come from:
- *
- * routes.php?resource=price
- *
- * OR
- *
- * routes.php/price
- */
-$resource =
-    $_GET['resource']
-    ?? ($segments[0] ?? '');
-
-
-/* =========================================================
-   ROUTES
-========================================================= */
 
 switch ($resource) {
 
-
-    /* =====================================================
-       BUSINESS
-    ===================================================== */
-
     case 'business':
+        if ($method === 'GET') {
+            $controller = new MSMEController();
+            if (isset($segments[2])) {
+                $response = $controller->getBusinessByEntityNo($segments[2]);
+            } else {
+                $response = $controller->getBusinesses();
+            }
+        } elseif ($method === 'POST') {
+            $controller = new MSMEController();
+            $response = $controller->addBusiness($input);
+        } elseif ($method === 'PUT') {
+            $controller = new MSMEController();
+            $response = $controller->updateBusiness($input);
+        } elseif ($method === 'PATCH') {
+            $controller = new MSMEController();
+            $response = $controller->patchBusiness($segments[2] ?? '', $input);
+        } else {
+            http_response_code(405);
+            $response = [
+                'status' => 'error',
+                'message' =>
+                    'Invalid request method for /business'
+            ];
+        }
+        break;
 
-        $controller =
-            new MSMEController();
+    case 'employer':
+        if ($method === 'GET') {
+            $controller = new MSMEController();
+            if (($segments[2] ?? '') === 'search') {
+                $response = $controller->searchEmployers($_GET['q'] ?? '');
+            } else {
+                $response = $controller->getEmployers();
+            }
+        } elseif ($method === 'POST') {
+            $controller = new MSMEController();
+            $response = $controller->addEmployer($input);
+        } else {
+            http_response_code(405);
+            $response = [
+                'status' => 'error',
+                'message' =>
+                    'Invalid request method for /business'
+            ];
+        }
+        break;
 
+     case 'scims':
+        if ($method === 'GET' && ($segments[2] ?? '') === 'employers') {
+            $controller = new MSMEController();
+            $response = $controller->searchScimsEmployers($_GET['q'] ?? '');
+        } else {
+            $json = json_decode(file_get_contents('https://vamosmobile.app/api/testjuridical/business'), true);
+            $response = ['data' => $json];
+        }
+        break;
+
+    case 'calamity':
+        if ($method === 'GET') {
+            $controller = new CalamityController();
+            $action = $_GET['action'] ?? 'calamities';
+            if ($action === 'juridicals') {
+                $response = $controller->getJuridicals();
+            } else {
+                $response = $controller->getCalamities();
+            }
+        } elseif ($method === 'POST') {
+            $controller = new CalamityController();
+            if (($input['type'] ?? '') === 'calamity') {
+                $response = $controller->addCalamity($input);
+            } else {
+                $response = $controller->addIncident($input);
+            }
+        } elseif ($method === 'PUT') {
+            $controller = new CalamityController();
+            $response = $controller->updateIncident($input);
+
+
+        } else {
+            http_response_code(405);
+            $response = ['status' => 'error', 'message' => 'Invalid request method for /calamity. Please use GET, POST, or PUT.'];
+        }
+        break;
+
+
+                case 'price':
+
+    $controller = new PriceMonitoringController();
+
+    if ($method === 'GET') {
+
+        $action = $_GET['action'] ?? '';
+
+        
+        if ($action === 'agencies') {
+
+            $response = $controller->getAgencies();
+
+        
+        } elseif ($action === 'commodities') {
+
+            $response = $controller->getCommodities(
+                $_GET['agency_id'] ?? null
+            );
+
+        
+        } elseif (
+            isset($_GET['id']) &&
+            $_GET['id'] !== ''
+        ) {
+
+            $response = $controller->getPriceById(
+                $_GET['id']
+            );
+ 
+       
+        } else {
+
+            $agencyId = $_GET['agency_id']
+    ?? $_GET['monitored_by_agency_id']
+    ?? null;
+
+$response = $controller->getPrices($agencyId);
+        }
+
+    } elseif ($method === 'POST') {
+
+        
+        $response = $controller->addPrice($input);
+
+    } elseif ($method === 'PUT') {
+
+        
+        $response = $controller->updatePrice($input);
+
+    } elseif ($method === 'DELETE') {
+
+        
+        $id = $_GET['id'] ?? ($segments[2] ?? null);
+
+        if (
+            $id === null ||
+            $id === '' ||
+            !is_numeric($id)
+        ) {
+
+            http_response_code(400);
+
+            $response = [
+                'status' => 'error',
+                'message' => 'Missing or invalid price ID.'
+            ];
+
+        } else {
+
+            $response = $controller->deletePrice(
+                (int)$id
+            );
+        }
+
+    } else {
+
+        http_response_code(405);
+
+        $response = [
+            'status' => 'error',
+            'message' =>
+                'Invalid request method for /price.'
+        ];
+    }
+
+    break;
+
+
+    
+    case 'price-monitoring':
+
+        $controller = new PriceMonitoringController();
 
         if ($method === 'GET') {
 
-            if (isset($segments[1])) {
+            $action = $_GET['action'] ?? 'commodity_categories';
 
-                $response =
-                    $controller->getBusinessByEntityNo(
-                        $segments[1]
-                    );
+            if ($action === 'commodity_categories') {
+
+                $response = $controller->getCategories();
 
             } else {
 
-                $response =
-                    $controller->getBusinesses();
+                http_response_code(400);
 
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Invalid action.'
+                ];
             }
-
 
         } elseif ($method === 'POST') {
 
-            $response =
-                $controller->addBusiness($input);
+            $action = $_GET['action'] ?? ($input['action'] ?? '');
 
+            if ($action === 'add_category') {
+
+                $response = $controller->addCategory($input);
+
+            } else {
+
+                http_response_code(400);
+
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Invalid action.'
+                ];
+            }
 
         } elseif ($method === 'PUT') {
 
-            $response =
-                $controller->updateBusiness($input);
+            $response = $controller->updateCategory($input);
 
+        } elseif ($method === 'DELETE') {
+
+            $id = $_GET['id'] ?? ($segments[2] ?? null);
+
+            if (!$id || !is_numeric($id)) {
+
+                http_response_code(400);
+
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Missing or invalid category ID.'
+                ];
+
+            } else {
+
+                $response = $controller->deleteCategory(
+                    (int) $id
+                );
+            }
 
         } else {
 
             http_response_code(405);
 
             $response = [
-
                 'status' => 'error',
-
-                'message' =>
-                    'Invalid request method for /business. Please use GET, POST, or PUT.'
-
-            ];
-        }
-
-        break;
-
-
-
-    /* =====================================================
-       PRICE
-    ===================================================== */
-
-    case 'price':
-
-        $controller =
-            new PriceMonitoringController();
-
-
-        /*
-         * GET
-         */
-        if ($method === 'GET') {
-
-
-            /*
-             * GET agencies
-             *
-             * ?resource=price&action=agencies
-             */
-            if (
-                isset($_GET['action']) &&
-                $_GET['action'] === 'agencies'
-            ) {
-
-                $response =
-                    $controller->getAgencies();
-
-
-            }
-
-
-            /*
-             * GET commodities by agency
-             *
-             * ?resource=price
-             * &action=commodities
-             * &agency_id=3
-             */
-            elseif (
-                isset($_GET['action']) &&
-                $_GET['action'] === 'commodities'
-            ) {
-
-                $agencyId =
-                    $_GET['agency_id']
-                    ?? null;
-
-
-                $response =
-                    $controller->getCommodities(
-                        $agencyId
-                    );
-
-
-            }
-
-
-            /*
-             * GET price record
-             */
-            else {
-
-                $recordId = null;
-
-
-                /*
-                 * /price/123
-                 */
-                if (
-                    isset($segments[1]) &&
-                    is_numeric($segments[1])
-                ) {
-
-                    $recordId =
-                        $segments[1];
-
-                }
-
-
-                /*
-                 * ?id=123
-                 */
-                elseif (
-                    isset($_GET['id'])
-                ) {
-
-                    $recordId =
-                        $_GET['id'];
-
-                }
-
-
-                if ($recordId !== null) {
-
-                    $response =
-                        $controller->getPriceById(
-                            $recordId
-                        );
-
-                }
-
-
-                /*
-                 * GET all prices
-                 */
-                else {
-
-                    $agencyId =
-                        $_GET['agency_id']
-                        ?? null;
-
-
-                    $response =
-                        $controller->getPrices(
-                            $agencyId
-                        );
-                }
-            }
-
-
-        }
-
-
-        /*
-         * POST PRICE
-         */
-        elseif ($method === 'POST') {
-
-            $response =
-                $controller->addPrice(
-                    $input
-                );
-
-        }
-
-
-        /*
-         * PUT PRICE
-         */
-        elseif ($method === 'PUT') {
-
-    /*
-     * Get price record ID from:
-     *
-     * ?id=10
-     *
-     * or from FormData / JSON:
-     *
-     * id=10
-     */
-    $recordId =
-        $_GET['id']
-        ?? ($input['id'] ?? null);
-
-
-    /*
-     * Make sure the controller receives the ID
-     */
-    if (
-        $recordId !== null &&
-        $recordId !== ''
-    ) {
-
-        $input['id'] = $recordId;
-    }
-
-
-    $response =
-        $controller->updatePrice(
-            $input
-        );
-
-}
-
-
-        /*
-         * DELETE PRICE
-         */
-        elseif ($method === 'DELETE') {
-
-            $recordId = null;
-
-
-            if (
-                isset($segments[1]) &&
-                is_numeric($segments[1])
-            ) {
-
-                $recordId =
-                    $segments[1];
-
-            }
-
-
-            elseif (
-                isset($_GET['id'])
-            ) {
-
-                $recordId =
-                    $_GET['id'];
-
-            }
-
-
-            if ($recordId !== null) {
-
-                $response =
-                    $controller->deletePrice(
-                        $recordId
-                    );
-
-            } else {
-
-                http_response_code(400);
-
-                $response = [
-
-                    'status' => 'error',
-
-                    'message' =>
-                        'Missing ID for delete.'
-
-                ];
-            }
-
-
-        }
-
-
-        /*
-         * Invalid method
-         */
-        else {
-
-            http_response_code(405);
-
-            $response = [
-
-                'status' => 'error',
-
-                'message' =>
-                    'Invalid request method for /price.'
-
-            ];
-        }
-
-
-        break;
-
-
-
-    /* =====================================================
-       PRICE MONITORING
-    ===================================================== */
-
-    case 'price-monitoring':
-
-        $controller =
-            new PriceMonitoringController();
-
-
-        if ($method === 'GET') {
-
-            $action =
-                $_GET['action']
-                ?? 'commodity_categories';
-
-
-            switch ($action) {
-
-
-                case 'commodity_categories':
-
-                    $response =
-                        $controller->getCategories();
-
-                    break;
-
-
-                default:
-
-                    $response = [
-
-                        'status' => 'error',
-
-                        'message' =>
-                            'Invalid action.'
-
-                    ];
-
-                    break;
-            }
-
-
-        }
-
-
-        elseif ($method === 'POST') {
-
-            $action =
-                $input['action']
-                ?? $_POST['action']
-                ?? '';
-
-
-            switch ($action) {
-
-
-                case 'add_category':
-
-                    $response =
-                        $controller->addCategory(
-                            $input
-                        );
-
-                    break;
-
-
-                default:
-
-                    $response = [
-
-                        'status' => 'error',
-
-                        'message' =>
-                            'Invalid action for POST request.'
-
-                    ];
-
-                    break;
-            }
-
-
-        }
-
-
-        elseif ($method === 'PUT') {
-
-            $response =
-                $controller->updateCategory(
-                    $input
-                );
-
-
-        }
-
-
-        else {
-
-            http_response_code(405);
-
-            $response = [
-
-                'status' => 'error',
-
                 'message' =>
                     'Invalid request method for /price-monitoring.'
-
             ];
         }
 
-
         break;
 
+            case 'commodity':
 
+        $controller = new PriceMonitoringController();
 
-    /* =====================================================
-       COMMODITY
-    ===================================================== */
-
-    case 'commodity':
-
-        $controller =
-            new PriceMonitoringController();
-
-
-        $id =
-            $_GET['id']
-            ?? ($segments[1] ?? null);
-
-
-        /*
-         * GET
-         */
         if ($method === 'GET') {
 
             if (
-                $id &&
-                is_numeric($id)
+                isset($_GET['id']) &&
+                $_GET['id'] !== ''
             ) {
 
-                $response =
-                    $controller->getCommodityById(
-                        $id
-                    );
+                $response = $controller->getCommodityById(
+                    $_GET['id']
+                );
 
             } else {
 
-                $response =
-                    $controller->getCommodityList();
+                $response = $controller->getCommodityList();
 
             }
 
+        } elseif ($method === 'POST') {
 
-        }
+            $response = $controller->addCommodity($input);
 
+        } elseif ($method === 'PUT') {
 
-        /*
-         * POST
-         */
-        elseif ($method === 'POST') {
+            $response = $controller->updateCommodity($input);
 
-            $response =
-                $controller->addCommodity(
-                    $input
-                );
+        } elseif ($method === 'DELETE') {
 
-        }
-
-
-        /*
-         * PUT
-         */
-        elseif ($method === 'PUT') {
-
-            $response =
-                $controller->updateCommodity(
-                    $input
-                );
-
-        }
-
-
-        /*
-         * DELETE
-         */
-        elseif ($method === 'DELETE') {
+            $id = $_GET['id'] ?? ($segments[2] ?? null);
 
             if (
-                $id &&
-                is_numeric($id)
+                $id === null ||
+                $id === '' ||
+                !is_numeric($id)
             ) {
-
-                $response =
-                    $controller->deleteCommodity(
-                        $id
-                    );
-
-            } else {
 
                 http_response_code(400);
 
                 $response = [
-
                     'status' => 'error',
-
-                    'message' =>
-                        'Missing commodity ID.'
-
+                    'message' => 'Missing or invalid commodity ID.'
                 ];
-            }
-
-
-        }
-
-
-        else {
-
-            http_response_code(405);
-
-            $response = [
-
-                'status' => 'error',
-
-                'message' =>
-                    'Invalid request method.'
-
-            ];
-        }
-
-
-        break;
-
-
-
-    /* =====================================================
-       CALAMITY
-    ===================================================== */
-
-    case 'calamity':
-
-        $controller =
-            new CalamityController();
-
-
-        if ($method === 'GET') {
-
-            $action =
-                $_GET['action']
-                ?? 'calamities';
-
-
-            if ($action === 'juridicals') {
-
-                $response =
-                    $controller->getJuridicals();
 
             } else {
 
-                $response =
-                    $controller->getCalamities();
-            }
-
-
-        }
-
-
-        elseif ($method === 'POST') {
-
-            if (
-                ($input['type'] ?? '')
-                === 'calamity'
-            ) {
-
-                $response =
-                    $controller->addCalamity(
-                        $input
-                    );
-
-            } else {
-
-                $response =
-                    $controller->addIncident(
-                        $input
-                    );
-            }
-
-
-        }
-
-
-        elseif ($method === 'PUT') {
-
-            $response =
-                $controller->updateIncident(
-                    $input
+                $response = $controller->deleteCommodity(
+                    (int)$id
                 );
+            }
 
-
-        }
-
-
-        else {
+        } else {
 
             http_response_code(405);
 
             $response = [
-
                 'status' => 'error',
-
                 'message' =>
-                    'Invalid request method for /calamity. Please use GET, POST, or PUT.'
-
+                    'Invalid request method for /commodity.'
             ];
         }
 
-
         break;
 
-
-
-    /* =====================================================
-       SCIMS
-    ===================================================== */
-
-    case 'scims':
-
-        $json =
-            json_decode(
-                file_get_contents(
-                    'https://vamosmobile.app/api/testjuridical/business'
-                ),
-                true
-            );
-
-
-        $response = [
-
-            'data' => $json
-
-        ];
-
-
-        break;
-
-
-
-    /* =====================================================
-       DEFAULT
-    ===================================================== */
 
     default:
-
         http_response_code(404);
-
         $response = [
-
             'status' => 'error',
-
-            'message' =>
-                'Resource not found.'
-
+            'message' => 'Resource not found.'
         ];
-
         break;
 }
 
 
-/* =========================================================
-   OUTPUT JSON
-========================================================= */
 
-echo json_encode(
-    $response,
-    JSON_UNESCAPED_UNICODE
-);
+echo json_encode($response);

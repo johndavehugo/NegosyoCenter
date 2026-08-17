@@ -51,26 +51,12 @@
 
                     <ul class="nav nav-treeview">
 
-                        <li class="nav-item">
-                            <a href="../price-monitoring/dti.php" class="nav-link">
-                                <i class="fas fa-store nav-icon"></i>
-                                <p>DTI Price Monitoring</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="../price-monitoring/da.php" class="nav-link">
-                                <i class="fas fa-seedling nav-icon"></i>
-                                <p>DA Price Monitoring</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="../price-monitoring/doe.php" class="nav-link">
-                                <i class="fas fa-gas-pump nav-icon"></i>
-                                <p>DOE Price Monitoring</p>
-                            </a>
-                        </li>
+                       <li class="nav-item">
+    <a href="../price-monitoring/price-monitoring.php" class="nav-link">
+        <i class="fas fa-tags nav-icon"></i>
+        <p>Price Monitoring</p>
+    </a>
+</li>
 
                         <li class="nav-item">
                             <a href="../price-monitoring/category.php" class="nav-link">

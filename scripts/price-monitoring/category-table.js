@@ -47,3 +47,36 @@ $(function () {
     });
 
 });
+
+$(document).on('click', '.btn-delete', function () {
+    const categoryId = $(this).data('id');
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This category will be deleted.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('../../api/routes.php/price-monitoring?action=delete_category&id=' + categoryId, {
+    method: 'DELETE'
+})
+            .then(response => response.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    Swal.fire('Deleted!', res.message, 'success');
+                    $('#tblCategories').DataTable().ajax.reload(null, false);
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                Swal.fire('Error', 'Network error.', 'error');
+            });
+        }
+    });
+});

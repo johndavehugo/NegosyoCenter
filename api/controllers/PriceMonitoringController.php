@@ -12,67 +12,261 @@ class PriceMonitoringController
         $this->con = $con;
     }
 
-    /* ==========================================================
-       AGENCIES
-       ========================================================== */
+    private function success($message = '', $data = [])
+    {
+        return [
+            'status' => 'success',
+            'message' => $message,
+            'data' => $data
+        ];
+    }
+
+    private function error($message, $data = [])
+    {
+        return [
+            'status' => 'error',
+            'message' => $message,
+            'data' => $data
+        ];
+    }
+
+    private function id($value)
+    {
+        return $value !== null && $value !== '' && is_numeric($value)
+            ? (int)$value
+            : null;
+    }
+
+    private function input($data, $keys, $default = '')
+    {
+        foreach ($keys as $key) {
+            if (isset($data[$key]) && $data[$key] !== '') {
+                return trim((string)$data[$key]);
+            }
+        }
+
+        return $default;
+    }
+
+    private function validatePrice($value, $field = 'Price')
+    {
+        if ($value === '' || $value === null || !is_numeric($value)) {
+            return $this->error("A valid {$field} is required.");
+        }
+
+        if ((float)$value < 0) {
+            return $this->error("{$field} cannot be negative.");
+        }
+
+        return null;
+    }
+
+    private function findAgency($id)
+    {
+        $stmt = $this->con->prepare("
+            SELECT id, code, name
+            FROM agencies
+            WHERE id = ?
+            LIMIT 1
+        ");
+
+        $stmt->execute([$id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    private function findCategory($id)
+    {
+        $stmt = $this->con->prepare("
+            SELECT
+                id,
+                name,
+                agency_id
+            FROM commodity_categories
+            WHERE id = ?
+            LIMIT 1
+        ");
+
+        $stmt->execute([$id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    private function findCommodity($id)
+    {
+        $stmt = $this->con->prepare("
+            SELECT
+                c.id,
+                c.product_name,
+                c.category_id,
+                c.agency_id,
+                c.brand_name,
+                c.unit_of_measure,
+                c.srp,
+                cc.name AS category_name,
+                cc.agency_id AS category_agency_id
+            FROM commodities c
+            LEFT JOIN commodity_categories cc
+                ON c.category_id = cc.id
+            WHERE c.id = ?
+            LIMIT 1
+        ");
+
+        $stmt->execute([$id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    private function getAgencyFromCategory($categoryId)
+    {
+        $category = $this->findCategory($categoryId);
+
+        if (!$category) {
+            return null;
+        }
+
+        if (
+            $category['agency_id'] === null ||
+            !is_numeric($category['agency_id'])
+        ) {
+            return null;
+        }
+
+        return (int)$category['agency_id'];
+    }
+
+    private function calculateStatus($price, $srp)
+    {
+        if ($price === null || $price === '') {
+            return 'NO_PRICE_YET';
+        }
+
+        if ($srp === null || $srp <= 0) {
+            return 'NO_SRP';
+        }
+
+        if ($price > $srp) {
+            return 'OVERPRICED';
+        }
+
+        if ($price < $srp) {
+            return 'BELOW_SRP';
+        }
+
+        return 'WITHIN_SRP';
+    }
+
+    private function normalizeSrp($value)
+    {
+        if ($value === null || trim((string)$value) === '') {
+            return null;
+        }
+
+        return is_numeric($value)
+            ? (float)$value
+            : null;
+    }
+
+    private function getPriceRecord($id)
+    {
+        $stmt = $this->con->prepare("
+            SELECT
+                p.id,
+                p.commodity_id,
+                p.monitored_by_agency_id,
+                p.prevailing_price,
+                p.status,
+                p.monitored_at,
+                c.product_name,
+                c.category_id,
+                c.brand_name,
+                c.unit_of_measure,
+                c.srp,
+                cc.name AS category_name,
+                cc.agency_id,
+                a.name AS agency_name,
+                a.code AS agency_code
+            FROM price_logs p
+            LEFT JOIN commodities c
+                ON p.commodity_id = c.id
+            LEFT JOIN commodity_categories cc
+                ON c.category_id = cc.id
+            LEFT JOIN agencies a
+                ON cc.agency_id = a.id
+            WHERE p.id = ?
+            LIMIT 1
+        ");
+
+        $stmt->execute([$id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    private function formatPriceRecord($row)
+    {
+        if (!$row) {
+            return null;
+        }
+
+        return [
+            'id' => (int)$row['id'],
+            'commodity_id' => (int)$row['commodity_id'],
+            'monitored_by_agency_id' => (int)$row['monitored_by_agency_id'],
+            'product_name' => $row['product_name'],
+            'category_id' => $row['category_id'] !== null
+                ? (int)$row['category_id']
+                : null,
+            'category_name' => $row['category_name'],
+            'brand_name' => $row['brand_name'],
+            'unit_of_measure' => $row['unit_of_measure'],
+            'srp' => $row['srp'] !== null && $row['srp'] !== ''
+                ? (float)$row['srp']
+                : null,
+            'prevailing_price' => $row['prevailing_price'] !== null
+                ? (float)$row['prevailing_price']
+                : null,
+            'status' => $row['status'],
+            'monitored_at' => $row['monitored_at'],
+            'agency_id' => $row['agency_id'] !== null
+                ? (int)$row['agency_id']
+                : null,
+            'agency_name' => $row['agency_name'],
+            'agency_code' => $row['agency_code']
+        ];
+    }
 
     public function getAgencies()
     {
         try {
-            $sql = "
-                SELECT
-                    id,
-                    code,
-                    name
+            $stmt = $this->con->prepare("
+                SELECT id, code, name
                 FROM agencies
                 ORDER BY name ASC
-            ";
+            ");
 
-            $stmt = $this->con->prepare($sql);
             $stmt->execute();
 
-            return [
-                'status' => 'success',
-                'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)
-            ];
-
+            return $this->success('', $stmt->fetchAll(PDO::FETCH_ASSOC));
         } catch (PDOException $e) {
+            error_log('getAgencies: ' . $e->getMessage());
 
-            error_log(
-                'PriceMonitoringController::getAgencies() - ' .
-                $e->getMessage()
+            return $this->error(
+                'Database error: ' . $e->getMessage(),
+                []
             );
-
-            return [
-                'status' => 'error',
-                'message' => 'Database error: ' . $e->getMessage(),
-                'data' => []
-            ];
         }
     }
 
-
-    /* ==========================================================
-       PRICE MONITORING
-       ========================================================== */
-
     public function getPrices($agencyId = null)
     {
-        if (
-            $agencyId === null ||
-            $agencyId === '' ||
-            !is_numeric($agencyId)
-        ) {
-            return [
-                'status' => 'error',
-                'message' => 'Agency ID is required.',
-                'data' => []
-            ];
+        $agencyId = $this->id($agencyId);
+
+        if ($agencyId === null) {
+            return $this->error('Agency ID is required.', []);
         }
 
         try {
-
-            $sql = "
+            $stmt = $this->con->prepare("
                 SELECT
                     p.id,
                     c.id AS commodity_id,
@@ -82,34 +276,20 @@ class PriceMonitoringController
                     c.unit_of_measure,
                     c.srp,
                     p.prevailing_price,
-
                     CASE
-                        WHEN p.prevailing_price IS NULL
-                            THEN 'NO_PRICE_YET'
-
-                        WHEN c.srp IS NULL OR c.srp <= 0
-                            THEN 'NO_SRP'
-
-                        WHEN p.prevailing_price > c.srp
-                            THEN 'OVERPRICED'
-
-                        WHEN p.prevailing_price < c.srp
-                            THEN 'BELOW_SRP'
-
+                        WHEN p.prevailing_price IS NULL THEN 'NO_PRICE_YET'
+                        WHEN c.srp IS NULL OR c.srp <= 0 THEN 'NO_SRP'
+                        WHEN p.prevailing_price > c.srp THEN 'OVERPRICED'
+                        WHEN p.prevailing_price < c.srp THEN 'BELOW_SRP'
                         ELSE 'WITHIN_SRP'
                     END AS status,
-
                     p.monitored_at,
                     p.monitored_by_agency_id,
-
                     a.code AS agency_code,
                     a.name AS agency_name
-
                 FROM commodities c
-
                 INNER JOIN commodity_categories cc
                     ON c.category_id = cc.id
-
                 LEFT JOIN price_logs p
                     ON p.id = (
                         SELECT pl.id
@@ -119,47 +299,31 @@ class PriceMonitoringController
                         ORDER BY pl.monitored_at DESC, pl.id DESC
                         LIMIT 1
                     )
-
                 LEFT JOIN agencies a
                     ON cc.agency_id = a.id
-
                 WHERE cc.agency_id = ?
-
                 ORDER BY c.product_name ASC
-            ";
-
-            $stmt = $this->con->prepare($sql);
+            ");
 
             $stmt->execute([
-                (int)$agencyId,
-                (int)$agencyId
+                $agencyId,
+                $agencyId
             ]);
 
-            return [
-                'status' => 'success',
-                'data' => $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []
-            ];
-
+            return $this->success('', $stmt->fetchAll(PDO::FETCH_ASSOC));
         } catch (PDOException $e) {
+            error_log('getPrices: ' . $e->getMessage());
 
-            error_log(
-                'PriceMonitoringController::getPrices() - ' .
-                $e->getMessage()
+            return $this->error(
+                'Database error: ' . $e->getMessage(),
+                []
             );
-
-            return [
-                'status' => 'error',
-                'message' => 'Database error: ' . $e->getMessage(),
-                'data' => []
-            ];
         }
     }
-
 
     public function getCommodities($agencyId = null)
     {
         try {
-
             $sql = "
                 SELECT
                     c.id,
@@ -170,333 +334,124 @@ class PriceMonitoringController
                     cc.name AS category_name,
                     cc.agency_id,
                     c.srp
-
                 FROM commodities c
-
                 INNER JOIN commodity_categories cc
                     ON c.category_id = cc.id
             ";
 
             $params = [];
 
-            if (
-                $agencyId !== null &&
-                $agencyId !== ''
-            ) {
+            if ($agencyId !== null && $agencyId !== '') {
+                $agencyId = $this->id($agencyId);
 
-                if (!is_numeric($agencyId)) {
-
-                    return [
-                        'status' => 'error',
-                        'message' => 'Invalid agency ID.',
-                        'data' => []
-                    ];
+                if ($agencyId === null) {
+                    return $this->error('Invalid agency ID.', []);
                 }
 
-                $sql .= "
-                    WHERE cc.agency_id = ?
-                ";
-
-                $params[] = (int)$agencyId;
+                $sql .= " WHERE cc.agency_id = ?";
+                $params[] = $agencyId;
             }
 
-            $sql .= "
-                ORDER BY c.product_name ASC
-            ";
+            $sql .= " ORDER BY c.product_name ASC";
 
             $stmt = $this->con->prepare($sql);
-
             $stmt->execute($params);
 
-            return [
-                'status' => 'success',
-                'data' => $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []
-            ];
-
+            return $this->success('', $stmt->fetchAll(PDO::FETCH_ASSOC));
         } catch (PDOException $e) {
+            error_log('getCommodities: ' . $e->getMessage());
 
-            error_log(
-                'PriceMonitoringController::getCommodities() - ' .
-                $e->getMessage()
+            return $this->error(
+                'Database error: ' . $e->getMessage(),
+                []
             );
-
-            return [
-                'status' => 'error',
-                'message' => 'Database error: ' . $e->getMessage(),
-                'data' => []
-            ];
         }
     }
-
 
     public function getPriceById($id)
     {
-        if (
-            $id === null ||
-            $id === '' ||
-            !is_numeric($id)
-        ) {
+        $id = $this->id($id);
 
-            return [
-                'status' => 'error',
-                'message' => 'Missing or invalid record ID.'
-            ];
+        if ($id === null) {
+            return $this->error('Missing or invalid record ID.');
         }
 
         try {
+            $record = $this->getPriceRecord($id);
 
-            $sql = "
-                SELECT
-                    p.id,
-                    p.commodity_id,
-                    p.monitored_by_agency_id,
-                    p.prevailing_price,
-                    p.status,
-                    p.monitored_at,
-
-                    c.product_name,
-                    c.category_id,
-                    cc.name AS category_name,
-                    c.brand_name,
-                    c.unit_of_measure,
-                    c.srp,
-
-                    a.code AS agency_code,
-                    a.name AS agency_name
-
-                FROM price_logs p
-
-                LEFT JOIN commodities c
-                    ON p.commodity_id = c.id
-
-                LEFT JOIN commodity_categories cc
-                    ON c.category_id = cc.id
-
-                LEFT JOIN agencies a
-                    ON cc.agency_id = a.id
-
-                WHERE p.id = ?
-
-                LIMIT 1
-            ";
-
-            $stmt = $this->con->prepare($sql);
-
-            $stmt->execute([
-                (int)$id
-            ]);
-
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$row) {
-
-                return [
-                    'status' => 'error',
-                    'message' => 'Price record not found.'
-                ];
+            if (!$record) {
+                return $this->error('Price record not found.');
             }
 
-            return [
-                'status' => 'success',
-                'data' => $row
-            ];
-
-        } catch (PDOException $e) {
-
-            error_log(
-                'PriceMonitoringController::getPriceById() - ' .
-                $e->getMessage()
+            return $this->success(
+                '',
+                $this->formatPriceRecord($record)
             );
+        } catch (PDOException $e) {
+            error_log('getPriceById: ' . $e->getMessage());
 
-            return [
-                'status' => 'error',
-                'message' => 'Database error: ' . $e->getMessage()
-            ];
+            return $this->error(
+                'Database error: ' . $e->getMessage()
+            );
         }
     }
 
-
-    /* ==========================================================
-       ADD PRICE
-       ========================================================== */
-
     public function addPrice(array $data)
     {
-        $commodity_id = trim(
-            (string)($data['commodity_id'] ?? '')
+        $commodityId = $this->id(
+            $this->input($data, ['commodity_id'])
         );
 
-        $agency_id = trim(
-            (string)(
-                $data['monitored_by_agency_id']
-                ?? $data['agency_id']
-                ?? ''
+        $agencyId = $this->id(
+            $this->input(
+                $data,
+                ['monitored_by_agency_id', 'agency_id']
             )
         );
 
-        $prevailing_price = trim(
-            (string)($data['prevailing_price'] ?? '')
+        $price = $this->input(
+            $data,
+            ['prevailing_price']
         );
 
-        $srp = trim(
-    (string)(
-        $data['srp']
-        ?? $data['srp_price']
-        ?? ''
-    )
-);
-
-
-        if (
-            $commodity_id === '' ||
-            $agency_id === ''
-        ) {
-
-            return [
-                'status' => 'error',
-                'message' => 'Commodity and agency are required.'
-            ];
+        if ($commodityId === null || $agencyId === null) {
+            return $this->error(
+                'Commodity and agency are required.'
+            );
         }
 
+        $priceError = $this->validatePrice(
+            $price,
+            'Prevailing price'
+        );
 
-        if (
-            !is_numeric($commodity_id) ||
-            !is_numeric($agency_id)
-        ) {
-
-            return [
-                'status' => 'error',
-                'message' => 'Invalid commodity or agency ID.'
-            ];
+        if ($priceError) {
+            return $priceError;
         }
-
-
-        if (
-            $prevailing_price === '' ||
-            !is_numeric($prevailing_price)
-        ) {
-
-            return [
-                'status' => 'error',
-                'message' => 'A valid prevailing price is required.'
-            ];
-        }
-
-
-        $commodity_id = (int)$commodity_id;
-        $agency_id = (int)$agency_id;
-        $price = (float)$prevailing_price;
-
-
-        if ($price < 0) {
-
-            return [
-                'status' => 'error',
-                'message' => 'Prevailing price cannot be negative.'
-            ];
-        }
-
 
         try {
-
-            /*
-             * Get commodity
-             */
-
-            $commodityStmt = $this->con->prepare("
-                SELECT
-                    c.id,
-                    c.product_name,
-                    c.srp,
-                    cc.name AS category_name,
-                    cc.agency_id
-
-                FROM commodities c
-
-                LEFT JOIN commodity_categories cc
-                    ON c.category_id = cc.id
-
-                WHERE c.id = ?
-
-                LIMIT 1
-            ");
-
-            $commodityStmt->execute([
-                $commodity_id
-            ]);
-
-            $commodity =
-                $commodityStmt->fetch(PDO::FETCH_ASSOC);
-
+            $commodity = $this->findCommodity($commodityId);
 
             if (!$commodity) {
-
-                return [
-                    'status' => 'error',
-                    'message' => 'Selected commodity not found.'
-                ];
+                return $this->error(
+                    'Selected commodity not found.'
+                );
             }
-
-
-            /*
-             * Verify agency
-             */
 
             if (
-                $commodity['agency_id'] === null ||
-                (int)$commodity['agency_id'] !== $agency_id
+                $commodity['category_agency_id'] === null ||
+                (int)$commodity['category_agency_id'] !== $agencyId
             ) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'The selected commodity does not belong to the selected agency.'
-                ];
+                return $this->error(
+                    'The selected commodity does not belong to the selected agency.'
+                );
             }
 
+            $price = (float)$price;
+            $srp = $this->normalizeSrp($commodity['srp']);
+            $status = $this->calculateStatus($price, $srp);
 
-            /*
-             * Get SRP
-             */
-
-            $srp = (
-                $commodity['srp'] !== null &&
-                $commodity['srp'] !== ''
-            )
-                ? (float)$commodity['srp']
-                : null;
-
-
-            /*
-             * Determine status
-             */
-
-            if (
-                $srp === null ||
-                $srp <= 0
-            ) {
-
-                $status = 'NO_SRP';
-
-            } elseif ($price > $srp) {
-
-                $status = 'OVERPRICED';
-
-            } elseif ($price < $srp) {
-
-                $status = 'BELOW_SRP';
-
-            } else {
-
-                $status = 'WITHIN_SRP';
-            }
-
-
-            /*
-             * Insert
-             */
-
-            $sql = "
+            $stmt = $this->con->prepare("
                 INSERT INTO price_logs
                 (
                     commodity_id,
@@ -505,888 +460,412 @@ class PriceMonitoringController
                     status,
                     monitored_at
                 )
-
-                VALUES
-                (?, ?, ?, ?, NOW())
-            ";
-
-            $stmt =
-                $this->con->prepare($sql);
-
+                VALUES (?, ?, ?, ?, NOW())
+            ");
 
             $stmt->execute([
-                $commodity_id,
-                $agency_id,
+                $commodityId,
+                $agencyId,
                 $price,
                 $status
             ]);
 
+            $id = (int)$this->con->lastInsertId();
 
-            $insertedId =
-                $this->con->lastInsertId();
-
-
-            return [
-                'status' => 'success',
-
-                'message' =>
-                    'Price record has been added.',
-
-                'data' => [
-
-                    'id' =>
-                        (int)$insertedId,
-
-                    'commodity_id' =>
-                        $commodity_id,
-
-                    'monitored_by_agency_id' =>
-                        $agency_id,
-
-                    'srp' =>
-                        $srp,
-
-                    'prevailing_price' =>
-                        $price,
-
-                    'status' =>
-                        $status
+            return $this->success(
+                'Price record has been added.',
+                [
+                    'id' => $id,
+                    'commodity_id' => $commodityId,
+                    'monitored_by_agency_id' => $agencyId,
+                    'srp' => $srp,
+                    'prevailing_price' => $price,
+                    'status' => $status
                 ]
-            ];
-
-
-        } catch (PDOException $e) {
-
-            error_log(
-                'PriceMonitoringController::addPrice() - ' .
-                $e->getMessage()
             );
+        } catch (PDOException $e) {
+            error_log('addPrice: ' . $e->getMessage());
 
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Database error: ' .
-                    $e->getMessage()
-            ];
+            return $this->error(
+                'Database error: ' . $e->getMessage()
+            );
         }
     }
-
-
-    /* ==========================================================
-       UPDATE PRICE
-       ========================================================== */
 
     public function updatePrice(array $data)
-{
-    $id = trim(
-        (string)($data['id'] ?? '')
-    );
-
-    $commodity_id = trim(
-        (string)($data['commodity_id'] ?? '')
-    );
-
-    $agency_id = trim(
-        (string)(
-            $data['monitored_by_agency_id']
-            ?? $data['agency_id']
-            ?? ''
-        )
-    );
-
-    $prevailing_price = trim(
-        (string)($data['prevailing_price'] ?? '')
-    );
-
-    /*
-     * IMPORTANT:
-     * Accept SRP from either:
-     *
-     * srp
-     * srp_price
-     */
-    $srp_input = $data['srp']
-        ?? $data['srp_price']
-        ?? null;
-
-
-    /*
-     * ==========================================================
-     * VALIDATE ID
-     * ==========================================================
-     */
-
-    if (
-        $id === '' ||
-        !is_numeric($id)
-    ) {
-        return [
-            'status' => 'error',
-            'message' =>
-                'Missing or invalid record ID for update.'
-        ];
-    }
-
-
-    /*
-     * ==========================================================
-     * VALIDATE COMMODITY / AGENCY
-     * ==========================================================
-     */
-
-    if (
-        $commodity_id === '' ||
-        $agency_id === ''
-    ) {
-        return [
-            'status' => 'error',
-            'message' =>
-                'Commodity and agency are required for update.'
-        ];
-    }
-
-    if (
-        !is_numeric($commodity_id) ||
-        !is_numeric($agency_id)
-    ) {
-        return [
-            'status' => 'error',
-            'message' =>
-                'Invalid commodity or agency ID.'
-        ];
-    }
-
-
-    /*
-     * ==========================================================
-     * VALIDATE PREVAILING PRICE
-     * ==========================================================
-     */
-
-    if (
-        $prevailing_price === '' ||
-        !is_numeric($prevailing_price)
-    ) {
-        return [
-            'status' => 'error',
-            'message' =>
-                'A valid prevailing price is required.'
-        ];
-    }
-
-
-    /*
-     * ==========================================================
-     * VALIDATE SRP
-     * ==========================================================
-     */
-
-    if (
-        $srp_input === null ||
-        trim((string)$srp_input) === '' ||
-        !is_numeric($srp_input)
-    ) {
-        return [
-            'status' => 'error',
-            'message' =>
-                'A valid SRP is required.'
-        ];
-    }
-
-
-    /*
-     * ==========================================================
-     * CONVERT VALUES
-     * ==========================================================
-     */
-
-    $id = (int)$id;
-
-    $commodity_id = (int)$commodity_id;
-
-    $agency_id = (int)$agency_id;
-
-    $price = (float)$prevailing_price;
-
-    $srp = (float)$srp_input;
-
-
-    /*
-     * ==========================================================
-     * CHECK NEGATIVE VALUES
-     * ==========================================================
-     */
-
-    if ($price < 0) {
-        return [
-            'status' => 'error',
-            'message' =>
-                'Prevailing price cannot be negative.'
-        ];
-    }
-
-    if ($srp < 0) {
-        return [
-            'status' => 'error',
-            'message' =>
-                'SRP cannot be negative.'
-        ];
-    }
-
-
-    try {
-
-        /*
-         * ======================================================
-         * VERIFY EXISTING PRICE RECORD
-         * ======================================================
-         */
-
-        $checkStmt = $this->con->prepare("
-            SELECT
-                id,
-                commodity_id,
-                monitored_by_agency_id
-            FROM price_logs
-            WHERE id = ?
-            LIMIT 1
-        ");
-
-        $checkStmt->execute([
-            $id
-        ]);
-
-        $existing =
-            $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-
-        if (!$existing) {
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Price record not found.'
-            ];
-        }
-
-
-        /*
-         * ======================================================
-         * VERIFY AGENCY OWNERSHIP
-         * ======================================================
-         */
-
-        if (
-            (int)$existing['monitored_by_agency_id']
-            !== $agency_id
-        ) {
-            return [
-                'status' => 'error',
-                'message' =>
-                    'You cannot update a price record belonging to another agency.'
-            ];
-        }
-
-
-        /*
-         * ======================================================
-         * VERIFY COMMODITY
-         * ======================================================
-         */
-
-        $commodityStmt = $this->con->prepare("
-            SELECT
-                c.id,
-                c.product_name,
-                c.category_id,
-                c.brand_name,
-                c.unit_of_measure,
-                c.srp,
-                cc.name AS category_name,
-                cc.agency_id
-            FROM commodities c
-            LEFT JOIN commodity_categories cc
-                ON c.category_id = cc.id
-            WHERE c.id = ?
-            LIMIT 1
-        ");
-
-        $commodityStmt->execute([
-            $commodity_id
-        ]);
-
-        $commodity =
-            $commodityStmt->fetch(PDO::FETCH_ASSOC);
-
-
-        if (!$commodity) {
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Commodity not found.'
-            ];
-        }
-
-
-        /*
-         * ======================================================
-         * VERIFY COMMODITY AGENCY
-         * ======================================================
-         */
-
-        if (
-            $commodity['agency_id'] === null ||
-            (int)$commodity['agency_id'] !== $agency_id
-        ) {
-            return [
-                'status' => 'error',
-                'message' =>
-                    'The selected commodity does not belong to the selected agency.'
-            ];
-        }
-
-
-        /*
-         * ======================================================
-         * UPDATE SRP
-         *
-         * THIS IS THE IMPORTANT PART.
-         *
-         * The new SRP is written into:
-         *
-         * commodities.srp
-         * ======================================================
-         */
-
-        $srpStmt = $this->con->prepare("
-            UPDATE commodities
-            SET srp = ?
-            WHERE id = ?
-        ");
-
-        $srpStmt->execute([
-            $srp,
-            $commodity_id
-        ]);
-
-
-        /*
-         * ======================================================
-         * DETERMINE STATUS USING NEW SRP
-         * ======================================================
-         */
-
-        if ($srp <= 0) {
-
-            $status = 'NO_SRP';
-
-        } elseif ($price > $srp) {
-
-            $status = 'OVERPRICED';
-
-        } elseif ($price < $srp) {
-
-            $status = 'BELOW_SRP';
-
-        } else {
-
-            $status = 'WITHIN_SRP';
-        }
-
-
-        /*
-         * ======================================================
-         * UPDATE PRICE LOG
-         * ======================================================
-         */
-
-        $updateStmt = $this->con->prepare("
-            UPDATE price_logs
-            SET
-                commodity_id = ?,
-                monitored_by_agency_id = ?,
-                prevailing_price = ?,
-                status = ?,
-                monitored_at = NOW()
-            WHERE id = ?
-        ");
-
-        $updateStmt->execute([
-            $commodity_id,
-            $agency_id,
-            $price,
-            $status,
-            $id
-        ]);
-
-
-        /*
-         * ======================================================
-         * READ UPDATED RECORD
-         * ======================================================
-         */
-
-        $resultStmt = $this->con->prepare("
-            SELECT
-                p.id,
-                p.commodity_id,
-                p.monitored_by_agency_id,
-                p.prevailing_price,
-                p.status,
-                p.monitored_at,
-
-                c.product_name,
-                c.category_id,
-                c.brand_name,
-                c.unit_of_measure,
-                c.srp,
-
-                cc.name AS category_name,
-                cc.agency_id,
-
-                a.name AS agency_name,
-                a.code AS agency_code
-
-            FROM price_logs p
-
-            LEFT JOIN commodities c
-                ON p.commodity_id = c.id
-
-            LEFT JOIN commodity_categories cc
-                ON c.category_id = cc.id
-
-            LEFT JOIN agencies a
-                ON cc.agency_id = a.id
-
-            WHERE p.id = ?
-
-            LIMIT 1
-        ");
-
-        $resultStmt->execute([
-            $id
-        ]);
-
-        $updated =
-            $resultStmt->fetch(PDO::FETCH_ASSOC);
-
-
-        if (!$updated) {
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Price was updated but the updated record could not be retrieved.'
-            ];
-        }
-
-
-        /*
-         * ======================================================
-         * RETURN UPDATED DATA
-         * ======================================================
-         */
-
-        return [
-            'status' => 'success',
-
-            'message' =>
-                'Price record and SRP updated successfully.',
-
-            'data' => [
-
-                'id' =>
-                    (int)$updated['id'],
-
-                'commodity_id' =>
-                    (int)$updated['commodity_id'],
-
-                'monitored_by_agency_id' =>
-                    (int)$updated['monitored_by_agency_id'],
-
-                'product_name' =>
-                    $updated['product_name'],
-
-                'category_id' =>
-                    $updated['category_id'] !== null
-                        ? (int)$updated['category_id']
-                        : null,
-
-                'category_name' =>
-                    $updated['category_name'],
-
-                'brand_name' =>
-                    $updated['brand_name'],
-
-                'unit_of_measure' =>
-                    $updated['unit_of_measure'],
-
-                /*
-                 * THIS MUST NOW BE THE NEW SRP
-                 */
-                'srp' =>
-                    $updated['srp'] !== null &&
-                    $updated['srp'] !== ''
-                        ? (float)$updated['srp']
-                        : null,
-
-                'prevailing_price' =>
-                    (float)$updated['prevailing_price'],
-
-                'status' =>
-                    $updated['status'],
-
-                'monitored_at' =>
-                    $updated['monitored_at'],
-
-                'agency_id' =>
-                    $updated['agency_id'] !== null
-                        ? (int)$updated['agency_id']
-                        : null,
-
-                'agency_name' =>
-                    $updated['agency_name'],
-
-                'agency_code' =>
-                    $updated['agency_code']
-            ]
-        ];
-
-
-    } catch (PDOException $e) {
-
-        error_log(
-            'PriceMonitoringController::updatePrice() - ' .
-            $e->getMessage()
+    {
+        $id = $this->id(
+            $this->input($data, ['id'])
         );
 
-        return [
-            'status' => 'error',
-            'message' =>
-                'Database error: ' .
-                $e->getMessage()
-        ];
+        $commodityId = $this->id(
+            $this->input($data, ['commodity_id'])
+        );
+
+        $agencyId = $this->id(
+            $this->input(
+                $data,
+                ['monitored_by_agency_id', 'agency_id']
+            )
+        );
+
+        $price = $this->input(
+            $data,
+            ['prevailing_price']
+        );
+
+        $srpInput = $this->input(
+            $data,
+            ['srp', 'srp_price'],
+            null
+        );
+
+        if ($id === null) {
+            return $this->error(
+                'Missing or invalid record ID for update.'
+            );
+        }
+
+        if ($commodityId === null || $agencyId === null) {
+            return $this->error(
+                'Commodity and agency are required for update.'
+            );
+        }
+
+        $priceError = $this->validatePrice(
+            $price,
+            'Prevailing price'
+        );
+
+        if ($priceError) {
+            return $priceError;
+        }
+
+        $srpError = $this->validatePrice(
+            $srpInput,
+            'SRP'
+        );
+
+        if ($srpError) {
+            return $srpError;
+        }
+
+        try {
+            $existing = $this->getPriceRecord($id);
+
+            if (!$existing) {
+                return $this->error(
+                    'Price record not found.'
+                );
+            }
+
+            if (
+                (int)$existing['monitored_by_agency_id'] !== $agencyId
+            ) {
+                return $this->error(
+                    'You cannot update a price record belonging to another agency.'
+                );
+            }
+
+            $commodity = $this->findCommodity($commodityId);
+
+            if (!$commodity) {
+                return $this->error(
+                    'Commodity not found.'
+                );
+            }
+
+            if (
+                $commodity['category_agency_id'] === null ||
+                (int)$commodity['category_agency_id'] !== $agencyId
+            ) {
+                return $this->error(
+                    'The selected commodity does not belong to the selected agency.'
+                );
+            }
+
+            $price = (float)$price;
+            $srp = (float)$srpInput;
+            $status = $this->calculateStatus($price, $srp);
+
+            $this->con->beginTransaction();
+
+            $stmt = $this->con->prepare("
+                UPDATE commodities
+                SET srp = ?
+                WHERE id = ?
+            ");
+
+            $stmt->execute([
+                $srp,
+                $commodityId
+            ]);
+
+            $stmt = $this->con->prepare("
+                UPDATE price_logs
+                SET
+                    commodity_id = ?,
+                    monitored_by_agency_id = ?,
+                    prevailing_price = ?,
+                    status = ?,
+                    monitored_at = NOW()
+                WHERE id = ?
+            ");
+
+            $stmt->execute([
+                $commodityId,
+                $agencyId,
+                $price,
+                $status,
+                $id
+            ]);
+
+            $this->con->commit();
+
+            $updated = $this->getPriceRecord($id);
+
+            if (!$updated) {
+                return $this->error(
+                    'Price was updated but could not be retrieved.'
+                );
+            }
+
+            return $this->success(
+                'Price record and SRP updated successfully.',
+                $this->formatPriceRecord($updated)
+            );
+        } catch (PDOException $e) {
+            if ($this->con->inTransaction()) {
+                $this->con->rollBack();
+            }
+
+            error_log('updatePrice: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: ' . $e->getMessage()
+            );
+        }
     }
-}
 
-
-    /* ==========================================================
-       CATEGORIES
-       ========================================================== */
-
-    public function getCategories()
+        public function getCategories()
     {
         try {
-
-            $sql = "
+            $stmt = $this->con->prepare("
                 SELECT
                     c.id AS category_id,
                     c.agency_id,
                     c.name AS category_name,
                     a.name AS agency_name
-
                 FROM commodity_categories c
-
                 INNER JOIN agencies a
                     ON c.agency_id = a.id
-
                 ORDER BY c.name ASC
-            ";
-
-            $stmt =
-                $this->con->prepare($sql);
+            ");
 
             $stmt->execute();
 
-            return [
-                'status' => 'success',
-                'data' =>
-                    $stmt->fetchAll(PDO::FETCH_ASSOC)
-            ];
-
-
-        } catch (PDOException $e) {
-
-            error_log(
-                'PriceMonitoringController::getCategories() - ' .
-                $e->getMessage()
+            return $this->success(
+                '',
+                $stmt->fetchAll(PDO::FETCH_ASSOC)
             );
+        } catch (PDOException $e) {
+            error_log('getCategories: ' . $e->getMessage());
 
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Unable to retrieve categories.',
-                'data' => []
-            ];
+            return $this->error(
+                'Unable to retrieve categories.',
+                []
+            );
         }
     }
 
-
     public function addCategory(array $data)
     {
-        $name = trim(
-            (string)($data['name'] ?? '')
+        $name = $this->input(
+            $data,
+            ['name']
         );
 
-        $agency_id = trim(
-            (string)($data['agency_id'] ?? '')
+        $agencyId = $this->id(
+            $this->input(
+                $data,
+                ['agency_id']
+            )
         );
 
-
-        if (
-            $name === '' ||
-            $agency_id === ''
-        ) {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Category name and agency selection are required.'
-            ];
+        if ($name === '' || $agencyId === null) {
+            return $this->error(
+                'Category name and agency selection are required.'
+            );
         }
-
-
-        if (!is_numeric($agency_id)) {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Invalid agency ID.'
-            ];
-        }
-
 
         try {
-
-            /*
-             * Verify agency
-             */
-
-            $agencyStmt =
-                $this->con->prepare("
-                    SELECT id
-                    FROM agencies
-                    WHERE id = ?
-                    LIMIT 1
-                ");
-
-            $agencyStmt->execute([
-                (int)$agency_id
-            ]);
-
-
-            if (!$agencyStmt->fetch(PDO::FETCH_ASSOC)) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Selected agency was not found.'
-                ];
+            if (!$this->findAgency($agencyId)) {
+                return $this->error(
+                    'Selected agency was not found.'
+                );
             }
 
-
-            /*
-             * Insert category
-             */
-
-            $sql = "
+            $stmt = $this->con->prepare("
                 INSERT INTO commodity_categories
                 (
                     name,
                     agency_id
                 )
-
-                VALUES
-                (?, ?)
-            ";
-
-            $stmt =
-                $this->con->prepare($sql);
-
+                VALUES (?, ?)
+            ");
 
             $stmt->execute([
                 $name,
-                (int)$agency_id
+                $agencyId
             ]);
 
-
-            return [
-                'status' => 'success',
-                'message' =>
-                    'Category has been added successfully.'
-            ];
-
-
-        } catch (PDOException $e) {
-
-            error_log(
-                'PriceMonitoringController::addCategory() - ' .
-                $e->getMessage()
+            return $this->success(
+                'Category has been added successfully.'
             );
+        } catch (PDOException $e) {
+            error_log('addCategory: ' . $e->getMessage());
 
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Database error: Unable to add category.'
-            ];
+            return $this->error(
+                'Database error: Unable to add category.'
+            );
         }
     }
-
 
     public function updateCategory(array $data)
     {
-        $id = trim(
-            (string)($data['category_id'] ?? '')
+        $id = $this->id(
+            $this->input(
+                $data,
+                ['category_id', 'id']
+            )
         );
 
-        $name = trim(
-            (string)($data['name'] ?? '')
+        $name = $this->input(
+            $data,
+            ['name']
         );
 
-        $agency_id = trim(
-            (string)($data['agency_id'] ?? '')
+        $agencyId = $this->id(
+            $this->input(
+                $data,
+                ['agency_id']
+            )
         );
-
 
         if (
-            $id === '' ||
+            $id === null ||
             $name === '' ||
-            $agency_id === ''
+            $agencyId === null
         ) {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Category ID, name, and agency are required.'
-            ];
+            return $this->error(
+                'Category ID, name, and agency are required.'
+            );
         }
-
-
-        if (
-            !is_numeric($id) ||
-            !is_numeric($agency_id)
-        ) {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Invalid category or agency ID.'
-            ];
-        }
-
 
         try {
-
-            /*
-             * Verify agency
-             */
-
-            $agencyStmt =
-                $this->con->prepare("
-                    SELECT id
-                    FROM agencies
-                    WHERE id = ?
-                    LIMIT 1
-                ");
-
-            $agencyStmt->execute([
-                (int)$agency_id
-            ]);
-
-
-            if (!$agencyStmt->fetch(PDO::FETCH_ASSOC)) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Selected agency was not found.'
-                ];
+            if (!$this->findAgency($agencyId)) {
+                return $this->error(
+                    'Selected agency was not found.'
+                );
             }
 
+            $checkStmt = $this->con->prepare("
+                SELECT id
+                FROM commodity_categories
+                WHERE id = ?
+                LIMIT 1
+            ");
 
-            /*
-             * Update category
-             */
+            $checkStmt->execute([
+                $id
+            ]);
 
-            $stmt =
-                $this->con->prepare("
-                    UPDATE commodity_categories
+            if (!$checkStmt->fetch(PDO::FETCH_ASSOC)) {
+                return $this->error(
+                    'Category not found.'
+                );
+            }
 
-                    SET
-                        name = ?,
-                        agency_id = ?
-
-                    WHERE id = ?
-                ");
-
+            $stmt = $this->con->prepare("
+                UPDATE commodity_categories
+                SET
+                    name = ?,
+                    agency_id = ?
+                WHERE id = ?
+            ");
 
             $stmt->execute([
                 $name,
-                (int)$agency_id,
-                (int)$id
+                $agencyId,
+                $id
             ]);
 
-
-            /*
-             * Check if category exists
-             */
-
-            if ($stmt->rowCount() === 0) {
-
-                $checkStmt =
-                    $this->con->prepare("
-                        SELECT id
-                        FROM commodity_categories
-                        WHERE id = ?
-                        LIMIT 1
-                    ");
-
-                $checkStmt->execute([
-                    (int)$id
-                ]);
-
-
-                if (!$checkStmt->fetch(PDO::FETCH_ASSOC)) {
-
-                    return [
-                        'status' => 'error',
-                        'message' =>
-                            'Category not found.'
-                    ];
-                }
-            }
-
-
-            return [
-                'status' => 'success',
-                'message' =>
-                    'Category updated successfully.'
-            ];
-
-
-        } catch (PDOException $e) {
-
-            error_log(
-                'PriceMonitoringController::updateCategory() - ' .
-                $e->getMessage()
+            return $this->success(
+                'Category updated successfully.'
             );
+        } catch (PDOException $e) {
+            error_log('updateCategory: ' . $e->getMessage());
 
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Database error: Unable to update category.'
-            ];
+            return $this->error(
+                'Database error: Unable to update category.'
+            );
         }
     }
 
 
-    /* ==========================================================
-       COMMODITIES
-       ========================================================== */
+   
+
+public function deleteCategory($id)
+{
+    $id = $this->id($id);
+
+    if ($id === null) {
+        return $this->error('Invalid category ID.');
+    }
+
+    try {
+        $stmt = $this->con->prepare("
+            SELECT id
+            FROM commodity_categories
+            WHERE id = ?
+            LIMIT 1
+        ");
+
+        $stmt->execute([$id]);
+
+        if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+            return $this->error('Category not found.');
+        }
+
+        $stmt = $this->con->prepare("
+            DELETE FROM commodity_categories
+            WHERE id = ?
+        ");
+
+        $stmt->execute([$id]);
+
+        if ($stmt->rowCount() === 0) {
+            return $this->error('Category could not be deleted.');
+        }
+
+        return $this->success('Category deleted successfully.');
+
+    } catch (PDOException $e) {
+        error_log('deleteCategory: ' . $e->getMessage());
+
+        return $this->error(
+            'Database error: Unable to delete category.'
+        );
+    }
+}
+
+
+
 
     public function getCommodityList()
     {
         try {
-
-            $sql = "
+            $stmt = $this->con->prepare("
                 SELECT
                     c.id,
                     c.product_name,
@@ -1398,68 +877,42 @@ class PriceMonitoringController
                     c.agency_id,
                     a.name AS agency_name,
                     a.code AS agency_code
-
                 FROM commodities c
-
                 INNER JOIN commodity_categories cc
                     ON c.category_id = cc.id
-
                 INNER JOIN agencies a
                     ON cc.agency_id = a.id
-
                 ORDER BY c.product_name ASC
-            ";
-
-            $stmt =
-                $this->con->prepare($sql);
+            ");
 
             $stmt->execute();
 
-
-            return [
-                'status' => 'success',
-                'data' =>
-                    $stmt->fetchAll(PDO::FETCH_ASSOC)
-            ];
-
-
-        } catch (PDOException $e) {
-
-            error_log(
-                'PriceMonitoringController::getCommodityList() - ' .
-                $e->getMessage()
+            return $this->success(
+                '',
+                $stmt->fetchAll(PDO::FETCH_ASSOC)
             );
+        } catch (PDOException $e) {
+            error_log('getCommodityList: ' . $e->getMessage());
 
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Database error: ' .
-                    $e->getMessage(),
-                'data' => []
-            ];
+            return $this->error(
+                'Database error: ' . $e->getMessage(),
+                []
+            );
         }
     }
 
-
     public function getCommodityById($id)
     {
-        if (
-            $id === null ||
-            $id === '' ||
-            !is_numeric($id)
-        ) {
+        $id = $this->id($id);
 
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Invalid commodity ID.'
-            ];
+        if ($id === null) {
+            return $this->error(
+                'Invalid commodity ID.'
+            );
         }
 
-
         try {
-
-            $sql = "
+            $stmt = $this->con->prepare("
                 SELECT
                     c.id,
                     c.product_name,
@@ -1467,937 +920,418 @@ class PriceMonitoringController
                     c.agency_id,
                     c.brand_name,
                     c.unit_of_measure,
-                    c.srp
-
+                    c.srp,
+                    cc.name AS category_name,
+                    a.name AS agency_name,
+                    a.code AS agency_code
                 FROM commodities c
-
+                LEFT JOIN commodity_categories cc
+                    ON c.category_id = cc.id
+                LEFT JOIN agencies a
+                    ON c.agency_id = a.id
                 WHERE c.id = ?
-
                 LIMIT 1
-            ";
-
-
-            $stmt =
-                $this->con->prepare($sql);
+            ");
 
             $stmt->execute([
-                (int)$id
+                $id
             ]);
 
-
-            $commodity =
-                $stmt->fetch(PDO::FETCH_ASSOC);
-
+            $commodity = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$commodity) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Commodity not found.'
-                ];
+                return $this->error(
+                    'Commodity not found.'
+                );
             }
 
-
-            return [
-                'status' => 'success',
-                'data' => $commodity
-            ];
-
-
-        } catch (PDOException $e) {
-
-            error_log(
-                'PriceMonitoringController::getCommodityById() - ' .
-                $e->getMessage()
+            return $this->success(
+                '',
+                $commodity
             );
+        } catch (PDOException $e) {
+            error_log('getCommodityById: ' . $e->getMessage());
 
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Database error: ' .
-                    $e->getMessage()
-            ];
+            return $this->error(
+                'Database error: ' . $e->getMessage()
+            );
         }
     }
-
 
     public function addCommodity($data)
     {
-        error_log(
-            'PriceMonitoringController::addCommodity() DATA: ' .
-            print_r($data, true)
+        $productName = $this->input(
+            $data,
+            ['product_name']
         );
 
-
-        $product_name = trim(
-            (string)($data['product_name'] ?? '')
+        $categoryId = $this->id(
+            $this->input(
+                $data,
+                ['category_id']
+            )
         );
 
-        $category_id = trim(
-            (string)($data['category_id'] ?? '')
+        $brandName = $this->input(
+            $data,
+            ['brand_name']
         );
 
-        $brand_name = trim(
-            (string)($data['brand_name'] ?? '')
+        $unitOfMeasure = $this->input(
+            $data,
+            ['unit_of_measure']
         );
 
-        $unit_of_measure = trim(
-            (string)($data['unit_of_measure'] ?? '')
+        $srpInput = $this->input(
+            $data,
+            ['srp'],
+            null
         );
-
-
-        /*
-         * SRP is optional when adding.
-         */
-
-        $srpInput =
-            $data['srp'] ?? null;
-
-        $srp = null;
-
 
         if (
-            $product_name === '' ||
-            $category_id === '' ||
-            $unit_of_measure === ''
+            $productName === '' ||
+            $categoryId === null ||
+            $unitOfMeasure === ''
         ) {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Please complete Product Name, Category, and Unit of Measure.'
-            ];
+            return $this->error(
+                'Please complete Product Name, Category, and Unit of Measure.'
+            );
         }
 
-
-        if (!is_numeric($category_id)) {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Invalid category ID.'
-            ];
-        }
-
-
-        /*
-         * Validate optional SRP
-         */
+        $srp = $this->normalizeSrp($srpInput);
 
         if (
             $srpInput !== null &&
-            trim((string)$srpInput) !== ''
+            trim((string)$srpInput) !== '' &&
+            $srp === null
         ) {
-
-            $srpValue =
-                trim((string)$srpInput);
-
-
-            if (!is_numeric($srpValue)) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Invalid SRP value.'
-                ];
-            }
-
-
-            $srp =
-                (float)$srpValue;
-
-
-            if ($srp < 0) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'SRP cannot be negative.'
-                ];
-            }
+            return $this->error(
+                'Invalid SRP value.'
+            );
         }
 
+        if ($srp !== null && $srp < 0) {
+            return $this->error(
+                'SRP cannot be negative.'
+            );
+        }
 
         try {
-
-            /*
-             * Get agency from category
-             */
-
-            $categoryStmt =
-                $this->con->prepare("
-                    SELECT
-                        id,
-                        agency_id
-
-                    FROM commodity_categories
-
-                    WHERE id = ?
-
-                    LIMIT 1
-                ");
-
-
-            $categoryStmt->execute([
-                (int)$category_id
-            ]);
-
-
-            $category =
-                $categoryStmt->fetch(PDO::FETCH_ASSOC);
-
+            $category = $this->findCategory($categoryId);
 
             if (!$category) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Selected category was not found.'
-                ];
+                return $this->error(
+                    'Selected category was not found.'
+                );
             }
 
+            $agencyId = $this->getAgencyFromCategory(
+                $categoryId
+            );
 
-            if (
-                $category['agency_id'] === null ||
-                !is_numeric($category['agency_id'])
-            ) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'The selected category has no valid agency.'
-                ];
+            if ($agencyId === null) {
+                return $this->error(
+                    'The selected category has no valid agency.'
+                );
             }
 
-
-            $agency_id =
-                (int)$category['agency_id'];
-
-
-            /*
-             * Insert commodity
-             */
-
-            $stmt =
-                $this->con->prepare("
-                    INSERT INTO commodities
-                    (
-                        product_name,
-                        category_id,
-                        agency_id,
-                        brand_name,
-                        unit_of_measure,
-                        srp
-                    )
-
-                    VALUES
-                    (?, ?, ?, ?, ?, ?)
-                ");
-
+            $stmt = $this->con->prepare("
+                INSERT INTO commodities
+                (
+                    product_name,
+                    category_id,
+                    agency_id,
+                    brand_name,
+                    unit_of_measure,
+                    srp
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            ");
 
             $stmt->execute([
-
-                $product_name,
-
-                (int)$category_id,
-
-                $agency_id,
-
-                $brand_name,
-
-                $unit_of_measure,
-
+                $productName,
+                $categoryId,
+                $agencyId,
+                $brandName,
+                $unitOfMeasure,
                 $srp
             ]);
 
+            $id = (int)$this->con->lastInsertId();
 
-            return [
-                'status' => 'success',
-
-                'message' =>
-                    'Commodity added successfully.',
-
-                'data' => [
-                    'id' =>
-                        (int)$this->con->lastInsertId()
+            return $this->success(
+                'Commodity added successfully.',
+                [
+                    'id' => $id
                 ]
-            ];
-
-
-        } catch (PDOException $e) {
-
-            error_log(
-                'PriceMonitoringController::addCommodity() - ' .
-                $e->getMessage()
             );
+        } catch (PDOException $e) {
+            error_log('addCommodity: ' . $e->getMessage());
 
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Database error: ' .
-                    $e->getMessage()
-            ];
+            return $this->error(
+                'Database error: ' . $e->getMessage()
+            );
         }
     }
 
-
     public function updateCommodity($data)
     {
-        error_log(
-            'PriceMonitoringController::updateCommodity() DATA: ' .
-            print_r($data, true)
+        $id = $this->id(
+            $this->input(
+                $data,
+                ['id', 'commodity_id']
+            )
         );
 
-
-        $id = trim(
-            (string)($data['id'] ?? '')
+        $productName = $this->input(
+            $data,
+            ['product_name']
         );
 
-        $product_name = trim(
-            (string)($data['product_name'] ?? '')
+        $categoryId = $this->id(
+            $this->input(
+                $data,
+                ['category_id']
+            )
         );
 
-        $category_id = trim(
-            (string)($data['category_id'] ?? '')
+        $brandName = $this->input(
+            $data,
+            ['brand_name']
         );
 
-        $brand_name = trim(
-            (string)($data['brand_name'] ?? '')
+        $unitOfMeasure = $this->input(
+            $data,
+            ['unit_of_measure']
         );
 
-        $unit_of_measure = trim(
-            (string)($data['unit_of_measure'] ?? '')
+        $srpInput = $this->input(
+            $data,
+            ['srp'],
+            null
         );
 
-        $srpInput =
-            $data['srp'] ?? null;
-
-
-        /*
-         * Validation
-         */
-
-        if (
-            $id === '' ||
-            !is_numeric($id)
-        ) {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Invalid commodity ID.'
-            ];
+        if ($id === null) {
+            return $this->error(
+                'Invalid commodity ID.'
+            );
         }
 
-
-        if ($product_name === '') {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Product name is required.'
-            ];
+        if ($productName === '') {
+            return $this->error(
+                'Product name is required.'
+            );
         }
 
-
-        if (
-            $category_id === '' ||
-            !is_numeric($category_id)
-        ) {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Category is required.'
-            ];
+        if ($categoryId === null) {
+            return $this->error(
+                'Category is required.'
+            );
         }
 
-
-        if ($unit_of_measure === '') {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Unit of measure is required.'
-            ];
+        if ($unitOfMeasure === '') {
+            return $this->error(
+                'Unit of measure is required.'
+            );
         }
-
 
         try {
-
-            /*
-             * Get current commodity
-             */
-
-            $currentStmt =
-                $this->con->prepare("
-                    SELECT
-                        id,
-                        product_name,
-                        category_id,
-                        agency_id,
-                        brand_name,
-                        unit_of_measure,
-                        srp
-
-                    FROM commodities
-
-                    WHERE id = ?
-
-                    LIMIT 1
-                ");
-
-
-            $currentStmt->execute([
-                (int)$id
-            ]);
-
-
-            $current =
-                $currentStmt->fetch(PDO::FETCH_ASSOC);
-
+            $current = $this->findCommodity($id);
 
             if (!$current) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Commodity not found.'
-                ];
+                return $this->error(
+                    'Commodity not found.'
+                );
             }
 
-
-            /*
-             * Keep existing SRP if no SRP
-             * was supplied by JavaScript.
-             */
-
-            $srp =
-                $current['srp'];
-
+            $srp = $current['srp'];
 
             if (
                 $srpInput !== null &&
                 trim((string)$srpInput) !== ''
             ) {
+                $srp = $this->normalizeSrp($srpInput);
 
-                $srpValue =
-                    trim((string)$srpInput);
-
-
-                if (!is_numeric($srpValue)) {
-
-                    return [
-                        'status' => 'error',
-                        'message' =>
-                            'Invalid SRP value.'
-                    ];
+                if ($srp === null) {
+                    return $this->error(
+                        'Invalid SRP value.'
+                    );
                 }
-
-
-                $srp =
-                    (float)$srpValue;
-
 
                 if ($srp < 0) {
-
-                    return [
-                        'status' => 'error',
-                        'message' =>
-                            'SRP cannot be negative.'
-                    ];
+                    return $this->error(
+                        'SRP cannot be negative.'
+                    );
                 }
             }
 
-
-            /*
-             * Get agency from category
-             */
-
-            $categoryStmt =
-                $this->con->prepare("
-                    SELECT
-                        id,
-                        agency_id
-
-                    FROM commodity_categories
-
-                    WHERE id = ?
-
-                    LIMIT 1
-                ");
-
-
-            $categoryStmt->execute([
-                (int)$category_id
-            ]);
-
-
-            $category =
-                $categoryStmt->fetch(PDO::FETCH_ASSOC);
-
+            $category = $this->findCategory($categoryId);
 
             if (!$category) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Selected category was not found.'
-                ];
+                return $this->error(
+                    'Selected category was not found.'
+                );
             }
 
-
-            if (
-                $category['agency_id'] === null ||
-                !is_numeric($category['agency_id'])
-            ) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'The selected category has no valid agency.'
-                ];
-            }
-
-
-            $agency_id =
-                (int)$category['agency_id'];
-
-
-            /*
-             * Update commodity
-             */
-
-            $stmt =
-                $this->con->prepare("
-                    UPDATE commodities
-
-                    SET
-                        product_name = ?,
-                        category_id = ?,
-                        agency_id = ?,
-                        brand_name = ?,
-                        unit_of_measure = ?,
-                        srp = ?
-
-                    WHERE id = ?
-                ");
-
-
-            $stmt->execute([
-
-                $product_name,
-
-                (int)$category_id,
-
-                $agency_id,
-
-                $brand_name,
-
-                $unit_of_measure,
-
-                $srp,
-
-                (int)$id
-            ]);
-
-
-            /*
-             * Get updated commodity
-             */
-
-            $resultStmt =
-                $this->con->prepare("
-                    SELECT
-                        c.id,
-                        c.product_name,
-                        c.category_id,
-                        cc.name AS category_name,
-                        c.brand_name,
-                        c.unit_of_measure,
-                        c.srp,
-                        c.agency_id,
-                        a.name AS agency_name,
-                        a.code AS agency_code
-
-                    FROM commodities c
-
-                    LEFT JOIN commodity_categories cc
-                        ON c.category_id = cc.id
-
-                    LEFT JOIN agencies a
-                        ON c.agency_id = a.id
-
-                    WHERE c.id = ?
-
-                    LIMIT 1
-                ");
-
-
-            $resultStmt->execute([
-                (int)$id
-            ]);
-
-
-            $updated =
-                $resultStmt->fetch(PDO::FETCH_ASSOC);
-
-
-            if (!$updated) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Commodity was updated but could not be retrieved.'
-                ];
-            }
-
-
-            return [
-                'status' => 'success',
-
-                'message' =>
-                    'Commodity updated successfully.',
-
-                'data' => [
-
-                    'id' =>
-                        (int)$updated['id'],
-
-                    'product_name' =>
-                        $updated['product_name'],
-
-                    'category_id' =>
-                        (int)$updated['category_id'],
-
-                    'category_name' =>
-                        $updated['category_name'],
-
-                    'brand_name' =>
-                        $updated['brand_name'],
-
-                    'unit_of_measure' =>
-                        $updated['unit_of_measure'],
-
-                    'srp' =>
-                        $updated['srp'] !== null &&
-                        $updated['srp'] !== ''
-                            ? (float)$updated['srp']
-                            : null,
-
-                    'agency_id' =>
-                        $updated['agency_id'] !== null
-                            ? (int)$updated['agency_id']
-                            : null,
-
-                    'agency_name' =>
-                        $updated['agency_name'],
-
-                    'agency_code' =>
-                        $updated['agency_code']
-                ]
-            ];
-
-
-        } catch (PDOException $e) {
-
-            error_log(
-                'PriceMonitoringController::updateCommodity() - ' .
-                $e->getMessage()
+            $agencyId = $this->getAgencyFromCategory(
+                $categoryId
             );
 
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Database error: ' .
-                    $e->getMessage()
-            ];
+            if ($agencyId === null) {
+                return $this->error(
+                    'The selected category has no valid agency.'
+                );
+            }
+
+            $stmt = $this->con->prepare("
+                UPDATE commodities
+                SET
+                    product_name = ?,
+                    category_id = ?,
+                    agency_id = ?,
+                    brand_name = ?,
+                    unit_of_measure = ?,
+                    srp = ?
+                WHERE id = ?
+            ");
+
+            $stmt->execute([
+                $productName,
+                $categoryId,
+                $agencyId,
+                $brandName,
+                $unitOfMeasure,
+                $srp,
+                $id
+            ]);
+
+            return $this->getCommodityById($id);
+        } catch (PDOException $e) {
+            error_log('updateCommodity: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: ' . $e->getMessage()
+            );
         }
     }
-
-
-    /* ==========================================================
-       DELETE COMMODITY
-       ========================================================== */
 
     public function deleteCommodity($id)
     {
-        $id =
-            trim((string)($id ?? ''));
+        $id = $this->id($id);
 
-
-        if (
-            $id === '' ||
-            !is_numeric($id)
-        ) {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Invalid commodity ID.'
-            ];
+        if ($id === null) {
+            return $this->error(
+                'Invalid commodity ID.'
+            );
         }
 
-
-        $id =
-            (int)$id;
-
-
         try {
-
-            /*
-             * Check commodity exists
-             */
-
-            $checkStmt =
-                $this->con->prepare("
-                    SELECT
-                        id,
-                        product_name
-
-                    FROM commodities
-
-                    WHERE id = ?
-
-                    LIMIT 1
-                ");
-
-
-            $checkStmt->execute([
-                $id
-            ]);
-
-
-            $commodity =
-                $checkStmt->fetch(PDO::FETCH_ASSOC);
-
+            $commodity = $this->findCommodity($id);
 
             if (!$commodity) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Commodity not found.'
-                ];
+                return $this->error(
+                    'Commodity not found.'
+                );
             }
-
-
-            /*
-             * Start transaction
-             */
 
             $this->con->beginTransaction();
 
+            $stmt = $this->con->prepare("
+                DELETE FROM price_logs
+                WHERE commodity_id = ?
+            ");
 
-            /*
-             * Delete related price logs first
-             */
-
-            $deletePricesStmt =
-                $this->con->prepare("
-                    DELETE FROM price_logs
-                    WHERE commodity_id = ?
-                ");
-
-
-            $deletePricesStmt->execute([
+            $stmt->execute([
                 $id
             ]);
 
+            $stmt = $this->con->prepare("
+                DELETE FROM commodities
+                WHERE id = ?
+            ");
 
-            /*
-             * Delete commodity
-             */
-
-            $deleteCommodityStmt =
-                $this->con->prepare("
-                    DELETE FROM commodities
-                    WHERE id = ?
-                ");
-
-
-            $deleteCommodityStmt->execute([
+            $stmt->execute([
                 $id
             ]);
 
-
-            /*
-             * Verify delete
-             */
-
-            if (
-                $deleteCommodityStmt->rowCount() === 0
-            ) {
-
+            if ($stmt->rowCount() === 0) {
                 $this->con->rollBack();
 
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Commodity could not be deleted.'
-                ];
+                return $this->error(
+                    'Commodity could not be deleted.'
+                );
             }
-
-
-            /*
-             * Commit
-             */
 
             $this->con->commit();
 
-
-            return [
-                'status' => 'success',
-                'message' =>
-                    'Commodity deleted successfully.'
-            ];
-
-
+            return $this->success(
+                'Commodity deleted successfully.'
+            );
         } catch (PDOException $e) {
-
-            if (
-                $this->con->inTransaction()
-            ) {
-
+            if ($this->con->inTransaction()) {
                 $this->con->rollBack();
             }
 
+            error_log('deleteCommodity: ' . $e->getMessage());
 
-            error_log(
-                'PriceMonitoringController::deleteCommodity() - ' .
-                $e->getMessage()
+            return $this->error(
+                'Database error: ' . $e->getMessage()
             );
-
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Database error: ' .
-                    $e->getMessage()
-            ];
         }
     }
 
-
-    /* ==========================================================
-       DELETE PRICE
-       ========================================================== */
-
     public function deletePrice($id)
     {
-        $id =
-            trim((string)($id ?? ''));
+        $id = $this->id($id);
 
-
-        if (
-            $id === '' ||
-            !is_numeric($id)
-        ) {
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Invalid price record ID.'
-            ];
+        if ($id === null) {
+            return $this->error(
+                'Invalid price record ID.'
+            );
         }
 
-
-        $id =
-            (int)$id;
-
-
         try {
+            $stmt = $this->con->prepare("
+                SELECT id
+                FROM price_logs
+                WHERE id = ?
+                LIMIT 1
+            ");
 
-            /*
-             * Check price record
-             */
-
-            $checkStmt =
-                $this->con->prepare("
-                    SELECT
-                        id
-
-                    FROM price_logs
-
-                    WHERE id = ?
-
-                    LIMIT 1
-                ");
-
-
-            $checkStmt->execute([
+            $stmt->execute([
                 $id
             ]);
 
-
-            $record =
-                $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-
-            if (!$record) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Price record not found.'
-                ];
+            if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                return $this->error(
+                    'Price record not found.'
+                );
             }
 
+            $stmt = $this->con->prepare("
+                DELETE FROM price_logs
+                WHERE id = ?
+            ");
 
-            /*
-             * Delete
-             */
-
-            $deleteStmt =
-                $this->con->prepare("
-                    DELETE FROM price_logs
-                    WHERE id = ?
-                ");
-
-
-            $deleteStmt->execute([
+            $stmt->execute([
                 $id
             ]);
 
-
-            /*
-             * Verify delete
-             */
-
-            if (
-                $deleteStmt->rowCount() === 0
-            ) {
-
-                return [
-                    'status' => 'error',
-                    'message' =>
-                        'Price record could not be deleted.'
-                ];
+            if ($stmt->rowCount() === 0) {
+                return $this->error(
+                    'Price record could not be deleted.'
+                );
             }
 
-
-            return [
-                'status' => 'success',
-                'message' =>
-                    'Price record deleted successfully.'
-            ];
-
-
-        } catch (PDOException $e) {
-
-            error_log(
-                'PriceMonitoringController::deletePrice() - ' .
-                $e->getMessage()
+            return $this->success(
+                'Price record deleted successfully.'
             );
+        } catch (PDOException $e) {
+            error_log('deletePrice: ' . $e->getMessage());
 
-
-            return [
-                'status' => 'error',
-                'message' =>
-                    'Database error: ' .
-                    $e->getMessage()
-            ];
+            return $this->error(
+                'Database error: ' . $e->getMessage()
+            );
         }
     }
 }
