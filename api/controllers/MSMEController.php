@@ -228,7 +228,7 @@ class MSMEController
         $emp_street = trim($data['emp_street'] ?? '');
         $emp_subdivision = trim($data['emp_subdivision'] ?? '');
         $emp_upblb_num = trim($data['emp_upblb_num'] ?? '');
-        $emp_address_id = trim($data['emp_address_id']);
+        $emp_address_id = trim($data['emp_address_id'] ?? '');
         if ($emp_address_id === '') {
             $emp_address_id = uuidV7('addr-');
         }
@@ -286,6 +286,10 @@ class MSMEController
             return ['status' => 'error', 'message' => 'Business Name already taken.'];
         }
         ;
+
+        if (empty($emp_full_name) || empty($juri_name) || empty($juri_entity_no) || empty($emp_entity_no)) {
+            return ['status' => 'error', 'message' => "Required fields can't be empty."];
+        }
 
 
         $sqlEmpAddress = "INSERT INTO addresses
