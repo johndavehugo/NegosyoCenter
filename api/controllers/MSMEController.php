@@ -228,7 +228,7 @@ class MSMEController
         $emp_street = trim($data['emp_street'] ?? '');
         $emp_subdivision = trim($data['emp_subdivision'] ?? '');
         $emp_upblb_num = trim($data['emp_upblb_num'] ?? '');
-        $emp_address_id = trim($data['emp_address_id']);
+        $emp_address_id = trim($data['emp_address_id'] ?? '');
         if ($emp_address_id === '') {
             $emp_address_id = uuidV7('addr-');
         }
@@ -286,6 +286,10 @@ class MSMEController
             return ['status' => 'error', 'message' => 'Business Name already taken.'];
         }
         ;
+
+        if (empty($emp_full_name) || empty($juri_name) || empty($juri_entity_no) || empty($emp_entity_no)) {
+            return ['status' => 'error', 'message' => "Required fields can't be empty."];
+        }
 
 
         $sqlEmpAddress = "INSERT INTO addresses
@@ -446,6 +450,7 @@ class MSMEController
     {
         return match ($action) {
             'renew' => $this->renewBusiness($data),
+            'status' => $this->changeBusinessStatus($data),
             default => ['status' => 'error', 'message' => "Unknown PATCH action for /business."],
         };
     }
@@ -463,6 +468,31 @@ class MSMEController
 
             if ($renew->rowCount() > 0) {
                 return ['status' => 'success', 'message' => 'Business renewed successfully.'];
+            } else {
+                return ['status' => 'error', 'message' => 'No changes were made or business not found.'];
+            }
+        } catch (PDOException $e) {
+            return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+
+    private function changeBusinessStatus(array $data)
+    {
+        $juri_entity_no = trim($data['juri_entity_no'] ?? '');
+        $juri_bus_status = trim($data['juri_bus_status'] ?? '');
+
+        $sqlChangeStatus = "UPDATE juridicals SET bus_status = ? WHERE entity_no = ?";
+
+        if (empty($juri_bus_status)) {
+            return ['status' => 'error', 'message' => "Please select a status."];
+        }
+
+        try {
+            $changeStatus = $this->con->prepare($sqlChangeStatus);
+            $changeStatus->execute([$juri_bus_status, $juri_entity_no]);
+
+            if ($changeStatus->rowCount() > 0) {
+                return ['status' => 'success', 'message' => 'Business status changed successfully.'];
             } else {
                 return ['status' => 'error', 'message' => 'No changes were made or business not found.'];
             }
