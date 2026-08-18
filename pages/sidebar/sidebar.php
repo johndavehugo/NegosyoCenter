@@ -23,7 +23,7 @@
 
         <li id="statistics_sidebar" class="nav-item ">
           <a href="../calamity/calamity.php" class="nav-link sidebar-statistics cursor-e">
-            <i class="nav-icon fas fa-xlg fa-chart-line"></i>
+            <i class="nav-icon fa-brands fa-watchman-monitoring"></i>
             <p class="pt-2">
               CALAMITY MONITORING
             </p>
