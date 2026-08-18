@@ -9,7 +9,6 @@ const agencies = {
 function loadPrices() {
     const agencyId = $('#price_agency').val();
 
-
     const base = window.location.pathname.split('/pages/')[0];
     const url = window.location.origin +
         base +
@@ -67,17 +66,17 @@ function loadCategories(data) {
 function updateSummaryCards(data) {
     const monitored = data.length;
 
-    const compliant = data.filter(
-        row => row.status === 'WITHIN_SRP'
+    const active = data.filter(
+        row => row.status === 'ACTIVE'
     ).length;
 
-    const overpriced = data.filter(
-        row => row.status === 'OVERPRICED'
+    const inactive = data.filter(
+        row => row.status === 'INACTIVE'
     ).length;
 
     $('#total_monitored').text(monitored);
-    $('#total_compliant').text(compliant);
-    $('#total_overpriced').text(overpriced);
+    $('#total_active').text(active);
+    $('#total_inactive').text(inactive);
 }
 
 $(document).ready(function () {
@@ -96,101 +95,80 @@ $(document).ready(function () {
         responsive: true,
         autoWidth: false,
         columns: [
-    { data: 'product_name', defaultContent: '-' },
-    { data: 'category_name', defaultContent: '-' },
+            { data: 'product_name', defaultContent: '-' },
+            { data: 'category_name', defaultContent: '-' },
+            {
+                data: null,
+                render: function (data, type, row) {
+                    var brand = row.brand_name || '';
+                    var unit = row.unit_of_measure || '';
 
+                    if (brand && unit) {
+                        return brand + ' / ' + unit;
+                    }
 
-    {
-        data: null,
-        render: function (data, type, row) {
-            var brand = row.brand_name || '';
-            var unit = row.unit_of_measure || '';
+                    return brand || unit || '-';
+                }
+            },
+            {
+                data: null,
+                render: function (data, type, row) {
+                    return row.agency_name || row.agency_code || '-';
+                }
+            },
+            {
+                data: 'srp',
+                render: function (data) {
+                    return data
+                        ? '₱' + Number(data).toLocaleString('en-PH', {
+                            minimumFractionDigits: 2
+                        })
+                        : '-';
+                }
+            },
+            {
+                data: 'status',
+                render: function (data) {
+                    if (data === 'ACTIVE')
+                        return '<span class="badge badge-success">ACTIVE</span>';
 
-            if (brand && unit) {
-                return brand + ' / ' + unit;
+                    if (data === 'INACTIVE')
+                        return '<span class="badge badge-secondary">INACTIVE</span>';
+
+                    return '<span class="badge badge-secondary">INACTIVE</span>';
+                }
+            },
+            {
+                data: null,
+                orderable: false,
+                render: function (data, type, row) {
+                    if (!row.id) {
+                        return `
+                            <button class="btn btn-success btn-sm btn-add-price"
+                                    data-id="${row.commodity_id}">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        `;
+                    }
+
+                    return `
+                        <button class="btn btn-primary btn-sm btn-edit-price"
+                                data-id="${row.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    `;
+                }
             }
-
-            return brand || unit || '-';
-        }
-    },
-
-
-    {
-        data: null,
-        render: function (data, type, row) {
-            return row.agency_name || row.agency_code || '-';
-        }
-    },
-
-    {
-        data: 'srp',
-        render: function (data) {
-            return data
-                ? '₱' + Number(data).toLocaleString('en-PH', {
-                    minimumFractionDigits: 2
-                })
-                : '-';
-        }
-    },
-
-    {
-        data: 'prevailing_price',
-        render: function (data) {
-            return data
-                ? '₱' + Number(data).toLocaleString('en-PH', {
-                    minimumFractionDigits: 2
-                })
-                : '-';
-        }
-    },
-
-    {
-        data: 'status',
-        render: function (data) {
-            if (data === 'WITHIN_SRP')
-                return '<span class="badge badge-success">WITHIN SRP</span>';
-
-            if (data === 'OVERPRICED')
-                return '<span class="badge badge-danger">OVERPRICED</span>';
-
-            if (data === 'BELOW_SRP')
-                return '<span class="badge badge-warning">BELOW SRP</span>';
-
-            return '<span class="badge badge-secondary">NO PRICE YET</span>';
-        }
-    },
-
-    {
-        data: null,
-        orderable: false,
-        render: function (data, type, row) {
-            if (!row.id) {
-                return `
-                    <button class="btn btn-success btn-sm btn-add-price"
-                            data-id="${row.commodity_id}">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                `;
-            }
-
-            return `
-                <button class="btn btn-primary btn-sm btn-edit-price"
-                        data-id="${row.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-            `;
-        }
-    }
-]
+        ]
     });
 
-function updateAgencyUI() {
-    const agency = agencies[$('#price_agency').val()] || 'DOE';
+    function updateAgencyUI() {
+        const agency = agencies[$('#price_agency').val()] || 'DOE';
 
-    $('#agency_title').text(agency + ' Price Monitoring');
-    $('#agency_subtitle').text(agency + ' Price Monitoring System');
-    $('#selected_agency_name').text(agency);
-}
+        $('#agency_title').text(agency + ' Price Monitoring');
+        $('#agency_subtitle').text(agency + ' Price Monitoring System');
+        $('#selected_agency_name').text(agency);
+    }
 
     $('#price_agency').on('change', function () {
         updateAgencyUI();
@@ -207,9 +185,8 @@ function updateAgencyUI() {
     updateAgencyUI();
     loadPrices();
 
-
     // =====================================================
-    // ADD PRICE
+    // ADD PRICE / INITIAL STATUS
     // =====================================================
     $(document).on('click', '.btn-add-price', function () {
         const commodityId = $(this).data('id');
@@ -217,37 +194,35 @@ function updateAgencyUI() {
         $('#priceForm')[0].reset();
         $('#priceId').val('');
         $('#priceCommodityId').val(commodityId);
+        $('#priceStatus').val('ACTIVE');
 
-        $('#srpFieldGroup').hide(); 
-
-        $('#priceModalLabel').text('Add Price');
+        $('#priceModalLabel').text('Add Price / Set Status');
         $('#priceModal').appendTo('body').modal('show');
     });
 
-
     // =====================================================
-    // EDIT PRICE
+    // EDIT PRICE & STATUS
     // =====================================================
     $(document).on('click', '.btn-edit-price', function () {
-        const row = priceTable.row($(this).closest('tr')).data();
+    const row = priceTable.row($(this).closest('tr')).data();
 
-        if (!row || !row.id) {
-            Swal.fire('Error', 'Unable to retrieve Price ID.', 'error');
-            return;
-        }
+    if (!row) {
+        Swal.fire('Error', 'Unable to retrieve row data.', 'error');
+        return;
+    }
 
-        $('#priceForm')[0].reset();
-        $('#priceId').val(row.id);
-        $('#priceCommodityId').val(row.commodity_id || '');
-        $('#priceSrp').val(row.srp || '');
-        $('#pricePrevailing').val(row.prevailing_price || '');
+    $('#priceForm')[0].reset();
+    $('#priceId').val(row.id || 0);
+    $('#priceCommodityId').val(row.commodity_id || '');
+    $('#priceSrp').val(row.srp || '');
 
-        $('#srpFieldGroup').show();
+    // Select correct status in dropdown
+    const currentStatus = String(row.status || 'ACTIVE').toUpperCase();
+    $('#priceStatus').val(currentStatus);
 
-        $('#priceModalLabel').text('Edit Price');
-        $('#priceModal').appendTo('body').modal('show');
-    });
-
+    $('#priceModalLabel').text('Edit SRP & Status');
+    $('#priceModal').appendTo('body').modal('show');
+});
 
     // Reset form when modal is closed
     $('#priceModal').on('hidden.bs.modal', function () {
@@ -256,33 +231,24 @@ function updateAgencyUI() {
 
 });
 
-
 // =========================================================
-// SAVE / UPDATE PRICE
+// SAVE / UPDATE PRICE & STATUS
 // =========================================================
 function savePrice() {
     const id = $('#priceId').val();
-    const isEditing = !!id;
+const isEditing = id !== '' && id !== null && id !== '0' && id !== 0;
 
-    const data = {
-        commodity_id: $('#priceCommodityId').val(),
-        agency_id: $('#price_agency').val(),
-        prevailing_price: $('#pricePrevailing').val()
-    };
+const data = {
+    commodity_id: $('#priceCommodityId').val(),
+    agency_id: $('#price_agency').val(),
+    monitored_by_agency_id: $('#price_agency').val(),
+    srp: $('#priceSrp').val(),
+    status: $('#priceStatus').val()
+};
 
-    if ($('#srpFieldGroup').is(':visible')) {
-        data.srp = $('#priceSrp').val();
-    }
-
-    if (!data.commodity_id || !data.prevailing_price) {
-        Swal.fire('Warning', 'Please fill in all required fields.', 'warning');
-        return;
-    }
-
-    if (isEditing) {
-        data.id = id;
-    }
-
+if (isEditing) {
+    data.id = id;
+}
     fetch('../../api/routes.php/price', {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -291,9 +257,15 @@ function savePrice() {
     .then(r => r.json())
     .then(res => {
         if (res.status === 'success') {
-            Swal.fire('Success!', res.message || 'Price saved successfully.', 'success');
             $('#priceModal').modal('hide');
-            loadPrices();
+            Swal.fire('Success!', res.message || 'Price record updated successfully.', 'success').then(() => {
+                // Call loadPrices directly instead of ajax.reload
+                if (typeof loadPrices === 'function') {
+                    loadPrices();
+                } else {
+                    location.reload();
+                }
+            });
         } else {
             Swal.fire('Error', res.message || 'Unable to save price.', 'error');
         }

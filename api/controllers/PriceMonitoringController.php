@@ -135,25 +135,10 @@ class PriceMonitoringController
         return (int)$category['agency_id'];
     }
 
-    private function calculateStatus($price, $srp)
+    private function normalizeStatus($status)
     {
-        if ($price === null || $price === '') {
-            return 'NO_PRICE_YET';
-        }
-
-        if ($srp === null || $srp <= 0) {
-            return 'NO_SRP';
-        }
-
-        if ($price > $srp) {
-            return 'OVERPRICED';
-        }
-
-        if ($price < $srp) {
-            return 'BELOW_SRP';
-        }
-
-        return 'WITHIN_SRP';
+        $status = strtoupper(trim((string)$status));
+        return in_array($status, ['ACTIVE', 'INACTIVE']) ? $status : 'ACTIVE';
     }
 
     private function normalizeSrp($value)
@@ -174,7 +159,6 @@ class PriceMonitoringController
                 p.id,
                 p.commodity_id,
                 p.monitored_by_agency_id,
-                p.prevailing_price,
                 p.status,
                 p.monitored_at,
                 c.product_name,
@@ -222,10 +206,7 @@ class PriceMonitoringController
             'srp' => $row['srp'] !== null && $row['srp'] !== ''
                 ? (float)$row['srp']
                 : null,
-            'prevailing_price' => $row['prevailing_price'] !== null
-                ? (float)$row['prevailing_price']
-                : null,
-            'status' => $row['status'],
+            'status' => strtoupper((string)($row['status'] ?? 'ACTIVE')),
             'monitored_at' => $row['monitored_at'],
             'agency_id' => $row['agency_id'] !== null
                 ? (int)$row['agency_id']
@@ -268,23 +249,16 @@ class PriceMonitoringController
         try {
             $stmt = $this->con->prepare("
                 SELECT
-                    p.id,
+                    COALESCE(p.id, 0) AS id,
                     c.id AS commodity_id,
                     c.product_name,
                     cc.name AS category_name,
                     c.brand_name,
                     c.unit_of_measure,
                     c.srp,
-                    p.prevailing_price,
-                    CASE
-                        WHEN p.prevailing_price IS NULL THEN 'NO_PRICE_YET'
-                        WHEN c.srp IS NULL OR c.srp <= 0 THEN 'NO_SRP'
-                        WHEN p.prevailing_price > c.srp THEN 'OVERPRICED'
-                        WHEN p.prevailing_price < c.srp THEN 'BELOW_SRP'
-                        ELSE 'WITHIN_SRP'
-                    END AS status,
+                    UPPER(COALESCE(p.status, 'ACTIVE')) AS status,
                     p.monitored_at,
-                    p.monitored_by_agency_id,
+                    cc.agency_id AS monitored_by_agency_id,
                     a.code AS agency_code,
                     a.name AS agency_name
                 FROM commodities c
@@ -295,8 +269,7 @@ class PriceMonitoringController
                         SELECT pl.id
                         FROM price_logs pl
                         WHERE pl.commodity_id = c.id
-                        AND pl.monitored_by_agency_id = ?
-                        ORDER BY pl.monitored_at DESC, pl.id DESC
+                        ORDER BY pl.id DESC
                         LIMIT 1
                     )
                 LEFT JOIN agencies a
@@ -305,10 +278,7 @@ class PriceMonitoringController
                 ORDER BY c.product_name ASC
             ");
 
-            $stmt->execute([
-                $agencyId,
-                $agencyId
-            ]);
+            $stmt->execute([$agencyId]);
 
             return $this->success('', $stmt->fetchAll(PDO::FETCH_ASSOC));
         } catch (PDOException $e) {
@@ -320,7 +290,6 @@ class PriceMonitoringController
             );
         }
     }
-
     public function getCommodities($agencyId = null)
     {
         try {
@@ -409,10 +378,8 @@ class PriceMonitoringController
             )
         );
 
-        $price = $this->input(
-            $data,
-            ['prevailing_price']
-        );
+        $srpInput = $this->input($data, ['srp']);
+        $statusInput = $this->input($data, ['status'], 'ACTIVE');
 
         if ($commodityId === null || $agencyId === null) {
             return $this->error(
@@ -420,13 +387,9 @@ class PriceMonitoringController
             );
         }
 
-        $priceError = $this->validatePrice(
-            $price,
-            'Prevailing price'
-        );
-
-        if ($priceError) {
-            return $priceError;
+        $srpError = $this->validatePrice($srpInput, 'SRP');
+        if ($srpError) {
+            return $srpError;
         }
 
         try {
@@ -447,30 +410,38 @@ class PriceMonitoringController
                 );
             }
 
-            $price = (float)$price;
-            $srp = $this->normalizeSrp($commodity['srp']);
-            $status = $this->calculateStatus($price, $srp);
+            $srp = (float)$srpInput;
+            $status = $this->normalizeStatus($statusInput);
+
+            $this->con->beginTransaction();
+
+            $stmtSrp = $this->con->prepare("
+                UPDATE commodities
+                SET srp = ?
+                WHERE id = ?
+            ");
+            $stmtSrp->execute([$srp, $commodityId]);
 
             $stmt = $this->con->prepare("
                 INSERT INTO price_logs
                 (
                     commodity_id,
                     monitored_by_agency_id,
-                    prevailing_price,
                     status,
                     monitored_at
                 )
-                VALUES (?, ?, ?, ?, NOW())
+                VALUES (?, ?, ?, NOW())
             ");
 
             $stmt->execute([
                 $commodityId,
                 $agencyId,
-                $price,
                 $status
             ]);
 
             $id = (int)$this->con->lastInsertId();
+
+            $this->con->commit();
 
             return $this->success(
                 'Price record has been added.',
@@ -479,11 +450,14 @@ class PriceMonitoringController
                     'commodity_id' => $commodityId,
                     'monitored_by_agency_id' => $agencyId,
                     'srp' => $srp,
-                    'prevailing_price' => $price,
                     'status' => $status
                 ]
             );
         } catch (PDOException $e) {
+            if ($this->con->inTransaction()) {
+                $this->con->rollBack();
+            }
+
             error_log('addPrice: ' . $e->getMessage());
 
             return $this->error(
@@ -492,7 +466,7 @@ class PriceMonitoringController
         }
     }
 
-    public function updatePrice(array $data)
+   public function updatePrice(array $data)
     {
         $id = $this->id(
             $this->input($data, ['id'])
@@ -509,36 +483,18 @@ class PriceMonitoringController
             )
         );
 
-        $price = $this->input(
-            $data,
-            ['prevailing_price']
-        );
-
         $srpInput = $this->input(
             $data,
             ['srp', 'srp_price'],
             null
         );
 
-        if ($id === null) {
+        $statusInput = $this->input($data, ['status'], 'ACTIVE');
+
+        if ($commodityId === null) {
             return $this->error(
-                'Missing or invalid record ID for update.'
+                'Commodity ID is required for update.'
             );
-        }
-
-        if ($commodityId === null || $agencyId === null) {
-            return $this->error(
-                'Commodity and agency are required for update.'
-            );
-        }
-
-        $priceError = $this->validatePrice(
-            $price,
-            'Prevailing price'
-        );
-
-        if ($priceError) {
-            return $priceError;
         }
 
         $srpError = $this->validatePrice(
@@ -551,22 +507,6 @@ class PriceMonitoringController
         }
 
         try {
-            $existing = $this->getPriceRecord($id);
-
-            if (!$existing) {
-                return $this->error(
-                    'Price record not found.'
-                );
-            }
-
-            if (
-                (int)$existing['monitored_by_agency_id'] !== $agencyId
-            ) {
-                return $this->error(
-                    'You cannot update a price record belonging to another agency.'
-                );
-            }
-
             $commodity = $this->findCommodity($commodityId);
 
             if (!$commodity) {
@@ -575,21 +515,16 @@ class PriceMonitoringController
                 );
             }
 
-            if (
-                $commodity['category_agency_id'] === null ||
-                (int)$commodity['category_agency_id'] !== $agencyId
-            ) {
-                return $this->error(
-                    'The selected commodity does not belong to the selected agency.'
-                );
+            if ($agencyId === null) {
+                $agencyId = (int)($commodity['agency_id'] ?? $commodity['category_agency_id']);
             }
 
-            $price = (float)$price;
             $srp = (float)$srpInput;
-            $status = $this->calculateStatus($price, $srp);
+            $status = $this->normalizeStatus($statusInput);
 
             $this->con->beginTransaction();
 
+            // 1. Update SRP in commodities table
             $stmt = $this->con->prepare("
                 UPDATE commodities
                 SET srp = ?
@@ -601,34 +536,58 @@ class PriceMonitoringController
                 $commodityId
             ]);
 
-            $stmt = $this->con->prepare("
-                UPDATE price_logs
-                SET
-                    commodity_id = ?,
-                    monitored_by_agency_id = ?,
-                    prevailing_price = ?,
-                    status = ?,
-                    monitored_at = NOW()
-                WHERE id = ?
+            // 2. Check if a price log record exists for this commodity
+            $checkStmt = $this->con->prepare("
+                SELECT id 
+                FROM price_logs 
+                WHERE commodity_id = ? 
+                ORDER BY id DESC 
+                LIMIT 1
             ");
+            $checkStmt->execute([$commodityId]);
+            $existingLog = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
-            $stmt->execute([
-                $commodityId,
-                $agencyId,
-                $price,
-                $status,
-                $id
-            ]);
+            if ($existingLog) {
+                // Update existing log
+                $stmt = $this->con->prepare("
+                    UPDATE price_logs
+                    SET
+                        monitored_by_agency_id = ?,
+                        status = ?,
+                        monitored_at = NOW()
+                    WHERE id = ?
+                ");
+
+                $stmt->execute([
+                    $agencyId,
+                    $status,
+                    $existingLog['id']
+                ]);
+
+                $logId = (int)$existingLog['id'];
+            } else {
+                // Insert a new price log if none exists yet
+                $stmt = $this->con->prepare("
+                    INSERT INTO price_logs (
+                        commodity_id,
+                        monitored_by_agency_id,
+                        status,
+                        monitored_at
+                    ) VALUES (?, ?, ?, NOW())
+                ");
+
+                $stmt->execute([
+                    $commodityId,
+                    $agencyId,
+                    $status
+                ]);
+
+                $logId = (int)$this->con->lastInsertId();
+            }
 
             $this->con->commit();
 
-            $updated = $this->getPriceRecord($id);
-
-            if (!$updated) {
-                return $this->error(
-                    'Price was updated but could not be retrieved.'
-                );
-            }
+            $updated = $this->getPriceRecord($logId);
 
             return $this->success(
                 'Price record and SRP updated successfully.',
@@ -647,7 +606,7 @@ class PriceMonitoringController
         }
     }
 
-        public function getCategories()
+    public function getCategories()
     {
         try {
             $stmt = $this->con->prepare("
@@ -812,55 +771,49 @@ class PriceMonitoringController
         }
     }
 
+    public function deleteCategory($id)
+    {
+        $id = $this->id($id);
 
-   
-
-public function deleteCategory($id)
-{
-    $id = $this->id($id);
-
-    if ($id === null) {
-        return $this->error('Invalid category ID.');
-    }
-
-    try {
-        $stmt = $this->con->prepare("
-            SELECT id
-            FROM commodity_categories
-            WHERE id = ?
-            LIMIT 1
-        ");
-
-        $stmt->execute([$id]);
-
-        if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
-            return $this->error('Category not found.');
+        if ($id === null) {
+            return $this->error('Invalid category ID.');
         }
 
-        $stmt = $this->con->prepare("
-            DELETE FROM commodity_categories
-            WHERE id = ?
-        ");
+        try {
+            $stmt = $this->con->prepare("
+                SELECT id
+                FROM commodity_categories
+                WHERE id = ?
+                LIMIT 1
+            ");
 
-        $stmt->execute([$id]);
+            $stmt->execute([$id]);
 
-        if ($stmt->rowCount() === 0) {
-            return $this->error('Category could not be deleted.');
+            if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                return $this->error('Category not found.');
+            }
+
+            $stmt = $this->con->prepare("
+                DELETE FROM commodity_categories
+                WHERE id = ?
+            ");
+
+            $stmt->execute([$id]);
+
+            if ($stmt->rowCount() === 0) {
+                return $this->error('Category could not be deleted.');
+            }
+
+            return $this->success('Category deleted successfully.');
+
+        } catch (PDOException $e) {
+            error_log('deleteCategory: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: Unable to delete category.'
+            );
         }
-
-        return $this->success('Category deleted successfully.');
-
-    } catch (PDOException $e) {
-        error_log('deleteCategory: ' . $e->getMessage());
-
-        return $this->error(
-            'Database error: Unable to delete category.'
-        );
     }
-}
-
-
-
 
     public function getCommodityList()
     {

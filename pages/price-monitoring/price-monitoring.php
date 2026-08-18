@@ -145,7 +145,7 @@
 
 <div class="wrapper">
 
-    <!-- Navbar -->
+    
     <nav class="main-header navbar navbar-expand navbar-dark sticky-top">
         <ul class="navbar-nav">
             <li class="nav-item">
@@ -156,7 +156,7 @@
         </ul>
     </nav>
 
-    <!-- DO NOT CHANGE SIDEBAR -->
+    
     <?php include '../../pages/sidebar/sidebar.php'; ?>
 
     <!-- Content -->
@@ -183,7 +183,7 @@
                     </div>
                 </div>
 
-                <!-- Summary Cards -->
+                
                 <div class="row">
 
                     <div class="col-md-3 mb-3">
@@ -204,8 +204,8 @@
                                 <i class="fas fa-check-circle"></i>
                             </div>
                             <div>
-                                <p class="stat-label">Compliant Logs</p>
-                                <p class="stat-value" id="total_compliant">0</p>
+                                <p class="stat-label">Active Items</p>
+                                <p class="stat-value" id="total_active">0</p>
                             </div>
                         </div>
                     </div>
@@ -213,11 +213,11 @@
                     <div class="col-md-3 mb-3">
                         <div class="stat-card">
                             <div class="stat-icon icon-red">
-                                <i class="fas fa-exclamation-triangle"></i>
+                                <i class="fas fa-times-circle"></i>
                             </div>
                             <div>
-                                <p class="stat-label">Overpriced Alerts</p>
-                                <p class="stat-value" id="total_overpriced">0</p>
+                                <p class="stat-label">Inactive Items</p>
+                                <p class="stat-value" id="total_inactive">0</p>
                             </div>
                         </div>
                     </div>
@@ -236,7 +236,7 @@
 
                 </div>
 
-                <!-- Main Monitoring Card -->
+                
                 <div class="card monitoring-card">
 
                     <div class="card-header">
@@ -248,7 +248,7 @@
 
                     <div class="card-body">
 
-                        <!-- Filters -->
+                        
                         <div class="row mb-3">
 
                             <div class="col-md-4">
@@ -277,7 +277,7 @@
 
                         </div>
 
-                        <!-- Table -->
+                        
                         <div class="table-responsive">
 
                             <table id="tblPriceMonitoring"
@@ -290,7 +290,6 @@
                                         <th>Brand / Unit</th>
                                         <th>Agency</th>
                                         <th>SRP (₱)</th>
-                                        <th>Prevailing Price (₱)</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
@@ -310,7 +309,7 @@
 
     </div>
 
-    <!-- Footer -->
+    
     <footer class="main-footer">
 
         <div class="float-right d-none d-sm-inline">
@@ -328,12 +327,12 @@
 
 </div>
 
-<!-- Price Add/Edit Modal -->
+
 <div class="modal fade" id="priceModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="priceModalLabel">Add Price</h5>
+                <h5 class="modal-title" id="priceModalLabel">Edit Product Price & Status</h5>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
@@ -344,14 +343,17 @@
                     <input type="hidden" id="priceId">
                     <input type="hidden" id="priceCommodityId">
 
-                    <div class="form-group" id="srpFieldGroup">
-                        <label for="priceSrp">SRP</label>
-                        <input type="number" step="0.01" class="form-control" id="priceSrp">
+                    <div class="form-group">
+                        <label for="priceSrp">SRP (₱)</label>
+                        <input type="number" step="0.01" class="form-control" id="priceSrp" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="pricePrevailing">Prevailing Price</label>
-                        <input type="number" step="0.01" class="form-control" id="pricePrevailing" required>
+                        <label for="priceStatus">Status</label>
+                        <select class="form-control" id="priceStatus" required>
+                            <option value="ACTIVE">Active</option>
+                            <option value="INACTIVE">Inactive</option>
+                        </select>
                     </div>
                 </div>
 
@@ -375,7 +377,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>
 
-<!-- ONE JS FILE FOR PRICE MONITORING -->
+
 <script src="../../scripts/price-monitoring/price-monitoring.js"></script>
 
 </body>
