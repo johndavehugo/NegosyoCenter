@@ -4,10 +4,30 @@ function fillStatusModal(id) {
         .then(data => {
             if (data.status === 'success') {
                 const business = data.data;
-                $('#statusBusName').val(business.juridical.name);
-                $('#statusBusEntityNo').val(business.juridical.entity_no);
-                $('#statusCurStatus').val(business.juridical.business_status);
-                $('#statusNewStatus').val('');
+                const name     = business.juridical.name          || '—';
+                const entityNo = business.juridical.entity_no     || '—';
+                const status   = (business.juridical.business_status || '—').toUpperCase();
+
+                // Populate hidden inputs (used by changeBusinessStatus)
+                $('#statusBusName').val(name);
+                $('#statusBusEntityNo').val(entityNo);
+                $('#statusCurStatus').val(status);
+
+                // Populate display elements immediately — no need to wait for shown.bs.modal
+                $('#statusBusNameDisplay').text(name);
+                $('#statusBusEntityNoDisplay').text(entityNo);
+
+                // Render current status badge
+                var badgeCls = status === 'ACTIVE'
+                    ? 'badge badge-pill msme-badge-status-active'
+                    : 'badge badge-pill msme-badge-status-inactive';
+                $('#statusCurStatusBadge').html(
+                    '<span class="' + badgeCls + '">' + status + '</span>'
+                );
+
+                // Reset radio selection
+                $('input[name="statusNewStatus"]').prop('checked', false);
+
                 $('#statusBusinessModal').modal('show');
             } else {
                 alert(data.message);
@@ -22,7 +42,7 @@ function fillStatusModal(id) {
 function changeBusinessStatus() {
     const data = {
         juri_entity_no: $('#statusBusEntityNo').val(),
-        juri_bus_status: $('#statusNewStatus').val(),
+        juri_bus_status: $('input[name="statusNewStatus"]:checked').val() || '',
     };
 
     fetch('../../api/routes.php/business/status', {
