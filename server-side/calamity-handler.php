@@ -39,13 +39,14 @@ if ($action === 'affected') {
     $orderColumn = intval($_GET['order'][0]['column'] ?? 0);
     $orderDir = $_GET['order'][0]['dir'] ?? 'asc';
 
-    $columns = ['j.name', 'j.entity_no', 'CONCAT(e.first_name, " ", e.middle_name, " ", e.last_name)', 'c.declaration_date', 'ci.nature_of_damage', 'ci.estimated_cost_of_damages', 'ci.status'];
+    $columns = ['j.name', 'j.entity_no', 'e.full_name', 'COALESCE(ib.date_occurred, ci.date_occurred)', 'COALESCE(ib.nature_of_damage, ci.nature_of_damage)', 'COALESCE(ib.estimated_cost_of_damages, ci.estimated_cost_of_damages)', 'COALESCE(ib.status, ci.status)'];
     $orderBy = $columns[$orderColumn] ?? 'c.declaration_date';
     $orderDir = strtoupper($orderDir) === 'DESC' ? 'DESC' : 'ASC';
 
-    $baseQuery = "FROM calamity_incidents ci
-        LEFT JOIN juridicals j ON ci.juridical_id = j.id
+    $baseQuery = "FROM calamity_incident_businesses ib
+        LEFT JOIN juridicals j ON ib.juridical_id = j.id
         LEFT JOIN employers e ON j.employer_id = e.id
+        LEFT JOIN calamity_incidents ci ON ci.id = ib.incident_id
         LEFT JOIN calamities c ON ci.calamity_id = c.id
         WHERE ci.calamity_id = $calamityId";
 
@@ -54,34 +55,44 @@ if ($action === 'affected') {
 
     $data = [];
 
+    $fieldSelect = "ci.id, c.declaration_date,
+        ib.id AS affected_id,
+        COALESCE(ib.date_occurred, ci.date_occurred) AS date_occurred,
+        COALESCE(ib.nature_of_damage, ci.nature_of_damage) AS nature_of_damage,
+        COALESCE(ib.estimated_cost_of_damages, ci.estimated_cost_of_damages) AS business_cost,
+        COALESCE(ib.status, ci.status) AS status,
+        COALESCE(ib.remarks, ci.remarks) AS remarks,
+        j.entity_no AS juri_entity_no, j.name AS juri_name,
+        e.full_name";
+
     if (!empty($search)) {
         $like = '%' . $search . '%';
 
         $stmt = $con->prepare("SELECT
-            ci.id, c.declaration_date, ci.nature_of_damage,
-            ci.estimated_cost_of_damages, ci.status, ci.remarks,
-            j.entity_no AS juri_entity_no, j.name AS juri_name,
-            e.first_name, e.middle_name, e.last_name
+            $fieldSelect
             $baseQuery
-            AND (j.name LIKE ? OR j.entity_no LIKE ? OR e.first_name LIKE ? OR e.last_name LIKE ?
-                OR ci.nature_of_damage LIKE ? OR ci.status LIKE ?)
+            AND (j.name LIKE ? OR j.entity_no LIKE ? OR e.full_name LIKE ?
+                OR COALESCE(ib.nature_of_damage, ci.nature_of_damage) LIKE ?
+                OR COALESCE(ib.status, ci.status) LIKE ?
+                OR COALESCE(ib.date_occurred, ci.date_occurred) LIKE ?
+                OR COALESCE(ib.remarks, ci.remarks) LIKE ?)
             ORDER BY $orderBy $orderDir
             LIMIT ? OFFSET ?");
-        $stmt->execute([$like, $like, $like, $like, $like, $like, $length, $start]);
+        $stmt->execute([$like, $like, $like, $like, $like, $like, $like, $length, $start]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $countStmt = $con->prepare("SELECT COUNT(*)
             $baseQuery
-            AND (j.name LIKE ? OR j.entity_no LIKE ? OR e.first_name LIKE ? OR e.last_name LIKE ?
-                OR ci.nature_of_damage LIKE ? OR ci.status LIKE ?)");
-        $countStmt->execute([$like, $like, $like, $like, $like, $like]);
+            AND (j.name LIKE ? OR j.entity_no LIKE ? OR e.full_name LIKE ?
+                OR COALESCE(ib.nature_of_damage, ci.nature_of_damage) LIKE ?
+                OR COALESCE(ib.status, ci.status) LIKE ?
+                OR COALESCE(ib.date_occurred, ci.date_occurred) LIKE ?
+                OR COALESCE(ib.remarks, ci.remarks) LIKE ?)");
+        $countStmt->execute([$like, $like, $like, $like, $like, $like, $like]);
         $recordsFiltered = $countStmt->fetchColumn();
     } else {
         $stmt = $con->prepare("SELECT
-            ci.id, c.declaration_date, ci.date_occurred, ci.nature_of_damage,
-            ci.estimated_cost_of_damages, ci.status, ci.remarks,
-            j.entity_no AS juri_entity_no, j.name AS juri_name,
-            e.first_name, e.middle_name, e.last_name
+            $fieldSelect
             $baseQuery
             ORDER BY $orderBy $orderDir
             LIMIT ? OFFSET ?");
@@ -92,12 +103,13 @@ if ($action === 'affected') {
     }
 
     foreach ($rows as $row) {
-        $fullName = trim(implode(' ', array_filter([$row['first_name'] ?? '', $row['middle_name'] ?? '', $row['last_name'] ?? ''])));
+        $fullName = trim($row['full_name'] ?? '');
         $data[] = [
             'id'                       => $row['id'],
+            'affected_id'              => $row['affected_id'],
             'declaration_date'         => $row['date_occurred'],
             'nature_of_damage'         => $row['nature_of_damage'],
-            'estimated_cost_of_damages'=> $row['estimated_cost_of_damages'],
+            'estimated_cost_of_damages'=> $row['business_cost'],
             'status'                   => $row['status'],
             'remarks'                  => $row['remarks'],
             'entity_no'                => $row['juri_entity_no'],

@@ -67,6 +67,8 @@ switch ($resource) {
         $action = $_GET['action'] ?? 'calamities';
         if ($action === 'juridicals') {
             $response = $controller->getJuridicals();
+        } elseif ($action === 'juridical_search') {
+            $response = $controller->searchJuridicals($_GET);
         } elseif ($action === 'calamity_detail') {
             $calamity_id = intval($_GET['calamity_id'] ?? 0);
             $response = $controller->getCalamityDetail($calamity_id);
@@ -86,6 +88,15 @@ switch ($resource) {
             $response = $controller->updateCalamity($input);
         } else {
             $response = $controller->updateIncident($input);
+        }
+    } elseif ($method === 'DELETE') {
+        $controller = new CalamityController();
+        $id = $_GET['id'] ?? ($input['id'] ?? ($segments[2] ?? null));
+        if ($id === null || $id === '') {
+            http_response_code(400);
+            $response = ['status' => 'error', 'message' => 'Missing or invalid affected business ID.'];
+        } else {
+            $response = $controller->deleteAffectedBusiness($id);
         }
     } else {
         http_response_code(405);

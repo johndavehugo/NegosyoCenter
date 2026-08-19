@@ -109,9 +109,11 @@ function viewAffectedBusinesses(calamityId, calamityName) {
                     "data": null,
                     "orderable": false,
                     "render": function (data, type, row) {
-                        return '<div style="display:flex;justify-content:center;">' +
+                        return '<div style="display:flex;justify-content:center;gap:4px;">' +
                             '<button class="btn btn-warning btn-sm" onclick="fillUpdateIncident(' + row.id + ')">' +
-                            '<i class="fas fa-pen mr-1"></i>Update</button></div>';
+                            '<i class="fas fa-pen mr-1"></i>Update</button>' +
+                            '<button class="btn btn-danger btn-sm" onclick="deleteAffectedBusiness(' + row.affected_id + ')">' +
+                            '<i class="fas fa-trash-alt mr-1"></i>Delete</button></div>';
                     }
                 }
             ]
@@ -119,4 +121,39 @@ function viewAffectedBusinesses(calamityId, calamityName) {
     }
 
     $('#viewAffectedBusinessesModal').modal('show');
+}
+
+function deleteAffectedBusiness(affectedId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This affected business will be removed from the calamity incident.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('../../api/routes.php/calamity?id=' + encodeURIComponent(affectedId), {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    Swal.fire('Deleted!', res.message, 'success');
+                    if (affectedDataTable) {
+                        affectedDataTable.ajax.reload();
+                    }
+                    reloadCalamityTable();
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'Network error. Please try again.', 'error');
+            });
+        }
+    });
 }
