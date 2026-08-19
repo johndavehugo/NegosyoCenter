@@ -4,10 +4,10 @@ $(function () {
     function categoryBadge(value) {
         if (!value) return '<span class="badge badge-pill msme-badge-unknown">—</span>';
         var map = {
-            'micro':  'msme-badge-micro',
-            'small':  'msme-badge-small',
+            'micro': 'msme-badge-micro',
+            'small': 'msme-badge-small',
             'medium': 'msme-badge-medium',
-            'large':  'msme-badge-large'
+            'large': 'msme-badge-large'
         };
         var key = value.toString().toLowerCase();
         var cls = map[key] || 'msme-badge-unknown';
@@ -36,25 +36,25 @@ $(function () {
             { "data": "juridical.entity_no" },
             {
                 "data": "juridical.name",
-                "render": function(data, type, row) {
+                "render": function (data, type, row) {
                     return type === 'display' ? truncateCell(data, 220) : (data || '');
                 }
             },
             {
                 "data": "juridical.msme_category",
-                "render": function(data, type, row) {
+                "render": function (data, type, row) {
                     return type === 'display' ? categoryBadge(data) : (data || '');
                 }
             },
             {
                 "data": "employer.full_name",
-                "render": function(data, type, row) {
+                "render": function (data, type, row) {
                     return type === 'display' ? truncateCell(data, 200) : (data || '');
                 }
             },
             {
                 "data": null,
-                "render": function(data, type, row) {
+                "render": function (data, type, row) {
                     var id = row.juridical.entity_no;
                     return '<div class="d-flex justify-content-center dropdown">' +
                         '<button class="btn btn-text-secondary btn-sm tbl-action-btn" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Actions">' +
@@ -77,7 +77,7 @@ $(function () {
                 }
             }
         ],
-        "initComplete": function() {
+        "initComplete": function () {
             // Inject Material Icons search icon into the DataTables search input
             var $filter = $('#tblBusiness_filter');
             $filter.find('input')
