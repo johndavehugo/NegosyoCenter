@@ -3,6 +3,8 @@ var updStepper;
 address.cascade('#updBusRegion', '#updBusProvince', '#updBusCity', '#updBusBarangay');
 address.cascade('#updEmpRegion', '#updEmpProvince', '#updEmpCity', '#updEmpBarangay');
 
+bindCurrencyInput($('#updCapitalization'));
+
 $('#updateBusinessModal').on('shown.bs.modal', function () {
     updStepper = new Stepper($('.upd-stepper')[0]);
 });
@@ -27,7 +29,7 @@ async function fillUpdateModal(id) {
                 const business = data.data;
                 $('#updBusinessName').val(business.juridical.name);
                 $('#updBusEntityNo').val(business.juridical.entity_no);
-                $('#updCapitalization').val(business.juridical.capitalization);
+                $('#updCapitalization').val(business.juridical.capitalization ? currencyFormat(business.juridical.capitalization, false) : '');
                 $('#updIndustry').val(business.juridical.line_of_industry);
                 $('#updContactNo').val(business.juridical.contact_no);
                 $('#updEmail').val(business.juridical.contact_email);
@@ -62,7 +64,7 @@ function updateBusiness() {
         juri_entity_no: $('#updBusEntityNo').val(),
         juri_name: $('#updBusinessName').val(),
         line_of_industry: $('#updIndustry').val(),
-        capitalization: $('#updCapitalization').val(),
+        capitalization: currencyParse($('#updCapitalization').val()),
         contact_no: $('#updContactNo').val(),
         contact_email: $('#updEmail').val(),
 

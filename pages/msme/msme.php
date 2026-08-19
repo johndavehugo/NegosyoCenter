@@ -281,6 +281,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     
     <script src="../../scripts/common/address.js"> </script>
+    <script src="../../scripts/common/currency.js"> </script>
     <script src="../../scripts/msme/business-table.js"> </script>
     <script src="../../scripts/msme/business-view.js"></script>
     <script src="../../scripts/msme/business-add.js"></script>
