@@ -12,12 +12,22 @@
 
     <nav class="mt-2">
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-        <li id="module_msme" class="nav-item ">
-          <a href="../msme/msme.php" class="nav-link sidebar-statistics cursor-e">
+
+        <!-- Dashboard -->
+        <li class="nav-item">
+          <a href="../msme/dashboard.php"
+             class="nav-link cursor-e <?= (basename($_SERVER['PHP_SELF']) === 'dashboard.php') ? 'active' : '' ?>">
+            <i class="nav-icon material-icons" style="font-size:19px;vertical-align:middle;">dashboard</i>
+            <p>Dashboard</p>
+          </a>
+        </li>
+
+        <!-- MSME Master List -->
+        <li id="module_msme" class="nav-item">
+          <a href="../msme/msme.php"
+             class="nav-link sidebar-statistics cursor-e <?= (basename($_SERVER['PHP_SELF']) === 'msme.php') ? 'active' : '' ?>">
             <i class="nav-icon fas fa-xlg fa-chart-line"></i>
-            <p class="pt-2">
-              MSME
-            </p>
+            <p class="pt-2">MSME</p>
           </a>
         </li>
 

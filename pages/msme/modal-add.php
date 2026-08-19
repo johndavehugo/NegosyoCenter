@@ -55,8 +55,17 @@ require_once __DIR__ . '/../../global/industries.php';
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label class="msme-label">Entity No <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control msme-input" id="addBusEntityNo" name="addBusEntityNo">
+                                            <label class="msme-label">
+                                                Entity No <span class="text-danger">*</span>
+                                                <span class="msme-locked-badge ml-1">
+                                                    <i class="material-icons" style="font-size:11px;vertical-align:middle;">lock</i>
+                                                    Auto-filled
+                                                </span>
+                                            </label>
+                                            <input type="text" class="form-control msme-input msme-input-locked"
+                                                   id="addBusEntityNo" name="addBusEntityNo"
+                                                   readonly tabindex="-1"
+                                                   title="Auto-filled from SCIMS — cannot be edited">
                                         </div>
                                     </div>
                                 </div>
@@ -163,8 +172,17 @@ require_once __DIR__ . '/../../global/industries.php';
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label class="msme-label">Entity No <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control msme-input" id="addEmpEntityNo" name="addEmpEntityNo">
+                                            <label class="msme-label">
+                                                Entity No <span class="text-danger">*</span>
+                                                <span class="msme-locked-badge ml-1">
+                                                    <i class="material-icons" style="font-size:11px;vertical-align:middle;">lock</i>
+                                                    Auto-filled
+                                                </span>
+                                            </label>
+                                            <input type="text" class="form-control msme-input msme-input-locked"
+                                                   id="addEmpEntityNo" name="addEmpEntityNo"
+                                                   readonly tabindex="-1"
+                                                   title="Auto-filled from SCIMS — cannot be edited">
                                         </div>
                                     </div>
                                 </div>

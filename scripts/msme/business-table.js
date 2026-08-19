@@ -70,6 +70,9 @@ $(function () {
                         '<a class="dropdown-item" href="#" onclick="fillRenewModal(\'' + id + '\')">' +
                         '<i class="material-icons tbl-action-icon">autorenew</i>Renew' +
                         '</a>' +
+                        '<a class="dropdown-item" href="#" onclick="fillStatusModal(\'' + id + '\')">' +
+                        '<i class="material-icons tbl-action-icon">toggle_on</i>Change Status' +
+                        '</a>' +
                         '</div></div>';
                 }
             }

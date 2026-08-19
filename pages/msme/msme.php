@@ -286,7 +286,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="../../scripts/msme/business-add.js"></script>
     <script src="../../scripts/msme/business-update.js"></script>
     <script src="../../scripts/msme/business-renew.js"></script>
-    <script src="../../scripts/msme/business-status.js"></script>
+    <script src="../../scripts/msme/business-status.js?v=2"></script>
 
 
 </body>
