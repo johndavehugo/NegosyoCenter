@@ -63,8 +63,8 @@ require_once __DIR__ . '/../../global/industries.php';
                                             <label class="msme-label">Line of Industry</label>
                                             <select class="form-control msme-input" id="updIndustry" name="updIndustry">
                                                 <option value="" hidden>Select Industry</option>
-                                                <?php foreach ($industries as $code => $industry): ?>
-                                                    <option value="<?= $industry ?>"><?= $code ?> - <?= $industry ?></option>
+                                                <?php foreach ($industries as $industry): ?>
+                                                    <option value="<?= strtoupper($industry) ?>"><?= strtoupper($industry) ?></option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>

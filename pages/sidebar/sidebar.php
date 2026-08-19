@@ -14,20 +14,26 @@
     <!-- Sidebar -->
     <div class="sidebar">
 
-        <nav class="mt-2">
+    <nav class="mt-2">
+      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
-            <ul class="nav nav-pills nav-sidebar flex-column"
-                data-widget="treeview"
-                role="menu"
-                data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+          <a href="../msme/dashboard.php"
+             class="nav-link cursor-e <?= (basename($_SERVER['PHP_SELF']) === 'dashboard.php') ? 'active' : '' ?>">
+            <i class="nav-icon material-icons" style="font-size:19px;vertical-align:middle;">dashboard</i>
+            <p>Dashboard</p>
+          </a>
+        </li>
 
-                <!-- MSME -->
-                <li id="module_msme" class="nav-item">
-                    <a href="../msme/msme.php" class="nav-link">
-                        <i class="nav-icon fas fa-chart-line"></i>
-                        <p>MSME</p>
-                    </a>
-                </li>
+        <!-- MSME Master List -->
+        <li id="module_msme" class="nav-item">
+          <a href="../msme/msme.php"
+             class="nav-link sidebar-statistics cursor-e <?= (basename($_SERVER['PHP_SELF']) === 'msme.php') ? 'active' : '' ?>">
+            <i class="nav-icon fas fa-xlg fa-chart-line"></i>
+            <p class="pt-2">MSME</p>
+          </a>
+        </li>
 
                 <!-- Calamity -->
                 <li id="module_calamity" class="nav-item">

@@ -257,8 +257,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap4.js"></script>
 
@@ -288,7 +286,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="../../scripts/msme/business-add.js"></script>
     <script src="../../scripts/msme/business-update.js"></script>
     <script src="../../scripts/msme/business-renew.js"></script>
-    <script src="../../scripts/msme/business-status.js"></script>
+    <script src="../../scripts/msme/business-status.js?v=2"></script>
 
 
 </body>

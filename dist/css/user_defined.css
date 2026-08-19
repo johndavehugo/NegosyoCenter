@@ -955,3 +955,41 @@ body {
 #viewBusinessModal .modal-body {
   padding: 1rem 1.25rem 0.75rem;
 }
+
+/* =============================================================
+   Locked / read-only input fields  (Entity No in Add Business)
+   ============================================================= */
+
+/* Locked input — visually distinct from editable fields */
+.msme-input-locked {
+    background-color: #f1f3f5 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    border-color: #ced4da !important;
+    /* Override any focus ring so it never looks interactive */
+    pointer-events: none;
+}
+.msme-input-locked:focus {
+    box-shadow: none !important;
+    border-color: #ced4da !important;
+}
+
+/* Small inline "Auto-filled" badge next to the label */
+.msme-locked-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background-color: #e9ecef;
+    color: #6c757d;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 1px 6px;
+    border-radius: 10px;
+    vertical-align: middle;
+}
+.msme-locked-badge .material-icons {
+    font-size: 11px !important;
+    line-height: 1;
+}
