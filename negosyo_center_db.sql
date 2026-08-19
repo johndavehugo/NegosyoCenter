@@ -3,11 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
-<<<<<<< Updated upstream
--- Generation Time: Aug 17, 2026 at 06:48 AM
-=======
--- Generation Time: Aug 17, 2026 at 03:53 AM
->>>>>>> Stashed changes
+-- Generation Time: Aug 19, 2026 at 05:01 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -51,7 +47,10 @@ INSERT INTO `addresses` (`id`, `upblb_num`, `street`, `subdivision`, `barangay`,
 ('addr-01a00da9-fc0f-7ff3-af4a-a225881c8a5c', '', '', '', '', '', '', '', '2026-08-17 03:00:39'),
 ('addr-01a00db7-91b8-762e-8c0a-a5df96812144', '', '', '', '', '', '', '', '2026-08-17 03:15:29'),
 ('addr-23f6fc-1d90-5a0c76cb-c7a8', '', '', '', 'Barangay IV', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:14:37'),
+('addr-24fc0b-ed00-f33c1320-2448', '', '', '', 'Barangay II', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-19 02:36:22'),
+('addr-39e29a-ef81-5d971c6c-6cbe', '', '', '', 'Barangay IV', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-18 07:10:48'),
 ('addr-5340f9-ac48-931b724a-c8c7', '', 'F.C LEDESMA AVE.', '', 'Barangay II', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:13:49'),
+('addr-5b4275-9dc3-8511f30a-cabf', '', '', '', 'Barangay III', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-18 07:10:48'),
 ('addr-72b807-713c-3ab6ba6c-2ba4', 'enk', 'grove st', 'cheeseball', 'Suligan', 'Tabuan-Lasa', 'Basilan', 'Bangsamoro Autonomous Region In Muslim Mindanao (BARMM)', '2026-08-17 03:22:48'),
 ('addr-a37f49-6e25-3ab02132-b568', '', '', '', 'Rizal', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:13:28'),
 ('addr-c30504-230c-71902c84-6aba', '', 'RIZAL ST.', '', 'Barangay V', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:00:39'),
@@ -59,6 +58,7 @@ INSERT INTO `addresses` (`id`, `upblb_num`, `street`, `subdivision`, `barangay`,
 ('addr-d02419-852f-e6861d03-e3ea', '', 'LOCSIN ST.,', '', 'Barangay IV', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:14:37'),
 ('addr-d348f7-dfce-2d1d86d0-4613', '', '', '', 'Palampas', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:15:29'),
 ('addr-e8decc-8db5-7bfe3e86-8b2f', 'belly', 'hey', 'there', 'Butansapa', 'Mogpog', 'Marinduque', 'MIMAROPA Region', '2026-08-17 03:22:48'),
+('addr-ecf745-0c94-c0291dba-648b', '', '', '', 'Barangay II', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-19 02:36:22'),
 ('addr-fe1f3a-bfd2-4cee0ee2-b84b', '', 'F.C. LEDESMA AVE.', '', 'Barangay II', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:13:49');
 
 -- --------------------------------------------------------
@@ -105,12 +105,8 @@ CREATE TABLE `calamities` (
 
 INSERT INTO `calamities` (`id`, `name`, `calamity_type`, `declaration_date`, `description`, `created_at`) VALUES
 (1, 'Bagyong Kyle', 'TYPHOON', '0000-00-00', 'AHHH bagyo', '2026-07-29 00:46:58'),
-<<<<<<< Updated upstream
 (2, 'Bagyong Frenk', 'LANDSLIDE', '2026-08-01', 'Frenk gaunsa ka diha frenk', '2026-08-06 00:24:02'),
 (3, 'Bagyong Belly', 'TYPHOON', '2026-08-11', 'Cheeseball', '2026-08-11 07:02:44');
-=======
-(2, 'BAGYONG BILLY', 'FLOOD', '2026-08-02', 'rdryhtfu', '2026-08-03 05:11:48');
->>>>>>> Stashed changes
 
 -- --------------------------------------------------------
 
@@ -162,7 +158,10 @@ CREATE TABLE `commodities` (
 --
 
 INSERT INTO `commodities` (`id`, `category_id`, `product_name`, `brand_name`, `unit_of_measure`, `srp`, `agency_id`, `is_active`, `created_at`, `updated_at`) VALUES
-(65, 2, 'mais', '5', '5', 58.00, 2, 1, '2026-08-17 00:37:10', '2026-08-17 00:41:58');
+(66, 5, 'd', 'd', 'd', 66.00, 3, 1, '2026-08-18 15:47:31', '2026-08-18 16:00:50'),
+(67, 1, 'tuna', 'tuna', 't', 5.00, 1, 1, '2026-08-18 16:08:02', '2026-08-18 16:08:39'),
+(68, 2, 't', 't', 't', 5.00, 2, 1, '2026-08-18 16:08:22', '2026-08-18 16:08:50'),
+(69, 5, 'r', 'r', 'r', 5.00, 3, 1, '2026-08-18 16:09:25', '2026-08-18 16:09:35');
 
 -- --------------------------------------------------------
 
@@ -211,9 +210,11 @@ CREATE TABLE `employers` (
 INSERT INTO `employers` (`id`, `entity_no`, `full_name`, `address_id`, `created_at`, `updated_at`, `special_category`) VALUES
 ('emp-051ec8-9c8b-d9fa5350-e86f', 'GGTQBX1285', 'LUMINISCENT INC.', 'addr-01a00db7-91b8-762e-8c0a-a5df96812144', '2026-08-17 03:15:29', '2026-08-17 03:15:29', 'None'),
 ('emp-16986e-5175-4bac270a-8f8f', 'UDBNQA4863', 'EVANGELINE Y. RAMAS', 'addr-a37f49-6e25-3ab02132-b568', '2026-08-17 03:13:28', '2026-08-17 03:13:28', 'None'),
-('emp-3fb7b9-e5e2-148d32a8-e337', 'JSGDHX0554', 'mia eyy', 'addr-72b807-713c-3ab6ba6c-2ba4', '2026-08-17 03:22:48', '2026-08-17 03:52:45', 'Young Entrepreneur'),
+('emp-3fb7b9-e5e2-148d32a8-e337', 'JSGDHX0554', 'Jhay Arjhay', 'addr-72b807-713c-3ab6ba6c-2ba4', '2026-08-17 03:22:48', '2026-08-17 04:52:18', 'Young Entrepreneur'),
 ('emp-825fe4-9e95-256634cb-a24f', 'UCAWQC8632', 'VIPER\'S MUSCLE AND FITNESS GYM', 'addr-23f6fc-1d90-5a0c76cb-c7a8', '2026-08-17 03:14:37', '2026-08-17 03:14:37', 'None'),
 ('emp-8bbd88-c0f7-16a7db84-e163', 'DFEAHF7704', 'GLOBAL AUTHENTIC WEAR CORP.', 'addr-01a00da9-fc0f-7ff3-af4a-a225881c8a5c', '2026-08-17 03:00:39', '2026-08-17 03:00:39', 'None'),
+('emp-9e128f-fdd2-95dc4e7b-ca9c', 'JEDVPA9659', 'CHARLENE\'S FASHION & BRIDAL RENTAL', 'addr-39e29a-ef81-5d971c6c-6cbe', '2026-08-18 07:10:48', '2026-08-18 07:10:48', 'None'),
+('emp-d213f0-3f4e-a36a640f-1144', 'EGXAES7188', 'K.M.A. ARCHITECTURAL SERVICES', 'addr-ecf745-0c94-c0291dba-648b', '2026-08-19 02:36:22', '2026-08-19 02:36:22', 'None'),
 ('emp-fb7186-4db6-a295fba0-5a11', 'IAGOQR3354', 'CLICKPOINT SARI-SARI STORE', 'addr-fe1f3a-bfd2-4cee0ee2-b84b', '2026-08-17 03:13:49', '2026-08-17 03:13:49', 'None');
 
 -- --------------------------------------------------------
@@ -249,7 +250,9 @@ INSERT INTO `juridicals` (`id`, `entity_no`, `employer_id`, `address_id`, `name`
 ('neg-01a00db6-0d0f-7201-a0ff-f68c231e5830', 'QXKGVX7632', 'emp-fb7186-4db6-a295fba0-5a11', 'addr-5340f9-ac48-931b724a-c8c7', 'CLICKPOINT SARI-SARI STORE', 'NEW', 'ACTIVE', '09166349898', '-', 'WHOLESALE AND RETAIL TRADE', 0.00, '2026-08-17 03:13:49', '2026-08-17 03:13:49'),
 ('neg-01a00db6-c5c1-7cb4-80f6-670aba5d5de5', 'PXIJKB7604', 'emp-825fe4-9e95-256634cb-a24f', 'addr-d02419-852f-e6861d03-e3ea', 'VIPER\'S MUSCLE AND FITNESS GYM', 'NEW', 'ACTIVE', '.', '.', 'OTHER COMMUNITY, SOCIAL AND PERSONAL SERVICE ACTIVITIES', 0.00, '2026-08-17 03:14:37', '2026-08-17 03:14:37'),
 ('neg-01a00db7-91b8-7248-b895-52fdfb6893da', 'BVBPWF6784', 'emp-051ec8-9c8b-d9fa5350-e86f', 'addr-d348f7-dfce-2d1d86d0-4613', 'LUMINISCENT INC.-GAISANO CAPITAL', 'NEW', 'ACTIVE', '09153531877', 'sayingga98@gmail.com', 'WHOLESALE AND RETAIL TRADE', 0.00, '2026-08-17 03:15:29', '2026-08-17 03:15:29'),
-('neg-01a00dbe-46a6-7712-b958-8a27d579a59d', 'AAUKTT6112', 'emp-3fb7b9-e5e2-148d32a8-e337', 'addr-e8decc-8db5-7bfe3e86-8b2f', 'Epoy Flower Shop', 'NEW', 'ACTIVE', '111111111111111111111', 'epoy', 'FISHING', 9999999999999.99, '2026-08-17 03:22:48', '2026-08-17 03:53:19');
+('neg-01a00dbe-46a6-7712-b958-8a27d579a59d', 'AAUKTT6112', 'emp-3fb7b9-e5e2-148d32a8-e337', 'addr-e8decc-8db5-7bfe3e86-8b2f', 'Epoy Flower Shop', 'NEW', 'ACTIVE', '111111111111111111111', 'epoy', 'FISHING', 9999999999999.99, '2026-08-17 03:22:48', '2026-08-17 08:46:55'),
+('neg-01a013b5-5e99-7462-8f41-1323e5f8a342', 'ADDOTW9568', 'emp-9e128f-fdd2-95dc4e7b-ca9c', 'addr-5b4275-9dc3-8511f30a-cabf', 'CHARLENE\'S FASHION & BRIDAL RENTAL - S. CARMONA ST.', 'NEW', 'ACTIVE', '09122270903', 'cbratteng@yahoo.com', 'REAL ESTATE, RENTING, AND BUSINESS ACTIVITIES', 4000000.00, '2026-08-18 07:10:48', '2026-08-18 07:10:48'),
+('neg-01a017e0-7994-7fc9-a09d-dae142bc3728', 'AAAUJC2263', 'emp-d213f0-3f4e-a36a640f-1144', 'addr-24fc0b-ed00-f33c1320-2448', 'K.M.A. ARCHITECTURAL SERVICES - SAN JULIO SUBD.', 'NEW', 'ACTIVE', '09778198545', 'acabalkimbie@gmail.com', 'OTHER COMMUNITY, SOCIAL AND PERSONAL SERVICE ACTIVITIES', 6000000.00, '2026-08-19 02:36:22', '2026-08-19 02:36:22');
 
 -- --------------------------------------------------------
 
@@ -261,7 +264,7 @@ CREATE TABLE `price_logs` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `commodity_id` bigint(20) UNSIGNED NOT NULL,
   `prevailing_price` decimal(10,2) NOT NULL,
-  `status` enum('WITHIN_SRP','OVERPRICED','BELOW_SRP') DEFAULT 'WITHIN_SRP',
+  `status` enum('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
   `monitored_by_agency_id` bigint(20) UNSIGNED DEFAULT NULL,
   `monitored_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -271,7 +274,10 @@ CREATE TABLE `price_logs` (
 --
 
 INSERT INTO `price_logs` (`id`, `commodity_id`, `prevailing_price`, `status`, `monitored_by_agency_id`, `monitored_at`) VALUES
-(38, 65, 56.00, 'BELOW_SRP', 2, '2026-08-17 00:41:58');
+(39, 66, 0.00, 'ACTIVE', 3, '2026-08-18 16:08:33'),
+(40, 67, 0.00, 'INACTIVE', 1, '2026-08-18 16:08:44'),
+(41, 68, 0.00, 'INACTIVE', 2, '2026-08-18 16:08:50'),
+(42, 69, 0.00, 'INACTIVE', 3, '2026-08-18 16:09:35');
 
 --
 -- Indexes for dumped tables
@@ -351,18 +357,6 @@ ALTER TABLE `price_logs`
 --
 
 --
-<<<<<<< Updated upstream
--- AUTO_INCREMENT for table `calamities`
---
-ALTER TABLE `calamities`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-=======
--- AUTO_INCREMENT for table `addresses`
---
-ALTER TABLE `addresses`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
 -- AUTO_INCREMENT for table `agencies`
 --
 ALTER TABLE `agencies`
@@ -372,23 +366,19 @@ ALTER TABLE `agencies`
 -- AUTO_INCREMENT for table `calamities`
 --
 ALTER TABLE `calamities`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
->>>>>>> Stashed changes
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `calamity_incidents`
 --
 ALTER TABLE `calamity_incidents`
-<<<<<<< Updated upstream
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-=======
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `commodities`
 --
 ALTER TABLE `commodities`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
 -- AUTO_INCREMENT for table `commodity_categories`
@@ -397,23 +387,10 @@ ALTER TABLE `commodity_categories`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `employers`
---
-ALTER TABLE `employers`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `juridicals`
---
-ALTER TABLE `juridicals`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
 -- AUTO_INCREMENT for table `price_logs`
 --
 ALTER TABLE `price_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
->>>>>>> Stashed changes
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- Constraints for dumped tables
@@ -427,18 +404,6 @@ ALTER TABLE `calamity_incidents`
   ADD CONSTRAINT `fk_incident_juridical` FOREIGN KEY (`juridical_id`) REFERENCES `juridicals` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `commodities`
---
-ALTER TABLE `commodities`
-  ADD CONSTRAINT `fk_commodity_category` FOREIGN KEY (`category_id`) REFERENCES `commodity_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `commodity_categories`
---
-ALTER TABLE `commodity_categories`
-  ADD CONSTRAINT `fk_category_agency` FOREIGN KEY (`agency_id`) REFERENCES `agencies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
 -- Constraints for table `employers`
 --
 ALTER TABLE `employers`
@@ -450,13 +415,6 @@ ALTER TABLE `employers`
 ALTER TABLE `juridicals`
   ADD CONSTRAINT `juridicals_ibfk_1` FOREIGN KEY (`employer_id`) REFERENCES `employers` (`id`),
   ADD CONSTRAINT `juridicals_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `addresses` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `price_logs`
---
-ALTER TABLE `price_logs`
-  ADD CONSTRAINT `fk_price_agency` FOREIGN KEY (`monitored_by_agency_id`) REFERENCES `agencies` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_price_commodity` FOREIGN KEY (`commodity_id`) REFERENCES `commodities` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
