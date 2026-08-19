@@ -5,327 +5,336 @@ header('Content-Type: application/json');
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
-if ($action === 'detail') {
-    $entityNo = $_GET['entity_no'] ?? '';
-    echo json_encode(getBusinessDetail($entityNo, $con));
+if ($action === 'scims_businesses') {
+    $q = trim($_GET['q'] ?? '');
+    if ($q === '') {
+        echo json_encode(['status' => 'success', 'data' => []]);
+        exit;
+    }
+    $raw = @file_get_contents('https://vamosmobile.app/api/juridical/business/businessname/' . urlencode($q));
+    if (!$raw) {
+        echo json_encode(['status' => 'error', 'message' => 'Cannot connect to SCIMS API.']);
+        exit;
+    }
+    $results = [];
+    foreach (json_decode($raw, true)['data'] ?? [] as $x) {
+        $results[] = [
+
+            //Business
+            'juri_entity_no' => $x['entity_no'] ?? '',
+            'juri_name' => $x['juri_name'] ?? '',
+            'juri_category' => $x['juri_category'] ?? '',
+            'line_of_industry' => $x['line_of_industry'] ?? '',
+            'juri_contact_no' => $x['contact_no'] ?? '',
+            'juri_contact_email' => $x['contact_email'] ?? '',
+            'juri_region' => $x['juri_region'] ?? '',
+            'juri_province' => $x['juri_province'] ?? '',
+            'juri_city' => $x['juri_city'] ?? '',
+            'juri_barangay' => $x['juri_barangay'] ?? '',
+            'juri_street' => $x['juri_street'] ?? '',
+            'juri_subdivision' => $x['juri_subdivision'] ?? '',
+            'juri_upblb_num' => $x['juri_upblb_num'] ?? '',
+            'juri_address_id' => $x['juri_address_id'] ?? '',
+            
+            //Owner
+            
+            'emp_id' => $x['juri_employer_id'] ?? '',
+            'emp_name' => $x['trade_name'] ?? '',
+            'emp_entity_no' => $x['employer_entity_no'] ?? '',
+            'emp_region' => $x['emp_region'] ?? '',
+            'emp_province' => $x['emp_province'] ?? '',
+            'emp_city' => $x['emp_city'] ?? '',
+            'emp_barangay' => $x['emp_barangay'] ?? '',
+            'emp_street' => $x['emp_street'] ?? '',
+            'emp_subdivision' => $x['emp_subdivision'] ?? '',
+            'emp_upblb_num' => $x['emp_upblb_num'] ?? '',
+            'emp_address_id' => $x['emp_address_id'] ?? '',
+            
+
+        ];
+    }
+    echo json_encode(['status' => 'success', 'data' => $results]);
     exit;
 }
 
-if ($action === 'import') {
-    $entityNo = $_POST['entity_no'] ?? '';
-    echo json_encode(importBusiness($entityNo, $con));
-    exit;
-}
+// ============================================================
+// DASHBOARD ACTIONS
+// ============================================================
 
-$draw = intval($_GET['draw'] ?? 0);
-$start = intval($_GET['start'] ?? 0);
-$length = intval($_GET['length'] ?? 10);
-$search = $_GET['search']['value'] ?? '';
-$orderColumn = intval($_GET['order'][0]['column'] ?? 0);
-$orderDir = $_GET['order'][0]['dir'] ?? 'asc';
-
-$columns = ['j.entity_no', 'j.name', 'j.category', 'concat(e.first_name, " ", e.middle_name, " ", e.last_name)'];
-$orderBy = $columns[$orderColumn] ?? 'j.entity_no';
-$orderDir = strtoupper($orderDir) === 'DESC' ? 'DESC' : 'ASC';
-
-$totalStmt = $con->query("SELECT COUNT(*) FROM juridicals j LEFT JOIN employers e ON j.employer_id = e.id");
-$totalRecords = $totalStmt->fetchColumn();
-
-$data = [];
-
-if (!empty($search)) {
-    $like = '%' . $search . '%';
-
-    $stmt = $con->prepare("SELECT
-        j.id, j.entity_no AS juri_entity_no, j.name AS juri_name,
-        j.category AS juri_msme_category,
-        e.first_name, e.middle_name, e.last_name
-        FROM juridicals j
-        LEFT JOIN employers e ON j.employer_id = e.id
-        WHERE j.entity_no LIKE ? OR j.name LIKE ? OR j.category LIKE ?
-           OR e.first_name LIKE ? OR e.last_name LIKE ?
-        ORDER BY $orderBy $orderDir");
-    $stmt->execute([$like, $like, $like, $like, $like]);
-    $localRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $merged = [];
-    foreach ($localRows as $row) {
-        $fullName = trim(implode(' ', array_filter([$row['first_name'] ?? '', $row['middle_name'] ?? '', $row['last_name'] ?? ''])));
-        $merged[$row['juri_entity_no']] = [
-            'id' => $row['id'],
-            'juridical' => [
-                'entity_no' => $row['juri_entity_no'],
-                'name' => $row['juri_name'],
-                'msme_category' => $row['juri_msme_category'],
-            ],
-            'employer' => [
-                'full_name' => $fullName,
-            ],
-        ];
-    }
-
-    $scimsRaw = @file_get_contents('https://vamosmobile.app/api/testjuridical/business');
-    if ($scimsRaw) {
-        $scimsAll = json_decode($scimsRaw, true)['data'] ?? [];
-        foreach ($scimsAll as $item) {
-            $en = $item['entity_no'] ?? '';
-            if ($en && !isset($merged[$en])) {
-                if (stripos($item['entity_no'] ?? '', $search) !== false ||
-                    stripos($item['juri_name'] ?? '', $search) !== false ||
-                    stripos($item['juri_category'] ?? '', $search) !== false ||
-                    stripos($item['juri_employer'] ?? '', $search) !== false) {
-                    $merged[$en] = [
-                        'id' => '',
-                        'juridical' => [
-                            'entity_no' => $en,
-                            'name' => $item['juri_name'] ?? '',
-                            'msme_category' => $item['juri_category'] ?? '',
-                        ],
-                        'employer' => [
-                            'full_name' => $item['juri_employer'] ?? '',
-                        ],
-                    ];
-                }
-            }
-        }
-    }
-
-    $allData = array_values($merged);
-    $recordsFiltered = count($allData);
-    $data = array_slice($allData, $start, $length);
-
-} else {
-    $stmt = $con->prepare("SELECT
-        j.id, j.entity_no AS juri_entity_no, j.name AS juri_name,
-        j.category AS juri_msme_category,
-        e.first_name, e.middle_name, e.last_name
-        FROM juridicals j
-        LEFT JOIN employers e ON j.employer_id = e.id
-        ORDER BY $orderBy $orderDir
-        LIMIT ? OFFSET ?");
-    $stmt->execute([$length, $start]);
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($rows as $row) {
-        $fullName = trim(implode(' ', array_filter([$row['first_name'] ?? '', $row['middle_name'] ?? '', $row['last_name'] ?? ''])));
-        $data[] = [
-            'id' => $row['id'],
-            'juridical' => [
-                'entity_no' => $row['juri_entity_no'],
-                'name' => $row['juri_name'],
-                'msme_category' => $row['juri_msme_category'],
-            ],
-            'employer' => [
-                'full_name' => $fullName,
-            ],
-        ];
-    }
-
-    $recordsFiltered = $totalRecords;
-}
-
-echo json_encode([
-    'draw' => intval($draw),
-    'recordsTotal' => intval($totalRecords),
-    'recordsFiltered' => intval($recordsFiltered),
-    'data' => $data,
-]);
-
-function getBusinessDetail($entityNo, $con) {
-    $stmt = $con->prepare("SELECT
-        j.id, j.entity_no AS juri_entity_no, j.name AS juri_name,
-        j.registration_type AS juri_registration_type,
-        j.bus_status AS juri_business_status,
-        j.capitalization AS juri_capitalization,
-        j.category AS juri_msme_category,
-        j.contact_no AS juri_contact_no,
-        j.contact_email AS juri_contact_email,
-        j.line_of_industry AS juri_line_of_industry,
-        e.entity_no AS emp_entity_no,
-        e.first_name AS emp_first_name,
-        e.middle_name AS emp_middle_name,
-        e.last_name AS emp_last_name,
-        e.special_category AS emp_special_category,
-        a.street AS juri_street, a.subdivision AS juri_subdivision,
-        a.barangay AS juri_barangay, a.city AS juri_city,
-        a.province AS juri_province, a.region AS juri_region,
-        ea.street AS emp_street, ea.subdivision AS emp_subdivision,
-        ea.barangay AS emp_barangay, ea.city AS emp_city,
-        ea.province AS emp_province, ea.region AS emp_region
-        FROM juridicals j
-        LEFT JOIN employers e ON j.employer_id = e.id
-        LEFT JOIN addresses a ON j.address_id = a.id
-        LEFT JOIN addresses ea ON e.address_id = ea.id
-        WHERE j.entity_no = ?");
-    $stmt->execute([$entityNo]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($row) {
-        $fullName = trim(implode(' ', array_filter([$row['emp_first_name'] ?? '', $row['emp_middle_name'] ?? '', $row['emp_last_name'] ?? ''])));
-        return ['status' => 'success', 'data' => [
-            'id' => $row['id'],
-            'juridical' => [
-                'entity_no' => $row['juri_entity_no'],
-                'name' => $row['juri_name'],
-                'registration_type' => $row['juri_registration_type'],
-                'business_status' => $row['juri_business_status'],
-                'capitalization' => $row['juri_capitalization'],
-                'msme_category' => $row['juri_msme_category'],
-                'contact_no' => $row['juri_contact_no'],
-                'contact_email' => $row['juri_contact_email'],
-                'line_of_industry' => $row['juri_line_of_industry'],
-                'street' => $row['juri_street'],
-                'subdivision' => $row['juri_subdivision'],
-                'barangay' => $row['juri_barangay'],
-                'city' => $row['juri_city'],
-                'province' => $row['juri_province'],
-                'region' => $row['juri_region'],
-            ],
-            'employer' => [
-                'entity_no' => $row['emp_entity_no'],
-                'full_name' => $fullName,
-                'street' => $row['emp_street'],
-                'subdivision' => $row['emp_subdivision'],
-                'barangay' => $row['emp_barangay'],
-                'city' => $row['emp_city'],
-                'province' => $row['emp_province'],
-                'region' => $row['emp_region'],
-                'special_category' => $row['emp_special_category'] ?? '',
-            ],
-        ]];
-    }
-
-    $scimsRaw = @file_get_contents('https://vamosmobile.app/api/testjuridical/business');
-    if ($scimsRaw) {
-        $scimsAll = json_decode($scimsRaw, true)['data'] ?? [];
-        foreach ($scimsAll as $item) {
-            if (($item['entity_no'] ?? '') === $entityNo) {
-                return ['status' => 'success', 'data' => [
-                    'id' => '',
-                    'juridical' => [
-                        'entity_no' => $item['entity_no'],
-                        'name' => $item['juri_name'] ?? '',
-                        'registration_type' => $item['type_organization'] ?? '',
-                        'business_status' => $item['status'] ?? '',
-                        'capitalization' => '',
-                        'msme_category' => $item['juri_category'] ?? '',
-                        'contact_no' => $item['contact_no'] ?? '',
-                        'contact_email' => $item['contact_email'] ?? '',
-                        'line_of_industry' => $item['line_of_industry'] ?? '',
-                        'street' => $item['juri_street'] ?? '',
-                        'subdivision' => $item['juri_subdivision'] ?? '',
-                        'barangay' => $item['juri_barangay'] ?? '',
-                        'city' => $item['juri_city'] ?? '',
-                        'province' => $item['juri_province'] ?? '',
-                        'region' => $item['juri_region'] ?? '',
-                    ],
-                    'employer' => [
-                        'entity_no' => $item['employer_entity_no'] ?? '',
-                        'full_name' => $item['juri_employer'] ?? '',
-                        'special_category' => '',
-                        'street' => $item['emp_street'] ?? '',
-                        'subdivision' => $item['emp_subdivision'] ?? '',
-                        'barangay' => $item['emp_barangay'] ?? '',
-                        'city' => $item['emp_city'] ?? '',
-                        'province' => $item['emp_province'] ?? '',
-                        'region' => $item['emp_region'] ?? '',
-                    ],
-                ]];
-            }
-        }
-    }
-
-    return ['status' => 'error', 'message' => 'Business not found.'];
-}
-
-
-
-function importBusiness($entityNo, $con) {
-    $scimsRaw = @file_get_contents('https://vamosmobile.app/api/testjuridical/business');
-    if (!$scimsRaw) {
-        return ['status' => 'error', 'message' => 'Cannot connect to external API.'];
-    }
-
-    $scimsAll = json_decode($scimsRaw, true)['data'] ?? [];
-    $item = null;
-    foreach ($scimsAll as $b) {
-        if (($b['entity_no'] ?? '') === $entityNo) {
-            $item = $b;
-            break;
-        }
-    }
-
-    if (!$item) {
-        return ['status' => 'error', 'message' => 'Business not found in external API.'];
-    }
-
+// ── dashboard_sectors ────────────────────────────────────────
+// Returns distinct line_of_industry values for the filter dropdown.
+// GET ?action=dashboard_sectors
+// ─────────────────────────────────────────────────────────────
+if ($action === 'dashboard_sectors') {
     try {
-        $con->beginTransaction();
+        $stmt = $con->query(
+            "SELECT DISTINCT TRIM(line_of_industry) AS sector
+             FROM juridicals
+             WHERE line_of_industry IS NOT NULL
+               AND TRIM(line_of_industry) <> ''
+             ORDER BY sector ASC"
+        );
+        $sectors = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'sector');
+        echo json_encode(['status' => 'success', 'sectors' => $sectors]);
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
 
-        $fullName = explode(' ', $item['juri_employer'] ?? '', 3);
+// ── dashboard_stats ──────────────────────────────────────────
+// Returns filtered aggregates: total, byCategory, active/inactive.
+// GET ?action=dashboard_stats[&classification=][&status=][&sector=]
+// ─────────────────────────────────────────────────────────────
+if ($action === 'dashboard_stats') {
+    try {
+        $classification = trim($_GET['classification'] ?? '');
+        $status         = trim($_GET['status']         ?? '');
+        $sector         = trim($_GET['sector']         ?? '');
 
-         $stmt = $con->prepare("INSERT INTO addresses 
-            (street, subdivision, barangay, city, province, region)
-            VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $item['emp_street'] ?? '',
-            $item['emp_subdivision'] ?? '',
-            $item['emp_barangay'] ?? '',
-            $item['emp_city'] ?? '',
-            $item['emp_province'] ?? '',
-            $item['emp_region'] ?? '',
+        $conditions = [];
+        $params     = [];
+
+        if ($classification !== '') {
+            $conditions[] = 'LOWER(j.category) = LOWER(?)';
+            $params[]     = $classification;
+        }
+        if ($status !== '') {
+            $conditions[] = 'LOWER(j.bus_status) = LOWER(?)';
+            $params[]     = $status;
+        }
+        if ($sector !== '') {
+            $conditions[] = 'j.line_of_industry = ?';
+            $params[]     = $sector;
+        }
+
+        $where = count($conditions) ? ' WHERE ' . implode(' AND ', $conditions) : '';
+
+        // Total
+        $stmtTotal = $con->prepare("SELECT COUNT(*) FROM juridicals j" . $where);
+        $stmtTotal->execute($params);
+        $total = (int) $stmtTotal->fetchColumn();
+
+        // By category
+        $stmtCat = $con->prepare(
+            "SELECT
+                CASE
+                    WHEN LOWER(j.category) = 'micro'  THEN 'Micro'
+                    WHEN LOWER(j.category) = 'small'  THEN 'Small'
+                    WHEN LOWER(j.category) = 'medium' THEN 'Medium'
+                    WHEN LOWER(j.category) = 'large'  THEN 'Large'
+                    ELSE 'Other'
+                END AS label,
+                COUNT(*) AS cnt
+             FROM juridicals j" . $where . "
+             GROUP BY label
+             ORDER BY FIELD(label,'Micro','Small','Medium','Large','Other')"
+        );
+        $stmtCat->execute($params);
+        $byCategory = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
+
+        // By sector (top 10)
+        $stmtSec = $con->prepare(
+            "SELECT
+                COALESCE(NULLIF(TRIM(j.line_of_industry),''), 'Unspecified') AS label,
+                COUNT(*) AS cnt
+             FROM juridicals j" . $where . "
+             GROUP BY label
+             ORDER BY cnt DESC
+             LIMIT 10"
+        );
+        $stmtSec->execute($params);
+        $bySector = $stmtSec->fetchAll(PDO::FETCH_ASSOC);
+
+        // Active / Inactive breakdown (always within current filter scope)
+        $stmtActive = $con->prepare(
+            "SELECT
+                SUM(CASE WHEN LOWER(j.bus_status) = 'active'   THEN 1 ELSE 0 END) AS active,
+                SUM(CASE WHEN LOWER(j.bus_status) = 'inactive' THEN 1 ELSE 0 END) AS inactive
+             FROM juridicals j" . $where
+        );
+        $stmtActive->execute($params);
+        $statusRow = $stmtActive->fetch(PDO::FETCH_ASSOC);
+
+        echo json_encode([
+            'status'     => 'success',
+            'total'      => $total,
+            'active'     => (int) ($statusRow['active']   ?? 0),
+            'inactive'   => (int) ($statusRow['inactive'] ?? 0),
+            'byCategory' => array_values($byCategory),
+            'bySector'   => array_values($bySector),
         ]);
-        $empAddressId = $con->lastInsertId();
 
-        $stmt = $con->prepare("INSERT INTO employers 
-            (entity_no, first_name, middle_name, last_name, address_id, special_category)
-            VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $item['employer_entity_no'] ?? '',
-            $fullName[0] ?? '',
-            $fullName[1] ?? '',
-            $fullName[2] ?? '',
-            $empAddressId,
-            '',
-        ]);
-        $employerId = $con->lastInsertId();
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
 
-        $stmt = $con->prepare("INSERT INTO addresses 
-            (street, subdivision, barangay, city, province, region)
-            VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $item['juri_street'] ?? '',
-            $item['juri_subdivision'] ?? '',
-            $item['juri_barangay'] ?? '',
-            $item['juri_city'] ?? '',
-            $item['juri_province'] ?? '',
-            $item['juri_region'] ?? '',
-        ]);
-        $busAddressId = $con->lastInsertId();
+// ── export_report ────────────────────────────────────────────
+// Streams a downloadable CSV or PDF report of the filtered dataset.
+// GET ?action=export_report[&classification=][&status=][&sector=][&format=csv|pdf]
+// ─────────────────────────────────────────────────────────────
+if ($action === 'export_report') {
+    try {
+        $classification = trim($_GET['classification'] ?? '');
+        $status         = trim($_GET['status']         ?? '');
+        $sector         = trim($_GET['sector']         ?? '');
+        $format         = strtolower(trim($_GET['format'] ?? 'csv'));
 
-        $stmt = $con->prepare("INSERT INTO juridicals
-            (entity_no, name, registration_type, bus_status, capitalization,
-             contact_no, contact_email, line_of_industry,
-             employer_id, address_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $entityNo,
-            $item['juri_name'] ?? '',
-            $item['type_organization'] ?? '',
-            $item['status'] ?? '',
-            0,
-            $item['contact_no'] ?? '',
-            $item['contact_email'] ?? '',
-            $item['line_of_industry'] ?? '',
-            $employerId,
-            $busAddressId,
-        ]);
+        $conditions = [];
+        $params     = [];
 
-        $con->commit();
-        return ['status' => 'success', 'message' => 'Business imported successfully.'];
+        if ($classification !== '') {
+            $conditions[] = 'LOWER(j.category) = LOWER(?)';
+            $params[]     = $classification;
+        }
+        if ($status !== '') {
+            $conditions[] = 'LOWER(j.bus_status) = LOWER(?)';
+            $params[]     = $status;
+        }
+        if ($sector !== '') {
+            $conditions[] = 'j.line_of_industry = ?';
+            $params[]     = $sector;
+        }
 
-    } catch (Exception $e) {
-        $con->rollBack();
-        return ['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()];
+        $where = count($conditions) ? ' WHERE ' . implode(' AND ', $conditions) : '';
+
+        $stmt = $con->prepare(
+            "SELECT
+                j.entity_no,
+                j.name,
+                j.category,
+                j.bus_status,
+                j.registration_type,
+                j.line_of_industry,
+                j.capitalization,
+                j.contact_no,
+                j.contact_email,
+                e.full_name AS owner_name
+             FROM juridicals j
+             LEFT JOIN employers e ON j.employer_id = e.id" .
+            $where .
+            " ORDER BY j.name ASC"
+        );
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $filterLabel  = 'Classification: ' . ($classification ?: 'All');
+        $filterLabel .= ' | Status: '       . ($status         ?: 'All');
+        $filterLabel .= ' | Sector: '       . ($sector         ?: 'All');
+        $dateLabel    = date('F d, Y');
+
+        // ── CSV export ────────────────────────────────────────────────
+        if ($format === 'csv') {
+            header('Content-Type: text/csv; charset=UTF-8');
+            header('Content-Disposition: attachment; filename="MSME_Report_' . date('Ymd') . '.csv"');
+            header('Cache-Control: no-cache, no-store, must-revalidate');
+
+            $out = fopen('php://output', 'w');
+            // BOM for Excel UTF-8 compatibility
+            fwrite($out, "\xEF\xBB\xBF");
+
+            fputcsv($out, ['San Carlos City Negosyo Center — MSME Report']);
+            fputcsv($out, [$filterLabel]);
+            fputcsv($out, ['Generated: ' . $dateLabel]);
+            fputcsv($out, []);
+            fputcsv($out, ['Entity No.', 'Business Name', 'Classification', 'Status',
+                           'Registration Type', 'Sector / Line of Industry',
+                           'Capitalization', 'Contact No.', 'Email', 'Owner Name']);
+
+            foreach ($rows as $r) {
+                fputcsv($out, [
+                    $r['entity_no'],
+                    $r['name'],
+                    $r['category'],
+                    $r['bus_status'],
+                    $r['registration_type'],
+                    $r['line_of_industry'],
+                    $r['capitalization'],
+                    $r['contact_no'],
+                    $r['contact_email'],
+                    $r['owner_name'],
+                ]);
+            }
+            fclose($out);
+            exit;
+        }
+
+        // ── PDF export via TCPDF ──────────────────────────────────────
+        if ($format === 'pdf') {
+            $tcpdfPath = __DIR__ . '/../plugins/TCPDF-6.7.5/tcpdf.php';
+            if (!file_exists($tcpdfPath)) {
+                echo json_encode(['status' => 'error', 'message' => 'TCPDF not found.']);
+                exit;
+            }
+            require_once $tcpdfPath;
+
+            $pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
+            $pdf->SetCreator('Negosyo Center NCIMS');
+            $pdf->SetAuthor('San Carlos City');
+            $pdf->SetTitle('MSME Report');
+            $pdf->SetSubject($filterLabel);
+            $pdf->setPrintHeader(false);
+            $pdf->setPrintFooter(false);
+            $pdf->SetMargins(10, 10, 10);
+            $pdf->SetAutoPageBreak(true, 10);
+            $pdf->AddPage();
+
+            // Title block
+            $pdf->SetFont('helvetica', 'B', 13);
+            $pdf->Cell(0, 7, 'San Carlos City Negosyo Center — MSME Report', 0, 1, 'C');
+            $pdf->SetFont('helvetica', '', 9);
+            $pdf->Cell(0, 5, $filterLabel, 0, 1, 'C');
+            $pdf->Cell(0, 5, 'Generated: ' . $dateLabel, 0, 1, 'C');
+            $pdf->Ln(3);
+
+            // Table header
+            $pdf->SetFillColor(52, 58, 64);
+            $pdf->SetTextColor(255, 255, 255);
+            $pdf->SetFont('helvetica', 'B', 8);
+            $colW = [28, 60, 22, 20, 25, 50, 25, 28, 50, 40];
+            $headers = ['Entity No.', 'Business Name', 'Category', 'Status',
+                        'Reg. Type', 'Sector', 'Capital', 'Contact', 'Email', 'Owner'];
+            foreach ($headers as $i => $h) {
+                $pdf->Cell($colW[$i], 6, $h, 1, 0, 'C', true);
+            }
+            $pdf->Ln();
+
+            // Table rows
+            $pdf->SetTextColor(0, 0, 0);
+            $pdf->SetFont('helvetica', '', 7);
+            $fill = false;
+            foreach ($rows as $r) {
+                $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
+                $cells = [
+                    $r['entity_no'], $r['name'], $r['category'], $r['bus_status'],
+                    $r['registration_type'], $r['line_of_industry'],
+                    number_format((float)($r['capitalization'] ?? 0), 2),
+                    $r['contact_no'], $r['contact_email'], $r['owner_name']
+                ];
+                foreach ($cells as $i => $val) {
+                    $pdf->Cell($colW[$i], 5, $val, 1, 0, 'L', true);
+                }
+                $pdf->Ln();
+                $fill = !$fill;
+            }
+
+            // Summary footer
+            $pdf->Ln(3);
+            $pdf->SetFont('helvetica', 'B', 8);
+            $pdf->Cell(0, 5, 'Total Records: ' . count($rows), 0, 1, 'R');
+
+            $pdf->Output('MSME_Report_' . date('Ymd') . '.pdf', 'D');
+            exit;
+        }
+
+        // Unknown format
+        echo json_encode(['status' => 'error', 'message' => 'Unknown format. Use csv or pdf.']);
+        exit;
+
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        exit;
     }
 }

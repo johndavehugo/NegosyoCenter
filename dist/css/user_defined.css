@@ -387,3 +387,614 @@ input[type="number"] {
 }
 
 /* #table_expired_franchise.dataTable tbody td {} */
+
+/* =============================================================
+   MSME PAGE — Material Admin Pro reskin
+   All rules below are scoped to .msme-* classes or components
+   used exclusively on the MSME page. Safe to add here without
+   affecting any other page.
+   ============================================================= */
+
+/* ---- Typography ---- */
+body {
+  font-family: "Roboto", "Asap", sans-serif;
+}
+
+/* ---- Raised buttons ---- */
+.btn-raised-primary {
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.35);
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.btn-raised-primary:hover,
+.btn-raised-primary:focus {
+  color: #fff;
+  background-color: #0069d9;
+  border-color: #0062cc;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.45);
+}
+
+.btn-raised-success {
+  color: #fff;
+  background-color: #28a745;
+  border-color: #28a745;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.35);
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.btn-raised-success:hover,
+.btn-raised-success:focus {
+  color: #fff;
+  background-color: #218838;
+  border-color: #1e7e34;
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.45);
+}
+
+.btn-raised-danger {
+  color: #fff;
+  background-color: #dc3545;
+  border-color: #dc3545;
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.35);
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.btn-raised-danger:hover,
+.btn-raised-danger:focus {
+  color: #fff;
+  background-color: #c82333;
+  border-color: #bd2130;
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.45);
+}
+
+.btn-raised-secondary {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.35);
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.btn-raised-secondary:hover,
+.btn-raised-secondary:focus {
+  color: #fff;
+  background-color: #5a6268;
+  border-color: #545b62;
+  box-shadow: 0 4px 10px rgba(108, 117, 125, 0.45);
+}
+
+/* ---- Text (flat) buttons ---- */
+.btn-text-secondary {
+  color: #6c757d;
+  background-color: transparent;
+  border-color: transparent;
+  padding-left: 8px;
+  padding-right: 8px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.btn-text-secondary:hover,
+.btn-text-secondary:focus {
+  color: #495057;
+  background-color: rgba(108, 117, 125, 0.1);
+  border-color: transparent;
+}
+
+.btn-text-primary {
+  color: #007bff;
+  background-color: transparent;
+  border-color: transparent;
+  padding-left: 8px;
+  padding-right: 8px;
+  transition: background-color 0.15s ease;
+}
+.btn-text-primary:hover,
+.btn-text-primary:focus {
+  color: #0056b3;
+  background-color: rgba(0, 123, 255, 0.08);
+  border-color: transparent;
+}
+
+/* Leading icon alignment inside buttons */
+.btn .material-icons.leading-icon {
+  vertical-align: middle;
+  margin-right: 4px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* ---- Raised card ---- */
+.card-raised {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+}
+.card-raised:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ---- MSME modal — light background, Material style ---- */
+.msme-modal-content {
+  background-color: #fff;
+  color: #212529;
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.msme-modal-header {
+  border-bottom: 1px solid #e9ecef;
+  padding: 1rem 1.25rem 0.85rem;
+}
+
+.msme-modal-header .close {
+  color: #6c757d;
+  opacity: 0.7;
+}
+.msme-modal-header .close:hover {
+  color: #212529;
+  opacity: 1;
+}
+
+.msme-modal-footer {
+  border-top: 1px solid #e9ecef;
+  padding: 0.75rem 1.25rem;
+}
+
+/* ---- MSME form labels & inputs ---- */
+.msme-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+
+.msme-input {
+  border-radius: 4px;
+  border-color: #ced4da;
+  font-size: 0.9rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.msme-input-prefix {
+    color: #6c757d;
+}
+
+.msme-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.18);
+}
+.msme-input[readonly] {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+/* ---- MSME address section cards inside modals ---- */
+.msme-section-card {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  background-color: #fafafa;
+}
+.msme-section-header {
+  background-color: #f1f3f5;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #495057;
+  padding: 0.6rem 1rem;
+  border-radius: 6px 6px 0 0;
+}
+
+/* ---- View modal field layout ---- */
+.msme-view-field {
+  margin-bottom: 1rem;
+}
+.msme-view-field p {
+  margin-bottom: 0;
+  font-size: 0.95rem;
+  color: #212529;
+}
+.msme-view-field small {
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* ---- DataTable header override for MSME table ---- */
+#tblBusiness.dataTable thead th {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #495057;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+#tblBusiness.dataTable tbody td {
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.9rem;
+}
+
+/* ---- bs-stepper Material style overrides ---- */
+.bs-stepper .step-trigger:focus {
+  box-shadow: none;
+}
+.bs-stepper-circle {
+  background-color: #007bff;
+  font-weight: 500;
+}
+.bs-stepper .active .bs-stepper-circle {
+  background-color: #0056b3;
+  box-shadow: 0 2px 6px rgba(0, 86, 179, 0.4);
+}
+.bs-stepper-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #6c757d;
+}
+.bs-stepper .active .bs-stepper-label {
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* =============================================================
+   MSME UI Improvements — round 2
+   ============================================================= */
+
+/* ---- Broaden Material icon alignment inside buttons ---- */
+.btn .material-icons {
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* ---- card-raised: suppress hover lift on table wrapper ---- */
+.card-raised.no-hover:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* ---- Table action button (more_vert icon) ---- */
+.tbl-action-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.15s ease;
+}
+.tbl-action-btn:hover {
+  background-color: rgba(108, 117, 125, 0.12);
+}
+
+/* ---- Dropdown menu for table actions ---- */
+.tbl-action-menu {
+  min-width: 140px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 4px 0;
+}
+.tbl-action-menu .dropdown-item {
+  font-size: 0.875rem;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #495057;
+  transition: background-color 0.1s ease;
+}
+.tbl-action-menu .dropdown-item:hover {
+  background-color: #f1f3f5;
+  color: #212529;
+}
+.tbl-action-icon {
+  font-size: 16px !important;
+  color: #6c757d;
+}
+
+/* ---- View modal: entity number chips ---- */
+.msme-entity-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #e9ecef;
+  color: #495057;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.msme-entity-chip i {
+  color: #6c757d;
+}
+
+/* ---- View modal: field label icons ---- */
+.msme-view-icon {
+  font-size: 13px !important;
+  vertical-align: middle;
+  margin-right: 3px;
+  margin-bottom: 1px;
+  color: #adb5bd;
+}
+
+/* ---- Renew modal: readonly label lock icon ---- */
+.msme-readonly-icon {
+  font-size: 11px !important;
+  vertical-align: middle;
+  margin-right: 3px;
+  color: #adb5bd;
+}
+
+/* =============================================================
+   MSME Table Styling — round 3
+   ============================================================= */
+
+/* ---- MSME category badges ---- */
+.badge.msme-badge-micro {
+  background-color: #cfe2ff;
+  color: #084298;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+.badge.msme-badge-small {
+  background-color: #d1e7dd;
+  color: #0a3622;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+.badge.msme-badge-medium {
+  background-color: #ffe5c8;
+  color: #7d3a00;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+.badge.msme-badge-large {
+  background-color: #e8d8fa;
+  color: #3b0a6e;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+.badge.msme-badge-unknown {
+  background-color: #e9ecef;
+  color: #6c757d;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+
+/* ---- Table row hover highlight ---- */
+#tblBusiness.dataTable tbody tr {
+  transition: background-color 0.1s ease;
+}
+#tblBusiness.dataTable tbody tr:hover > td {
+  background-color: rgba(0, 123, 255, 0.04) !important;
+}
+
+/* ---- Search input with leading icon ---- */
+.tbl-search-label {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center;
+  margin-bottom: 0;
+}
+.tbl-search-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 18px !important;
+  color: #adb5bd;
+  pointer-events: none;
+  z-index: 1;
+}
+.tbl-search-input {
+  padding-left: 34px !important;
+  border-radius: 20px !important;
+  border: 1px solid #dee2e6 !important;
+  font-size: 0.875rem;
+  height: 34px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.tbl-search-input:focus {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15) !important;
+  outline: none;
+}
+
+/* ---- Truncated table cell text ---- */
+.tbl-cell-truncate {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  cursor: default;
+}
+
+/* =============================================================
+   View modal — status & classification badges  (round 4)
+   ============================================================= */
+
+/* ---- Application Status badges ---- */
+.badge.msme-badge-status-new {
+  background-color: #cfe2ff;
+  color: #084298;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+.badge.msme-badge-status-approved {
+  background-color: #d1e7dd;
+  color: #0a3622;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+.badge.msme-badge-status-pending {
+  background-color: #ffe5c8;
+  color: #7d3a00;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+.badge.msme-badge-status-rejected {
+  background-color: #f8d7da;
+  color: #842029;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+
+/* ---- Business Status badges ---- */
+.badge.msme-badge-status-active {
+  background-color: #d1e7dd;
+  color: #0a3622;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+.badge.msme-badge-status-inactive {
+  background-color: #e9ecef;
+  color: #495057;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+.badge.msme-badge-status-closed {
+  background-color: #f8d7da;
+  color: #842029;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  letter-spacing: 0.03em;
+}
+
+/* ---- View modal value text ---- */
+.msme-view-value {
+  font-size: 0.95rem;
+  color: #212529;
+  margin-bottom: 0;
+}
+
+/* =============================================================
+   View modal — typography cleanup  (round 5)
+   Matches the label-above-value mockup pattern exactly.
+   ============================================================= */
+
+/* Hide inline field icons inside the view modal —
+   section headers already carry the icon context        */
+#viewBusinessModal .msme-view-field .msme-view-icon {
+  display: none;
+}
+
+/* Field block spacing — tighter, consistent rhythm       */
+#viewBusinessModal .msme-view-field {
+  margin-bottom: 1.1rem;
+}
+#viewBusinessModal .msme-view-field.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+/* Label: small, muted, clean — no icon clutter           */
+#viewBusinessModal .msme-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+
+/* Value: normal weight, readable size, dark              */
+#viewBusinessModal .msme-view-value {
+  font-size: 0.925rem;
+  font-weight: 400;
+  color: #1a1a2e;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+/* Card body padding — matches mockup's inner whitespace  */
+#viewBusinessModal .msme-section-card .card-body {
+  padding: 1rem 1.1rem 0.75rem;
+}
+
+/* Section header — slightly lighter feel                 */
+#viewBusinessModal .msme-section-header {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  padding: 0.55rem 1.1rem;
+}
+
+/* Entity chips — subtler, inline with body font          */
+#viewBusinessModal .msme-entity-chip {
+  font-size: 0.75rem;
+  padding: 2px 10px 2px 8px;
+  background-color: #f1f3f5;
+  color: #6c757d;
+}
+#viewBusinessModal .msme-entity-chip strong {
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Modal body top padding                                 */
+#viewBusinessModal .modal-body {
+  padding: 1rem 1.25rem 0.75rem;
+}
+
+/* =============================================================
+   Locked / read-only input fields  (Entity No in Add Business)
+   ============================================================= */
+
+/* Locked input — visually distinct from editable fields */
+.msme-input-locked {
+    background-color: #f1f3f5 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    border-color: #ced4da !important;
+    /* Override any focus ring so it never looks interactive */
+    pointer-events: none;
+}
+.msme-input-locked:focus {
+    box-shadow: none !important;
+    border-color: #ced4da !important;
+}
+
+/* Small inline "Auto-filled" badge next to the label */
+.msme-locked-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background-color: #e9ecef;
+    color: #6c757d;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 1px 6px;
+    border-radius: 10px;
+    vertical-align: middle;
+}
+.msme-locked-badge .material-icons {
+    font-size: 11px !important;
+    line-height: 1;
+}
