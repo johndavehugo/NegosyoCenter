@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 19, 2026 at 05:01 AM
+-- Generation Time: Aug 19, 2026 at 08:41 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -46,11 +46,13 @@ CREATE TABLE `addresses` (
 INSERT INTO `addresses` (`id`, `upblb_num`, `street`, `subdivision`, `barangay`, `city`, `province`, `region`, `created_at`) VALUES
 ('addr-01a00da9-fc0f-7ff3-af4a-a225881c8a5c', '', '', '', '', '', '', '', '2026-08-17 03:00:39'),
 ('addr-01a00db7-91b8-762e-8c0a-a5df96812144', '', '', '', '', '', '', '', '2026-08-17 03:15:29'),
+('addr-07b219-c4f6-bd713747-f04c', '', '', '', 'Barangay II', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-19 06:12:39'),
 ('addr-23f6fc-1d90-5a0c76cb-c7a8', '', '', '', 'Barangay IV', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:14:37'),
 ('addr-24fc0b-ed00-f33c1320-2448', '', '', '', 'Barangay II', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-19 02:36:22'),
 ('addr-39e29a-ef81-5d971c6c-6cbe', '', '', '', 'Barangay IV', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-18 07:10:48'),
 ('addr-5340f9-ac48-931b724a-c8c7', '', 'F.C LEDESMA AVE.', '', 'Barangay II', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:13:49'),
 ('addr-5b4275-9dc3-8511f30a-cabf', '', '', '', 'Barangay III', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-18 07:10:48'),
+('addr-700c8f-26e3-e8b3fd4d-a629', '', 'Endrina CL ledesma  Ave. brgy 2', '', 'Barangay II', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-19 06:12:39'),
 ('addr-72b807-713c-3ab6ba6c-2ba4', 'enk', 'grove st', 'cheeseball', 'Suligan', 'Tabuan-Lasa', 'Basilan', 'Bangsamoro Autonomous Region In Muslim Mindanao (BARMM)', '2026-08-17 03:22:48'),
 ('addr-a37f49-6e25-3ab02132-b568', '', '', '', 'Rizal', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:13:28'),
 ('addr-c30504-230c-71902c84-6aba', '', 'RIZAL ST.', '', 'Barangay V', 'City of San Carlos', 'Negros Occidental', 'Negros Island Region (NIR)', '2026-08-17 03:00:39'),
@@ -214,6 +216,7 @@ INSERT INTO `employers` (`id`, `entity_no`, `full_name`, `address_id`, `created_
 ('emp-825fe4-9e95-256634cb-a24f', 'UCAWQC8632', 'VIPER\'S MUSCLE AND FITNESS GYM', 'addr-23f6fc-1d90-5a0c76cb-c7a8', '2026-08-17 03:14:37', '2026-08-17 03:14:37', 'None'),
 ('emp-8bbd88-c0f7-16a7db84-e163', 'DFEAHF7704', 'GLOBAL AUTHENTIC WEAR CORP.', 'addr-01a00da9-fc0f-7ff3-af4a-a225881c8a5c', '2026-08-17 03:00:39', '2026-08-17 03:00:39', 'None'),
 ('emp-9e128f-fdd2-95dc4e7b-ca9c', 'JEDVPA9659', 'CHARLENE\'S FASHION & BRIDAL RENTAL', 'addr-39e29a-ef81-5d971c6c-6cbe', '2026-08-18 07:10:48', '2026-08-18 07:10:48', 'None'),
+('emp-c2a965-f2e5-bcd9cce9-7cff', 'UMAGWO5478', 'MR. C FOODS', 'addr-07b219-c4f6-bd713747-f04c', '2026-08-19 06:12:39', '2026-08-19 06:12:39', 'None'),
 ('emp-d213f0-3f4e-a36a640f-1144', 'EGXAES7188', 'K.M.A. ARCHITECTURAL SERVICES', 'addr-ecf745-0c94-c0291dba-648b', '2026-08-19 02:36:22', '2026-08-19 02:36:22', 'None'),
 ('emp-fb7186-4db6-a295fba0-5a11', 'IAGOQR3354', 'CLICKPOINT SARI-SARI STORE', 'addr-fe1f3a-bfd2-4cee0ee2-b84b', '2026-08-17 03:13:49', '2026-08-17 03:13:49', 'None');
 
@@ -252,7 +255,8 @@ INSERT INTO `juridicals` (`id`, `entity_no`, `employer_id`, `address_id`, `name`
 ('neg-01a00db7-91b8-7248-b895-52fdfb6893da', 'BVBPWF6784', 'emp-051ec8-9c8b-d9fa5350-e86f', 'addr-d348f7-dfce-2d1d86d0-4613', 'LUMINISCENT INC.-GAISANO CAPITAL', 'NEW', 'ACTIVE', '09153531877', 'sayingga98@gmail.com', 'WHOLESALE AND RETAIL TRADE', 0.00, '2026-08-17 03:15:29', '2026-08-17 03:15:29'),
 ('neg-01a00dbe-46a6-7712-b958-8a27d579a59d', 'AAUKTT6112', 'emp-3fb7b9-e5e2-148d32a8-e337', 'addr-e8decc-8db5-7bfe3e86-8b2f', 'Epoy Flower Shop', 'NEW', 'ACTIVE', '111111111111111111111', 'epoy', 'FISHING', 9999999999999.99, '2026-08-17 03:22:48', '2026-08-17 08:46:55'),
 ('neg-01a013b5-5e99-7462-8f41-1323e5f8a342', 'ADDOTW9568', 'emp-9e128f-fdd2-95dc4e7b-ca9c', 'addr-5b4275-9dc3-8511f30a-cabf', 'CHARLENE\'S FASHION & BRIDAL RENTAL - S. CARMONA ST.', 'NEW', 'ACTIVE', '09122270903', 'cbratteng@yahoo.com', 'REAL ESTATE, RENTING, AND BUSINESS ACTIVITIES', 4000000.00, '2026-08-18 07:10:48', '2026-08-18 07:10:48'),
-('neg-01a017e0-7994-7fc9-a09d-dae142bc3728', 'AAAUJC2263', 'emp-d213f0-3f4e-a36a640f-1144', 'addr-24fc0b-ed00-f33c1320-2448', 'K.M.A. ARCHITECTURAL SERVICES - SAN JULIO SUBD.', 'NEW', 'ACTIVE', '09778198545', 'acabalkimbie@gmail.com', 'OTHER COMMUNITY, SOCIAL AND PERSONAL SERVICE ACTIVITIES', 6000000.00, '2026-08-19 02:36:22', '2026-08-19 02:36:22');
+('neg-01a017e0-7994-7fc9-a09d-dae142bc3728', 'AAAUJC2263', 'emp-d213f0-3f4e-a36a640f-1144', 'addr-24fc0b-ed00-f33c1320-2448', 'K.M.A. ARCHITECTURAL SERVICES - SAN JULIO SUBD.', 'NEW', 'ACTIVE', '09778198545', 'acabalkimbie@gmail.com', 'OTHER COMMUNITY, SOCIAL AND PERSONAL SERVICE ACTIVITIES', 6000000.00, '2026-08-19 02:36:22', '2026-08-19 02:36:22'),
+('neg-01a018a6-7f12-7c45-9569-9e9f862291f5', 'CQWDAN1025', 'emp-c2a965-f2e5-bcd9cce9-7cff', 'addr-700c8f-26e3-e8b3fd4d-a629', 'MR. C FOODS - CENTER MALL', 'NEW', 'ACTIVE', '09173014986', 'crizz_chef@yahoo.com', 'HOTELS AND RESTAURANTS', 9000000.00, '2026-08-19 06:12:39', '2026-08-19 06:12:39');
 
 -- --------------------------------------------------------
 
