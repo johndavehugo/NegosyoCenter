@@ -1,82 +1,152 @@
 <div class="modal fade" id="viewBusinessModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content" style="background-color: #343a40; color: white;">
+        <div class="modal-content msme-modal-content">
 
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title" id="viewBusinessName">Business Name</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            <!-- Header -->
+            <div class="modal-header msme-modal-header">
+                <h5 class="modal-title">
+                    <i class="material-icons text-primary align-middle mr-2" style="font-size:22px;">business</i><span id="viewBusinessName">Business Name</span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
 
-            <div class="modal-body">
+            <div class="modal-body pb-2">
 
-                <h6 class="text-info border-bottom border-secondary pb-2 mb-3">
-                    <i class="fas fa-store mr-2"></i>Business Information
-                </h6>
-                <table class="table table-sm table-dark table-striped">
-                    <tr>
-                        <th style="width: 40%;">Entity No.</th>
-                        <td id="viewEntityNo">—</td>
-                    </tr>
-                    <tr>
-                        <th>Application Status</th>
-                        <td id="viewAppStatus">—</td>
-                    </tr>
-                    <tr>
-                        <th>Business Status</th>
-                        <td id="viewBusStatus">—</td>
-                    </tr>
-                    <tr>
-                        <th>Capitalization</th>
-                        <td id="viewCapitalization">—</td>
-                    </tr>
-                    <tr>
-                        <th>Contact No.</th>
-                        <td id="viewContactNo">—</td>
-                    </tr>
-                    <tr>
-                        <th>Email</th>
-                        <td id="viewEmail">—</td>
-                    </tr>
-                    <tr>
-                        <th>Business Sector / Product Line</th>
-                        <td id="viewSector">—</td>
-                    </tr>
-                    <tr>
-                        <th>Enterprise Classification</th>
-                        <td id="viewClassification">—</td>
-                    </tr>
-                    <tr>
-                        <th>Business Address</th>
-                        <td id="viewBusAddress">—</td>
-                    </tr>
-                </table>
+                <!-- Entity reference pills -->
+                <div class="d-flex flex-wrap mb-3">
+                    <span class="msme-entity-chip mr-2">
+                        <i class="material-icons" style="font-size:14px;vertical-align:middle;">tag</i>
+                        Business: <strong id="viewEntityNo">—</strong>
+                    </span>
+                    <span class="msme-entity-chip">
+                        <i class="material-icons" style="font-size:14px;vertical-align:middle;">tag</i>
+                        Owner: <strong id="viewOwnerEntityNo">—</strong>
+                    </span>
+                </div>
 
-                <h6 class="text-info border-bottom border-secondary pb-2 my-3">
-                    <i class="fas fa-user mr-2"></i>Owner Information
-                </h6>
-                <table class="table table-sm table-dark table-striped">
-                    <tr>
-                        <th style="width: 40%;">Owner</th>
-                        <td id="viewOwner">—</td>
-                    </tr>
-                    <tr>
-                        <th>Entity No.</th>
-                        <td id="viewOwnerEntityNo">—</td>
-                    </tr>
-                    <tr>
-                        <th>Special Sector Classification</th>
-                        <td id="viewSpecialSector">—</td>
-                    </tr>
-                    <tr>
-                        <th>Owner Address</th>
-                        <td id="viewOwnerAddress">—</td>
-                    </tr>
-                </table>
+                <!-- ── Business Info ───────────────────────────────── -->
+                <div class="card msme-section-card mb-3">
+                    <div class="card-header msme-section-header">
+                        <i class="material-icons text-primary align-middle mr-1" style="font-size:18px;">storefront</i>Business Info
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+
+                            <!-- Left column -->
+                            <div class="col-md-6">
+                                <div class="msme-view-field">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">person</i>Owner
+                                    </label>
+                                    <p id="viewOwner" class="msme-view-value">—</p>
+                                </div>
+                                <div class="msme-view-field">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">payments</i>Capitalization
+                                    </label>
+                                    <p id="viewCapitalization" class="msme-view-value">—</p>
+                                </div>
+                                <div class="msme-view-field">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">assignment_turned_in</i>Application Status
+                                    </label>
+                                    <p class="msme-view-value mb-0"><span id="viewAppStatus">—</span></p>
+                                </div>
+                            </div>
+
+                            <!-- Right column -->
+                            <div class="col-md-6">
+                                <div class="msme-view-field">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">store</i>Business Status
+                                    </label>
+                                    <p class="msme-view-value"><span id="viewBusStatus">—</span></p>
+                                </div>
+                                <div class="msme-view-field">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">phone</i>Contact No.
+                                    </label>
+                                    <p id="viewContactNo" class="msme-view-value">—</p>
+                                </div>
+                                <div class="msme-view-field">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">email</i>Email
+                                    </label>
+                                    <p id="viewEmail" class="msme-view-value mb-0">—</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Addresses ───────────────────────────────────── -->
+                <div class="card msme-section-card mb-3">
+                    <div class="card-header msme-section-header">
+                        <i class="material-icons text-primary align-middle mr-1" style="font-size:18px;">location_on</i>Addresses
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="msme-view-field mb-0">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">storefront</i>Business Address
+                                    </label>
+                                    <p id="viewBusAddress" class="msme-view-value mb-0">—</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="msme-view-field mb-0">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">home</i>Owner Address
+                                    </label>
+                                    <p id="viewOwnerAddress" class="msme-view-value mb-0">—</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Classification ──────────────────────────────── -->
+                <div class="card msme-section-card mb-0">
+                    <div class="card-header msme-section-header">
+                        <i class="material-icons text-primary align-middle mr-1" style="font-size:18px;">category</i>Classification
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="msme-view-field mb-0">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">inventory_2</i>Sector / Product Line
+                                    </label>
+                                    <p id="viewSector" class="msme-view-value mb-0">—</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="msme-view-field mb-0">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">corporate_fare</i>Enterprise Class
+                                    </label>
+                                    <p class="msme-view-value mb-0"><span id="viewClassification">—</span></p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="msme-view-field mb-0">
+                                    <label class="msme-label">
+                                        <i class="material-icons msme-view-icon">group</i>Special Sector
+                                    </label>
+                                    <p id="viewSpecialSector" class="msme-view-value mb-0">—</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
 
-            <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <!-- Footer -->
+            <div class="modal-footer msme-modal-footer">
+                <button type="button" class="btn btn-text-secondary" data-dismiss="modal">Close</button>
             </div>
 
         </div>
