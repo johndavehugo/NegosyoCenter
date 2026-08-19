@@ -27,16 +27,79 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.min.css">
 
     <style>
-        #tblCalamityIncidents.dataTable thead th {
-            background-color: #343a40;
-            border-color: #4b545c;
+        /* ── Calamity page: blue & red theme ── */
+        :root {
+            --cal-blue: #1a3a6b;
+            --cal-blue-mid: #1e4db7;
+            --cal-blue-light: #2563eb;
+            --cal-red: #c0392b;
+            --cal-red-light: #e74c3c;
+        }
+
+        /* Navbar */
+        .main-header.navbar {
+            background-color: var(--cal-blue) !important;
+        }
+
+        /* Sidebar */
+        .main-sidebar {
+            background-color: var(--cal-blue) !important;
+        }
+        .main-sidebar .nav-sidebar .nav-item .nav-link {
+            color: #cfd8f0 !important;
+        }
+        .main-sidebar .nav-sidebar .nav-item .nav-link.active,
+        .main-sidebar .nav-sidebar .nav-item .nav-link:hover {
+            background-color: var(--cal-red) !important;
+            color: #fff !important;
+        }
+        .brand-link {
+            background-color: var(--cal-blue) !important;
+            border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+        }
+
+        /* Page card header */
+        .card {
+            border-top: 4px solid var(--cal-red);
+        }
+        .card .card-body h2 {
+            color: var(--cal-blue);
+            font-weight: 700;
+        }
+
+        /* DataTable header */
+        #tblCalamityIncidents.dataTable thead th,
+        #tblAffectedBusinesses.dataTable thead th {
+            background-color: var(--cal-blue) !important;
+            border-color: var(--cal-blue-mid) !important;
             color: white;
             text-align: center;
         }
 
-        #tblCalamityIncidents.dataTable tbody td {
+        #tblCalamityIncidents.dataTable tbody td,
+        #tblAffectedBusinesses.dataTable tbody td {
             text-align: center;
             vertical-align: middle !important;
+        }
+
+        /* Buttons */
+        #btn_add_calamity {
+            background-color: var(--cal-red) !important;
+            border-color: var(--cal-red) !important;
+            color: #fff !important;
+        }
+        #btn_add_calamity:hover {
+            background-color: var(--cal-red-light) !important;
+            border-color: var(--cal-red-light) !important;
+        }
+        #btn_add_incident {
+            background-color: var(--cal-blue-light) !important;
+            border-color: var(--cal-blue-light) !important;
+            color: #fff !important;
+        }
+        #btn_add_incident:hover {
+            background-color: var(--cal-blue-mid) !important;
+            border-color: var(--cal-blue-mid) !important;
         }
 
         .btn-outline-info-custom {
@@ -163,6 +226,7 @@
     <!-- REQUIRED SCRIPTS -->
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../plugins/select2/js/select2.min.js"></script>
     <script src="../../dist/js/adminlte.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>

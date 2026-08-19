@@ -1,7 +1,7 @@
 <form id="addCalamityForm" method="POST">
 <div class="modal fade" id="addCalamityModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content" style="background-color: #343a40; color: white;">
+        <div class="modal-content" style="background-color: #1a3a6b; color: white;">
 
             <div class="modal-header border-secondary">
                 <h5 class="modal-title">Add Calamity</h5>
@@ -49,7 +49,7 @@
 
             <div class="modal-footer border-secondary">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-success" id="btnSaveCalamity" onclick="addCalamity()">Save</button>
+                <button type="button" class="btn btn-danger" id="btnSaveCalamity" onclick="addCalamity()">Save</button>
             </div>
 
         </div>
