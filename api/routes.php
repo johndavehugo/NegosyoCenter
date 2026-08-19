@@ -6,9 +6,11 @@ error_reporting(E_ALL);
 
 header('Content-Type: application/json');
 
+
 require_once 'controllers/MSMEController.php';
 require_once 'controllers/CalamityController.php';
 require_once 'controllers/PriceMonitoringController.php';
+
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -79,6 +81,8 @@ switch ($resource) {
         } elseif ($method === 'PUT') {
             $controller = new CalamityController();
             $response = $controller->updateIncident($input);
+
+
         } else {
             http_response_code(405);
             $response = ['status' => 'error', 'message' => 'Invalid request method for /calamity. Please use GET, POST, or PUT.'];
@@ -314,7 +318,5 @@ $response = $controller->getPrices($agencyId);
         ];
         break;
 }
-
-
 
 echo json_encode($response);
