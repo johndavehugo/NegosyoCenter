@@ -139,6 +139,46 @@ INSERT INTO `calamity_incidents` (`id`, `juridical_id`, `calamity_id`, `date_occ
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `calamity_incident_businesses`
+--
+
+CREATE TABLE `calamity_incident_businesses` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `incident_id` bigint(20) UNSIGNED NOT NULL,
+  `juridical_id` varchar(100) NOT NULL,
+  `date_occurred` date DEFAULT NULL,
+  `nature_of_damage` enum('PARTIAL','TOTAL') DEFAULT NULL,
+  `status` enum('PENDING_VERIFICATION','VERIFIED','AID_RELEASED') DEFAULT 'VERIFIED',
+  `estimated_cost_of_damages` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `remarks` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Indexes for table `calamity_incident_businesses`
+--
+
+ALTER TABLE `calamity_incident_businesses`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_incident_business` (`incident_id`,`juridical_id`),
+  ADD KEY `idx_incident` (`incident_id`);
+
+--
+-- AUTO_INCREMENT for table `calamity_incident_businesses`
+--
+
+ALTER TABLE `calamity_incident_businesses`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for table `calamity_incident_businesses`
+--
+
+ALTER TABLE `calamity_incident_businesses`
+  ADD CONSTRAINT `fk_ib_incident` FOREIGN KEY (`incident_id`) REFERENCES `calamity_incidents` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `commodities`
 --
 

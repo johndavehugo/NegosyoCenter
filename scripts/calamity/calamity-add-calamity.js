@@ -21,7 +21,7 @@ function addCalamity() {
         if (res.status === 'success') {
             Swal.fire('Success!', res.message, 'success');
             $('#addCalamityModal').modal('hide');
-            $('#tblCalamityIncidents').DataTable().ajax.reload();
+            reloadCalamityTable();
             document.getElementById('addCalamityForm').reset();
         } else {
             Swal.fire('Error', res.message, 'error');
