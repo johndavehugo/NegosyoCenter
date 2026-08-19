@@ -3,7 +3,11 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
+<<<<<<< Updated upstream
 -- Generation Time: Aug 17, 2026 at 06:48 AM
+=======
+-- Generation Time: Aug 17, 2026 at 03:53 AM
+>>>>>>> Stashed changes
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -60,6 +64,29 @@ INSERT INTO `addresses` (`id`, `upblb_num`, `street`, `subdivision`, `barangay`,
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `agencies`
+--
+
+CREATE TABLE `agencies` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `code` varchar(20) NOT NULL,
+  `name` varchar(150) NOT NULL,
+  `coverage` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `agencies`
+--
+
+INSERT INTO `agencies` (`id`, `code`, `name`, `coverage`, `created_at`) VALUES
+(1, 'DTI', 'Department of Trade and Industry', 'Basic Necessities and Prime Commodities (BNPC)', '2026-08-03 05:15:08'),
+(2, 'DA', 'Department of Agriculture', 'Agricultural commodities', '2026-08-03 05:15:08'),
+(3, 'DOE', 'Department of Energy', 'Petroleum products', '2026-08-03 05:15:08');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `calamities`
 --
 
@@ -78,8 +105,12 @@ CREATE TABLE `calamities` (
 
 INSERT INTO `calamities` (`id`, `name`, `calamity_type`, `declaration_date`, `description`, `created_at`) VALUES
 (1, 'Bagyong Kyle', 'TYPHOON', '0000-00-00', 'AHHH bagyo', '2026-07-29 00:46:58'),
+<<<<<<< Updated upstream
 (2, 'Bagyong Frenk', 'LANDSLIDE', '2026-08-01', 'Frenk gaunsa ka diha frenk', '2026-08-06 00:24:02'),
 (3, 'Bagyong Belly', 'TYPHOON', '2026-08-11', 'Cheeseball', '2026-08-11 07:02:44');
+=======
+(2, 'BAGYONG BILLY', 'FLOOD', '2026-08-02', 'rdryhtfu', '2026-08-03 05:11:48');
+>>>>>>> Stashed changes
 
 -- --------------------------------------------------------
 
@@ -106,6 +137,56 @@ CREATE TABLE `calamity_incidents` (
 
 INSERT INTO `calamity_incidents` (`id`, `juridical_id`, `calamity_id`, `date_occurred`, `nature_of_damage`, `estimated_cost_of_damages`, `remarks`, `status`, `created_at`, `updated_at`) VALUES
 (2, '1', 3, '2026-08-11', 'PARTIAL', 80000.00, '', 'AID_RELEASED', '2026-08-11 07:07:38', '2026-08-11 07:08:11');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `commodities`
+--
+
+CREATE TABLE `commodities` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `category_id` bigint(20) UNSIGNED NOT NULL,
+  `product_name` varchar(150) NOT NULL,
+  `brand_name` varchar(100) DEFAULT NULL,
+  `unit_of_measure` varchar(50) NOT NULL DEFAULT '1 kg',
+  `srp` decimal(10,2) DEFAULT NULL,
+  `agency_id` bigint(20) UNSIGNED NOT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `commodities`
+--
+
+INSERT INTO `commodities` (`id`, `category_id`, `product_name`, `brand_name`, `unit_of_measure`, `srp`, `agency_id`, `is_active`, `created_at`, `updated_at`) VALUES
+(65, 2, 'mais', '5', '5', 58.00, 2, 1, '2026-08-17 00:37:10', '2026-08-17 00:41:58');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `commodity_categories`
+--
+
+CREATE TABLE `commodity_categories` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `agency_id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `commodity_categories`
+--
+
+INSERT INTO `commodity_categories` (`id`, `agency_id`, `name`, `created_at`) VALUES
+(1, 1, 'Canned Goods & Processed Foods', '2026-08-03 05:15:08'),
+(2, 2, 'Grains & Rice', '2026-08-03 05:15:08'),
+(3, 2, 'Vegetables & Root Crops', '2026-08-03 05:15:08'),
+(4, 2, 'Livestock & Poultry Products', '2026-08-03 05:15:08'),
+(5, 3, 'Fuel & Petroleum Products', '2026-08-03 05:15:08');
 
 -- --------------------------------------------------------
 
@@ -170,6 +251,28 @@ INSERT INTO `juridicals` (`id`, `entity_no`, `employer_id`, `address_id`, `name`
 ('neg-01a00db7-91b8-7248-b895-52fdfb6893da', 'BVBPWF6784', 'emp-051ec8-9c8b-d9fa5350-e86f', 'addr-d348f7-dfce-2d1d86d0-4613', 'LUMINISCENT INC.-GAISANO CAPITAL', 'NEW', 'ACTIVE', '09153531877', 'sayingga98@gmail.com', 'WHOLESALE AND RETAIL TRADE', 0.00, '2026-08-17 03:15:29', '2026-08-17 03:15:29'),
 ('neg-01a00dbe-46a6-7712-b958-8a27d579a59d', 'AAUKTT6112', 'emp-3fb7b9-e5e2-148d32a8-e337', 'addr-e8decc-8db5-7bfe3e86-8b2f', 'Epoy Flower Shop', 'NEW', 'ACTIVE', '111111111111111111111', 'epoy', 'FISHING', 9999999999999.99, '2026-08-17 03:22:48', '2026-08-17 03:53:19');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `price_logs`
+--
+
+CREATE TABLE `price_logs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `commodity_id` bigint(20) UNSIGNED NOT NULL,
+  `prevailing_price` decimal(10,2) NOT NULL,
+  `status` enum('WITHIN_SRP','OVERPRICED','BELOW_SRP') DEFAULT 'WITHIN_SRP',
+  `monitored_by_agency_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `monitored_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `price_logs`
+--
+
+INSERT INTO `price_logs` (`id`, `commodity_id`, `prevailing_price`, `status`, `monitored_by_agency_id`, `monitored_at`) VALUES
+(38, 65, 56.00, 'BELOW_SRP', 2, '2026-08-17 00:41:58');
+
 --
 -- Indexes for dumped tables
 --
@@ -180,6 +283,13 @@ INSERT INTO `juridicals` (`id`, `entity_no`, `employer_id`, `address_id`, `name`
 ALTER TABLE `addresses`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_address_location` (`city`,`barangay`);
+
+--
+-- Indexes for table `agencies`
+--
+ALTER TABLE `agencies`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `code` (`code`);
 
 --
 -- Indexes for table `calamities`
@@ -195,6 +305,20 @@ ALTER TABLE `calamity_incidents`
   ADD KEY `idx_juridical` (`juridical_id`),
   ADD KEY `idx_calamity` (`calamity_id`),
   ADD KEY `idx_damage_date` (`date_occurred`,`nature_of_damage`);
+
+--
+-- Indexes for table `commodities`
+--
+ALTER TABLE `commodities`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_commodity_category` (`category_id`);
+
+--
+-- Indexes for table `commodity_categories`
+--
+ALTER TABLE `commodity_categories`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_category_agency` (`agency_id`);
 
 --
 -- Indexes for table `employers`
@@ -215,20 +339,81 @@ ALTER TABLE `juridicals`
   ADD KEY `juridicals_ibfk_2` (`address_id`);
 
 --
+-- Indexes for table `price_logs`
+--
+ALTER TABLE `price_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_price_commodity` (`commodity_id`),
+  ADD KEY `idx_monitored_agency` (`monitored_by_agency_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+<<<<<<< Updated upstream
+-- AUTO_INCREMENT for table `calamities`
+--
+ALTER TABLE `calamities`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+=======
+-- AUTO_INCREMENT for table `addresses`
+--
+ALTER TABLE `addresses`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `agencies`
+--
+ALTER TABLE `agencies`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `calamities`
 --
 ALTER TABLE `calamities`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+>>>>>>> Stashed changes
 
 --
 -- AUTO_INCREMENT for table `calamity_incidents`
 --
 ALTER TABLE `calamity_incidents`
+<<<<<<< Updated upstream
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+=======
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `commodities`
+--
+ALTER TABLE `commodities`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+
+--
+-- AUTO_INCREMENT for table `commodity_categories`
+--
+ALTER TABLE `commodity_categories`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `employers`
+--
+ALTER TABLE `employers`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `juridicals`
+--
+ALTER TABLE `juridicals`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `price_logs`
+--
+ALTER TABLE `price_logs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+>>>>>>> Stashed changes
 
 --
 -- Constraints for dumped tables
@@ -242,6 +427,18 @@ ALTER TABLE `calamity_incidents`
   ADD CONSTRAINT `fk_incident_juridical` FOREIGN KEY (`juridical_id`) REFERENCES `juridicals` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Constraints for table `commodities`
+--
+ALTER TABLE `commodities`
+  ADD CONSTRAINT `fk_commodity_category` FOREIGN KEY (`category_id`) REFERENCES `commodity_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `commodity_categories`
+--
+ALTER TABLE `commodity_categories`
+  ADD CONSTRAINT `fk_category_agency` FOREIGN KEY (`agency_id`) REFERENCES `agencies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints for table `employers`
 --
 ALTER TABLE `employers`
@@ -253,6 +450,13 @@ ALTER TABLE `employers`
 ALTER TABLE `juridicals`
   ADD CONSTRAINT `juridicals_ibfk_1` FOREIGN KEY (`employer_id`) REFERENCES `employers` (`id`),
   ADD CONSTRAINT `juridicals_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `addresses` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `price_logs`
+--
+ALTER TABLE `price_logs`
+  ADD CONSTRAINT `fk_price_agency` FOREIGN KEY (`monitored_by_agency_id`) REFERENCES `agencies` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_price_commodity` FOREIGN KEY (`commodity_id`) REFERENCES `commodities` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

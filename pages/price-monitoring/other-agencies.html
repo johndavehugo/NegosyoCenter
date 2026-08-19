@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>San Carlos City | Other Agencies Price Monitoring</title>
+
+    <!-- Fonts & Plugins -->
+    <link rel="stylesheet" href="../../dist/css/font.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap4.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.2/css/responsive.bootstrap4.css">
+    
+    <!-- FontAwesome 6 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="../../plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="../../plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="../../dist/css/user_defined.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.min.css">
+    <link rel="icon" type="image/png" sizes="40x16" href="../../dist/img/splogo.png">
+    <style>
+        .table td { vertical-align: middle !important; }
+        .badge-overpriced { background-color: #dc3545; color: white; }
+        .badge-compliant { background-color: #28a745; color: white; }
+        
+        /* Banner Styling */
+        .page-header-banner {
+            background: linear-gradient(135deg, #0056b3 0%, #003366 100%);
+            color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header-logo {
+            max-height: 75px;
+            width: auto;
+            object-fit: contain;
+        }
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav class="main-header navbar sticky-top navbar-expand navbar-dark">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fa-solid fa-bars"></i></a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar Include -->
+        <?php include '../../pages/sidebar/sidebar.php'; ?>
+
+        <!-- Content Wrapper -->
+        <div id="body_wrapper" class="content-wrapper">
+            <div class="content mt-3">
+                <div class="container-fluid">
+
+                    <!-- Page Title Banner -->
+                    <div class="card page-header-banner mb-3 border-0">
+                        <div class="card-body py-3">
+                            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between text-center text-md-left">
+                                <div class="d-flex align-items-center mb-2 mb-md-0">
+                                    <img src="../../dist/img/splogo.png" alt="San Carlos Logo" class="header-logo mr-md-3 mb-2 mb-md-0">
+                                    <div>
+                                        <h2 class="m-0 font-weight-bold">Other Agencies Price Monitoring Module</h2>
+                                        <p class="mb-0 text-white-50"> Other Agencies Commodity Prevailing Price Monitoring</p>
+                                    </div>
+                                </div>
+                                <div class="mt-2 mt-md-0 text-md-right">
+                                    <span class="badge badge-light p-2 font-weight-normal">
+                                        <i class="fa-solid fa-location-dot mr-1 text-primary"></i> City of San Carlos
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Info Cards -->
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Monitored Items</span>
+                                    <span class="info-box-number" id="stat_total_items">0 Items</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-sm-6">
+                            <div class="info-box bg-success">
+                                <span class="info-box-icon"><i class="fa-solid fa-circle-check"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Compliant Stores</span>
+                                    <span class="info-box-number" id="stat_compliant_stores">0 Stores</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-sm-6">
+                            <div class="info-box bg-danger">
+                                <span class="info-box-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Overpriced Alerts</span>
+                                    <span class="info-box-number" id="stat_overpriced_alerts">0 Items</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-sm-6">
+                            <div class="info-box bg-warning">
+                                <span class="info-box-icon"><i class="fa-solid fa-building-flag"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Jurisdiction</span>
+                                    <span class="info-box-number" id="stat_jurisdiction_label">Other Agencies</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Data Table Card -->
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title mt-1">
+                                <i class="fa-solid fa-store mr-1"></i> Other Agencies Commodity Prevailing Price Monitoring
+                            </h3>
+                            <div class="card-tools">
+                                <button class="btn btn-primary btn-sm" id="btnAddEntry" data-toggle="modal" data-target="#modalAddPrice">
+                                    <i class="fa-solid fa-plus mr-1"></i> Add Entry
+                                </button>
+                                <button class="btn btn-success btn-sm" id="btnExportReport" onclick="exportExcelReport()">
+                                    <i class="fa-solid fa-file-excel mr-1"></i> Export Report
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            
+                            <!-- Filters Row -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="filter_agency" class="font-weight-bold small text-muted">Filter by Agency:</label>
+                                    <select id="filter_agency" class="form-control select2">
+                                        <option value="">All Other Agencies</option>
+                                        <option value="DOH">DOH (Essential Medicines)</option>
+                                        <option value="LGU">LGU / LPCC (Wet Market / Local)</option>
+                                        <option value="LTFRB">LTFRB (Transport Fares)</option>
+                                        <option value="NFA">NFA (Rice Commodities)</option>
+                                        <option value="DTI">DTI (Basic Necessities)</option>
+                                        <option value="DA">DA (Agriculture)</option>
+                                        <option value="DOE">DOE (Petroleum)</option>
+                                    </select>
+                                </div>
+                                
+                            </div>
+
+                            <!-- Data Table -->
+                            <div class="table-responsive">
+                                <table id="tblOtherAgenciesMonitoring" class="table table-bordered table-striped datatable w-100">
+                                    <thead>
+                                        <tr>
+                                            <th>Agency</th>
+                                            <th>Category</th>
+                                            <th>Commodity / Item</th>
+                                            <th>Unit</th>
+                                            <th>Store / Establishment</th>
+                                            <th>SRP (₱)</th>
+                                            <th>Prevailing Price (₱)</th>
+                                            <th>Variance / Status</th>
+                                            <th class="text-center" style="width: 120px;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- DataTables dynamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL: ADD / EDIT PRICE ENTRY              -->
+        <!-- ========================================== -->
+        <div class="modal fade" id="modalAddPrice" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <form id="formPriceEntry">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title" id="modalPriceTitle"><i class="fa-solid fa-plus mr-1"></i> Add Price Monitoring Entry</h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="entry_id" name="entry_id">
+                            
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-bold">Agency <span class="text-danger">*</span></label>
+                                    <select id="form_agency" name="agency" class="form-control select2" required style="width:100%;">
+                                        <option value="">-- Select Agency --</option>
+                                        <option value="DOH">DOH (Essential Medicines)</option>
+                                        <option value="LGU">LGU / LPCC (Wet Market)</option>
+                                        <option value="LTFRB">LTFRB (Transport Fares)</option>
+                                        <option value="NFA">NFA (Rice Commodities)</option>
+                                        <option value="DTI">DTI (Basic Necessities)</option>
+                                        <option value="DA">DA (Agriculture)</option>
+                                        <option value="DOE">DOE (Petroleum)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-bold">Category <span class="text-danger">*</span></label>
+                                    <input type="text" id="form_category" name="category" class="form-control" placeholder="e.g. Essential Medicines, Meat Products" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label class="font-weight-bold">Commodity / Description <span class="text-danger">*</span></label>
+                                    <input type="text" id="form_item_description" name="item_description" class="form-control" placeholder="e.g. Paracetamol, Pork Liempo" required>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label class="font-weight-bold">Unit / Packaging</label>
+                                    <input type="text" id="form_unit" name="unit" class="form-control" placeholder="e.g. 1 kg, 500mg, Can">
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label class="font-weight-bold">Store / Establishment <span class="text-danger">*</span></label>
+                                    <input type="text" id="form_store_name" name="store_name" class="form-control" placeholder="e.g. Public Market Stall #12" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-bold">SRP Price (₱) <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" min="0" id="form_srp_price" name="srp_price" class="form-control" placeholder="0.00" required>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-bold">Prevailing Price (₱) <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" min="0" id="form_prevailing_price" name="prevailing_price" class="form-control" placeholder="0.00" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="btnSavePrice"><i class="fa-solid fa-save mr-1"></i> Save Entry</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Footer -->
+        <footer class="main-footer">
+            <div class="float-right d-none d-sm-inline">All rights reserved</div>
+            <strong>Copyright &copy; 2026 <a href="http://lguscc.gov.ph/">Local Government of San Carlos City</a>.</strong>
+        </footer>
+    </div>
+
+    <!-- REQUIRED SCRIPTS -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../plugins/select2/js/select2.full.min.js"></script>
+    <script src="../../dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap4.js"></script>
+    <script src="https://cdn.datatables.net/responsive/3.0.2/js/dataTables.responsive.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>

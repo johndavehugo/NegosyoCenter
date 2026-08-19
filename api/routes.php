@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 
 require_once 'controllers/MSMEController.php';
 require_once 'controllers/CalamityController.php';
-
+require_once 'controllers/PriceMonitoringController.php';
 
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -89,6 +89,225 @@ switch ($resource) {
         }
         break;
 
+
+
+    case 'price-monitoring':
+
+        $controller = new PriceMonitoringController();
+
+        if ($method === 'GET') {
+
+            $action = $_GET['action'] ?? 'commodity_categories';
+
+            if ($action === 'commodity_categories') {
+
+                $response = $controller->getCategories();
+            } else {
+
+                http_response_code(400);
+
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Invalid action.'
+                ];
+            }
+        } elseif ($method === 'POST') {
+
+            $action = $_GET['action'] ?? ($input['action'] ?? '');
+
+            if ($action === 'add_category') {
+
+                $response = $controller->addCategory($input);
+            } else {
+
+                http_response_code(400);
+
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Invalid action.'
+                ];
+            }
+        } elseif ($method === 'PUT') {
+
+            $response = $controller->updateCategory($input);
+        } elseif ($method === 'DELETE') {
+
+            $id = $_GET['id'] ?? ($segments[2] ?? null);
+
+            if (!$id || !is_numeric($id)) {
+
+                http_response_code(400);
+
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Missing or invalid category ID.'
+                ];
+            } else {
+
+                $response = $controller->deleteCategory(
+                    (int) $id
+                );
+            }
+        } else {
+
+            http_response_code(405);
+
+            $response = [
+                'status' => 'error',
+                'message' =>
+                    'Invalid request method for /price-monitoring.'
+            ];
+        }
+
+        break;
+
+    case 'commodity':
+
+        $controller = new PriceMonitoringController();
+
+        if ($method === 'GET') {
+
+            if (
+                isset($_GET['id']) &&
+                $_GET['id'] !== ''
+            ) {
+
+                $response = $controller->getCommodityById(
+                    $_GET['id']
+                );
+            } else {
+
+                $response = $controller->getCommodityList();
+            }
+        } elseif ($method === 'POST') {
+
+            $response = $controller->addCommodity($input);
+        } elseif ($method === 'PUT') {
+
+            $response = $controller->updateCommodity($input);
+        } elseif ($method === 'DELETE') {
+
+            $id = $_GET['id'] ?? ($segments[2] ?? null);
+
+            if (
+                $id === null ||
+                $id === '' ||
+                !is_numeric($id)
+            ) {
+
+                http_response_code(400);
+
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Missing or invalid commodity ID.'
+                ];
+            } else {
+
+                $response = $controller->deleteCommodity(
+                    (int) $id
+                );
+            }
+        } else {
+
+            http_response_code(405);
+
+            $response = [
+                'status' => 'error',
+                'message' =>
+                    'Invalid request method for /commodity.'
+            ];
+        }
+
+        break;
+
+
+        case 'price':
+
+    $controller = new PriceMonitoringController();
+
+    if ($method === 'GET') {
+
+        $action = $_GET['action'] ?? '';
+
+        
+        if ($action === 'agencies') {
+
+            $response = $controller->getAgencies();
+
+        
+        } elseif ($action === 'commodities') {
+
+            $response = $controller->getCommodities(
+                $_GET['agency_id'] ?? null
+            );
+
+        
+        } elseif (
+            isset($_GET['id']) &&
+            $_GET['id'] !== ''
+        ) {
+
+            $response = $controller->getPriceById(
+                $_GET['id']
+            );
+ 
+       
+        } else {
+
+            $agencyId = $_GET['agency_id']
+    ?? $_GET['monitored_by_agency_id']
+    ?? null;
+
+$response = $controller->getPrices($agencyId);
+        }
+
+    } elseif ($method === 'POST') {
+
+        
+        $response = $controller->addPrice($input);
+
+    } elseif ($method === 'PUT') {
+
+        
+        $response = $controller->updatePrice($input);
+
+    } elseif ($method === 'DELETE') {
+
+        
+        $id = $_GET['id'] ?? ($segments[2] ?? null);
+
+        if (
+            $id === null ||
+            $id === '' ||
+            !is_numeric($id)
+        ) {
+
+            http_response_code(400);
+
+            $response = [
+                'status' => 'error',
+                'message' => 'Missing or invalid price ID.'
+            ];
+
+        } else {
+
+            $response = $controller->deletePrice(
+                (int)$id
+            );
+        }
+
+    } else {
+
+        http_response_code(405);
+
+        $response = [
+            'status' => 'error',
+            'message' =>
+                'Invalid request method for /price.'
+        ];
+    }
+
+    break;
 
 
     default:
