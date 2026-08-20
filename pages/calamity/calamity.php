@@ -154,7 +154,7 @@
         #tblCalamityIncidents.dataTable tbody tr:hover td,
         #tblAffectedBusinesses.dataTable tbody tr:hover td {
             background-color: #eef2ff !important;
-        }
+        }   
 
         .btn-outline-info-custom {
             border-radius: 50rem;
