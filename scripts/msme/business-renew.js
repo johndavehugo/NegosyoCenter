@@ -9,7 +9,7 @@ function fillRenewModal(id) {
                 $('#renewRegType').val(business.juridical.registration_type);
                 $('#renewBusinessModal').modal('show');
             } else {
-                msme.alert({
+                App.alert({
                     icon: 'error',
                     title: 'Could Not Load Record',
                     text: data.message || 'The business record could not be retrieved.'
@@ -18,7 +18,7 @@ function fillRenewModal(id) {
         })
         .catch(error => {
             console.error(error);
-            msme.alert({
+            App.alert({
                 icon: 'error',
                 title: 'Request Failed',
                 text: 'A network error occurred. Please check your connection and try again.'
@@ -31,7 +31,7 @@ function renewBusiness() {
     const name     = $('#renewBusName').val()     || 'this business';
     const entityNo = $('#renewBusEntityNo').val() || '—';
 
-    msme.confirm({
+    App.confirm({
         icon: 'question',
         title: 'Renew Registration?',
         html: 'This will renew the registration for <strong>' + name + '</strong>'
@@ -56,13 +56,13 @@ function renewBusiness() {
                 if (res.status === 'success') {
                     $('#renewBusinessModal').modal('hide');
                     $('#tblBusiness').DataTable().ajax.reload();
-                    msme.toast({
+                    App.toast({
                         icon: 'success',
                         title: 'Registration Renewed',
                         text: res.message || name + ' has been successfully renewed.'
                     });
                 } else {
-                    msme.alert({
+                    App.alert({
                         icon: 'error',
                         title: 'Renewal Failed',
                         text: res.message || 'An error occurred while renewing the registration.'
@@ -71,7 +71,7 @@ function renewBusiness() {
             })
             .catch(error => {
                 console.error(error);
-                msme.alert({
+                App.alert({
                     icon: 'error',
                     title: 'Request Failed',
                     text: 'A network error occurred. Please check your connection and try again.'

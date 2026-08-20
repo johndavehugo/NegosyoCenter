@@ -19,16 +19,28 @@ function addCalamity() {
     .then(r => r.json())
     .then(res => {
         if (res.status === 'success') {
-            Swal.fire('Success!', res.message, 'success');
             $('#addCalamityModal').modal('hide');
             reloadCalamityTable();
             document.getElementById('addCalamityForm').reset();
+            App.toast({
+                icon: 'success',
+                title: 'Calamity Added',
+                text: res.message || 'The calamity record has been saved.'
+            });
         } else {
-            Swal.fire('Error', res.message, 'error');
+            App.alert({
+                icon: 'error',
+                title: 'Could Not Save',
+                text: res.message || 'An error occurred while saving the calamity record.'
+            });
         }
     })
     .catch(err => {
         console.error(err);
-        Swal.fire('Error', 'Network error', 'error');
+        App.alert({
+            icon: 'error',
+            title: 'Request Failed',
+            text: 'A network error occurred. Please check your connection and try again.'
+        });
     });
 }

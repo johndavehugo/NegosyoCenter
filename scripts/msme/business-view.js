@@ -74,7 +74,7 @@ function viewBusiness(entityNo) {
             $('#viewClassification').html(statusBadge(j.msme_category || '—', 'class'));
 
         } else {
-            msme.alert({
+            App.alert({
                 icon: 'warning',
                 title: 'Not Found',
                 text: 'This business record could not be loaded.'

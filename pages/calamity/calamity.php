@@ -281,6 +281,7 @@
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap4.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>
+    <script src="../../scripts/common/alert.js"></script>
 
     <script src="../../scripts/calamity/calamity-table.js?v=<?= time() ?>"></script>
     <script src="../../scripts/calamity/calamity-add-calamity.js?v=<?= time() ?>"></script>

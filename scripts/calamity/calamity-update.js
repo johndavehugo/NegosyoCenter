@@ -75,7 +75,11 @@ function fillUpdateIncident(incidentId) {
                     $('#updateIncidentRemarks').val(d.remarks || '');
                     $('#updateIncidentModal').modal('show');
                 } else {
-                    Swal.fire('Error', res.message || 'Incident not found.', 'error');
+                    App.alert({
+                        icon: 'error',
+                        title: 'Could Not Load Record',
+                        text: res.message || 'Incident not found.'
+                    });
                 }
             });
     });
@@ -97,7 +101,11 @@ function updateIncident() {
     var remarks     = $('#updateIncidentRemarks').val();
 
     if (!id || !calamityId || !juridicalId || !date || !nature || cost === '') {
-        Swal.fire('Warning', 'Please fill in all required fields.', 'warning');
+        App.alert({
+            icon: 'warning',
+            title: 'Incomplete Fields',
+            text: 'Please fill in all required fields before saving.'
+        });
         return;
     }
 
@@ -120,18 +128,30 @@ function updateIncident() {
     .then(r => r.json())
     .then(res => {
         if (res.status === 'success') {
-            Swal.fire('Success!', res.message, 'success');
             $('#updateIncidentModal').modal('hide');
             reloadCalamityTable();
             if (affectedDataTable) {
                 affectedDataTable.ajax.reload();
             }
+            App.toast({
+                icon: 'success',
+                title: 'Incident Updated',
+                text: res.message || 'The incident record has been saved.'
+            });
         } else {
-            Swal.fire('Error', res.message, 'error');
+            App.alert({
+                icon: 'error',
+                title: 'Could Not Update',
+                text: res.message || 'An error occurred while saving the changes.'
+            });
         }
     })
     .catch(err => {
         console.error(err);
-        Swal.fire('Error', 'Network error. Please try again.', 'error');
+        App.alert({
+            icon: 'error',
+            title: 'Request Failed',
+            text: 'A network error occurred. Please check your connection and try again.'
+        });
     });
 }

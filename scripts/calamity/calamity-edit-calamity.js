@@ -14,7 +14,11 @@ function fillEditCalamity(calamityId) {
                 $('#editCalamityDescription').val(d.description || '');
                 $('#editCalamityModal').modal('show');
             } else {
-                Swal.fire('Error', res.message || 'Calamity not found.', 'error');
+                App.alert({
+                    icon: 'error',
+                    title: 'Could Not Load Record',
+                    text: res.message || 'Calamity not found.'
+                });
             }
         });
 }
@@ -36,7 +40,6 @@ function updateCalamity() {
     .then(r => r.json())
     .then(res => {
         if (res.status === 'success') {
-            // Update the row directly in the DataTable without reloading
             calamityTable.rows().every(function () {
                 var d = this.data();
                 if (String(d.id) === String(id)) {
@@ -48,13 +51,25 @@ function updateCalamity() {
                 }
             });
             $('#editCalamityModal').modal('hide');
-            Swal.fire({ icon: 'success', title: 'Updated!', text: res.message, timer: 1500, showConfirmButton: false });
+            App.toast({
+                icon: 'success',
+                title: 'Calamity Updated',
+                text: res.message || 'The calamity record has been saved.'
+            });
         } else {
-            Swal.fire('Error', res.message, 'error');
+            App.alert({
+                icon: 'error',
+                title: 'Could Not Update',
+                text: res.message || 'An error occurred while saving the changes.'
+            });
         }
     })
     .catch(err => {
         console.error(err);
-        Swal.fire('Error', 'Network error', 'error');
+        App.alert({
+            icon: 'error',
+            title: 'Request Failed',
+            text: 'A network error occurred. Please check your connection and try again.'
+        });
     });
 }

@@ -50,7 +50,7 @@ async function fillUpdateModal(id) {
                 await address.prefill('#updBusRegion', '#updBusProvince', '#updBusCity', '#updBusBarangay', business.juridical);
                 await address.prefill('#updEmpRegion', '#updEmpProvince', '#updEmpCity', '#updEmpBarangay', business.employer);
             } else {
-                msme.alert({
+                App.alert({
                     icon: 'error',
                     title: 'Could Not Load Record',
                     text: data.message || 'The business record could not be retrieved.'
@@ -59,7 +59,7 @@ async function fillUpdateModal(id) {
         })
         .catch(error => {
             console.error(error);
-            msme.alert({
+            App.alert({
                 icon: 'error',
                 title: 'Request Failed',
                 text: 'A network error occurred. Please check your connection and try again.'
@@ -112,13 +112,13 @@ function updateBusiness() {
                 var name = $('#updBusinessName').val() || 'Business';
                 $('#updateBusinessModal').modal('hide');
                 $('#tblBusiness').DataTable().ajax.reload();
-                msme.toast({
+                App.toast({
                     icon: 'success',
                     title: 'Record Updated',
                     text: 'Changes to ' + name + ' have been saved.'
                 });
             } else {
-                msme.alert({
+                App.alert({
                     icon: 'error',
                     title: 'Could Not Update',
                     text: data.message || 'An error occurred while saving the changes.'
@@ -127,7 +127,7 @@ function updateBusiness() {
         })
         .catch(error => {
             console.error(error);
-            msme.alert({
+            App.alert({
                 icon: 'error',
                 title: 'Request Failed',
                 text: 'A network error occurred. Please check your connection and try again.'

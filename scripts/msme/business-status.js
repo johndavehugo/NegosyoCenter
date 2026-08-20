@@ -30,7 +30,7 @@ function fillStatusModal(id) {
 
                 $('#statusBusinessModal').modal('show');
             } else {
-                msme.alert({
+                App.alert({
                     icon: 'error',
                     title: 'Could Not Load Record',
                     text: data.message || 'The business record could not be retrieved.'
@@ -39,7 +39,7 @@ function fillStatusModal(id) {
         })
         .catch(error => {
             console.error(error);
-            msme.alert({
+            App.alert({
                 icon: 'error',
                 title: 'Request Failed',
                 text: 'A network error occurred. Please check your connection and try again.'
@@ -59,7 +59,7 @@ function changeBusinessStatus() {
     const entityNo  = $('#statusBusEntityNo').val() || '—';
 
     if (!newStatus) {
-        msme.alert({
+        App.alert({
             icon: 'warning',
             title: 'No Status Selected',
             text: 'Please select a new status before continuing.'
@@ -67,10 +67,9 @@ function changeBusinessStatus() {
         return;
     }
 
-    // Build confirm options based on the chosen status
     var isDeactivating = newStatus === 'INACTIVE';
 
-    msme.confirm({
+    App.confirm({
         icon:    isDeactivating ? 'warning' : 'question',
         danger:  isDeactivating,
         title:   isDeactivating ? 'Deactivate Business?' : 'Activate Business?',
@@ -98,13 +97,13 @@ function changeBusinessStatus() {
                 if (res.status === 'success') {
                     $('#statusBusinessModal').modal('hide');
                     $('#tblBusiness').DataTable().ajax.reload();
-                    msme.toast({
+                    App.toast({
                         icon: 'success',
                         title: 'Status Updated',
                         text: res.message || name + ' is now ' + newStatus.toLowerCase() + '.'
                     });
                 } else {
-                    msme.alert({
+                    App.alert({
                         icon: 'error',
                         title: 'Update Failed',
                         text: res.message || 'An error occurred while updating the status.'
@@ -113,7 +112,7 @@ function changeBusinessStatus() {
             })
             .catch(error => {
                 console.error(error);
-                msme.alert({
+                App.alert({
                     icon: 'error',
                     title: 'Request Failed',
                     text: 'A network error occurred. Please check your connection and try again.'
