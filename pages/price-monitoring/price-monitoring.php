@@ -158,13 +158,13 @@
                 <!-- Page header card -->
                 <div class="card card-raised mb-3">
                     <div class="card-body d-flex align-items-center justify-content-between px-4 py-3">
-                        <div>
-                            <h5 class="mb-0 font-weight-bold">
-                                <i class="material-icons align-middle mr-1"
-                                   style="font-size:22px;color:#007bff;vertical-align:middle;">local_offer</i>
-                                Price Monitoring
-                            </h5>
-                            <small class="text-muted" id="agency_subtitle">Price Monitoring System — San Carlos City</small>
+                        <div class="d-flex align-items-center" style="gap:14px;">
+                            <img src="../../dist/img/logosan.jpg" alt="City Seal"
+                                 style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.15);">
+                            <div>
+                                <h5 class="mb-0 font-weight-bold" id="agency_title">Price Monitoring</h5>
+                                <small class="text-muted" id="agency_subtitle">Price Monitoring System — San Carlos City</small>
+                            </div>
                         </div>
                     </div>
                 </div>
