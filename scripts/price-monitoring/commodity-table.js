@@ -73,7 +73,7 @@ $(function () {
 
 
     // Open Add modal
-    $('#btn_add_calamity').on('click', function () {
+    $('#btn_add_commodity').on('click', function () {
         $('#product_name').val('');
         $('#category_id').val('');
         $('#brand_name').val('');
@@ -163,7 +163,7 @@ $(function () {
 
                 Swal.fire('Success', response.message || 'Commodity added successfully.', 'success');
 
-                $('#addCalamityModal').modal('hide');
+                $('#addCommodityModal').modal('hide');
 
                 $('#product_name').val('');
                 $('#category_id').val('');
