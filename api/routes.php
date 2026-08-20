@@ -62,47 +62,47 @@ switch ($resource) {
         break;
 
     case 'calamity':
-    if ($method === 'GET') {
-        $controller = new CalamityController();
-        $action = $_GET['action'] ?? 'calamities';
-        if ($action === 'juridicals') {
-            $response = $controller->getJuridicals();
-        } elseif ($action === 'juridical_search') {
-            $response = $controller->searchJuridicals($_GET);
-        } elseif ($action === 'calamity_detail') {
-            $calamity_id = intval($_GET['calamity_id'] ?? 0);
-            $response = $controller->getCalamityDetail($calamity_id);
+        if ($method === 'GET') {
+            $controller = new CalamityController();
+            $action = $_GET['action'] ?? 'calamities';
+            if ($action === 'juridicals') {
+                $response = $controller->getJuridicals();
+            } elseif ($action === 'juridical_search') {
+                $response = $controller->searchJuridicals($_GET);
+            } elseif ($action === 'calamity_detail') {
+                $calamity_id = intval($_GET['calamity_id'] ?? 0);
+                $response = $controller->getCalamityDetail($calamity_id);
+            } else {
+                $response = $controller->getCalamities();
+            }
+        } elseif ($method === 'POST') {
+            $controller = new CalamityController();
+            if (($input['type'] ?? '') === 'calamity') {
+                $response = $controller->addCalamity($input);
+            } else {
+                $response = $controller->addIncident($input);
+            }
+        } elseif ($method === 'PUT') {
+            $controller = new CalamityController();
+            if (($input['type'] ?? '') === 'calamity') {
+                $response = $controller->updateCalamity($input);
+            } else {
+                $response = $controller->updateIncident($input);
+            }
+        } elseif ($method === 'DELETE') {
+            $controller = new CalamityController();
+            $id = $_GET['id'] ?? ($input['id'] ?? ($segments[2] ?? null));
+            if ($id === null || $id === '') {
+                http_response_code(400);
+                $response = ['status' => 'error', 'message' => 'Missing or invalid affected business ID.'];
+            } else {
+                $response = $controller->deleteAffectedBusiness($id);
+            }
         } else {
-            $response = $controller->getCalamities();
+            http_response_code(405);
+            $response = ['status' => 'error', 'message' => 'Invalid request method for /calamity. Please use GET, POST, or PUT.'];
         }
-    } elseif ($method === 'POST') {
-        $controller = new CalamityController();
-        if (($input['type'] ?? '') === 'calamity') {
-            $response = $controller->addCalamity($input);
-        } else {
-            $response = $controller->addIncident($input);
-        }
-    } elseif ($method === 'PUT') {
-        $controller = new CalamityController();
-        if (($input['type'] ?? '') === 'calamity') {
-            $response = $controller->updateCalamity($input);
-        } else {
-            $response = $controller->updateIncident($input);
-        }
-    } elseif ($method === 'DELETE') {
-        $controller = new CalamityController();
-        $id = $_GET['id'] ?? ($input['id'] ?? ($segments[2] ?? null));
-        if ($id === null || $id === '') {
-            http_response_code(400);
-            $response = ['status' => 'error', 'message' => 'Missing or invalid affected business ID.'];
-        } else {
-            $response = $controller->deleteAffectedBusiness($id);
-        }
-    } else {
-        http_response_code(405);
-        $response = ['status' => 'error', 'message' => 'Invalid request method for /calamity. Please use GET, POST, or PUT.'];
-    }
-    break;
+        break;
 
 
     case 'price-monitoring':
