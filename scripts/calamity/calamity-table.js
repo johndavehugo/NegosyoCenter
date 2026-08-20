@@ -124,36 +124,47 @@ function viewAffectedBusinesses(calamityId, calamityName) {
 }
 
 function deleteAffectedBusiness(affectedId) {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: 'This affected business will be removed from the calamity incident.',
+    App.confirm({
         icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch('../../api/routes.php/calamity?id=' + encodeURIComponent(affectedId), {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(r => r.json())
-            .then(res => {
-                if (res.status === 'success') {
-                    Swal.fire('Deleted!', res.message, 'success');
-                    if (affectedDataTable) {
-                        affectedDataTable.ajax.reload();
-                    }
-                    reloadCalamityTable();
-                } else {
-                    Swal.fire('Error', res.message, 'error');
+        danger: true,
+        title: 'Remove Affected Business?',
+        text: 'This affected business will be removed from the calamity incident.',
+        confirmButtonText: 'Yes, Remove',
+        cancelButtonText: 'Cancel'
+    }).then(function (result) {
+        if (!result.isConfirmed) return;
+
+        fetch('../../api/routes.php/calamity?id=' + encodeURIComponent(affectedId), {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === 'success') {
+                if (affectedDataTable) {
+                    affectedDataTable.ajax.reload();
                 }
-            })
-            .catch(err => {
-                console.error(err);
-                Swal.fire('Error', 'Network error. Please try again.', 'error');
+                reloadCalamityTable();
+                App.toast({
+                    icon: 'success',
+                    title: 'Record Removed',
+                    text: res.message || 'The affected business has been removed.'
+                });
+            } else {
+                App.alert({
+                    icon: 'error',
+                    title: 'Could Not Remove',
+                    text: res.message || 'An error occurred while removing the record.'
+                });
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            App.alert({
+                icon: 'error',
+                title: 'Request Failed',
+                text: 'A network error occurred. Please check your connection and try again.'
             });
-        }
+        });
     });
 }

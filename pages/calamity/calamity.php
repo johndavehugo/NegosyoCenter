@@ -7,7 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>San Carlos City | Negosyo Center</title>
 
-    <!-- Google Font: Source Sans Pro -->
+    <!-- Google Font: Roboto (matches rest of app) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <!-- Material Icons (required by sidebar nav icons) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round">
+    <!-- Source Sans Pro (original font.css kept for any legacy usage) -->
     <link rel="stylesheet" href="../../dist/css/font.css">
 
     <!-- DataTables -->
@@ -277,6 +281,7 @@
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap4.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>
+    <script src="../../scripts/common/alert.js"></script>
 
     <script src="../../scripts/calamity/calamity-table.js?v=<?= time() ?>"></script>
     <script src="../../scripts/calamity/calamity-add-calamity.js?v=<?= time() ?>"></script>

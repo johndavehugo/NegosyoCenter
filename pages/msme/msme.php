@@ -268,6 +268,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="../../plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
     <script src="../../plugins/fontawesomekit/a757e6f388.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>
+    <script src="../../scripts/common/alert.js"></script>
     <script src="../../plugins/ekko-lightbox/ekko-lightbox.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 

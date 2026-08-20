@@ -229,7 +229,11 @@ function addIncident() {
     var juridicalIds = $('#addIncidentJuridical').val() || [];
 
     if (!calamityId || juridicalIds.length === 0) {
-        Swal.fire('Warning', 'Please select a calamity and at least one affected business.', 'warning');
+        App.alert({
+            icon: 'warning',
+            title: 'Incomplete Selection',
+            text: 'Please select a calamity and at least one affected business.'
+        });
         return;
     }
 
@@ -244,15 +248,27 @@ function addIncident() {
         var d = businessDetails[id] || {};
 
         if (!d.date_occurred) {
-            Swal.fire('Warning', 'Please enter the date of occurrence for every affected business.', 'warning');
+            App.alert({
+                icon: 'warning',
+                title: 'Missing Date',
+                text: 'Please enter the date of occurrence for every affected business.'
+            });
             return;
         }
         if (!d.nature_of_damage) {
-            Swal.fire('Warning', 'Please select the nature of damage for every affected business.', 'warning');
+            App.alert({
+                icon: 'warning',
+                title: 'Missing Nature of Damage',
+                text: 'Please select the nature of damage for every affected business.'
+            });
             return;
         }
         if (d.cost === undefined || d.cost === '' || isNaN(parseFloat(d.cost)) || parseFloat(d.cost) < 0) {
-            Swal.fire('Warning', 'Please enter the estimated damage for every affected business.', 'warning');
+            App.alert({
+                icon: 'warning',
+                title: 'Missing Damage Cost',
+                text: 'Please enter the estimated damage cost for every affected business.'
+            });
             return;
         }
 
@@ -281,15 +297,27 @@ function addIncident() {
     .then(r => r.json())
     .then(res => {
         if (res.status === 'success') {
-            Swal.fire('Success!', res.message, 'success');
             $('#addIncidentModal').modal('hide');
             reloadCalamityTable();
+            App.toast({
+                icon: 'success',
+                title: 'Incident Added',
+                text: res.message || 'The incident has been recorded successfully.'
+            });
         } else {
-            Swal.fire('Error', res.message, 'error');
+            App.alert({
+                icon: 'error',
+                title: 'Could Not Save',
+                text: res.message || 'An error occurred while saving the incident.'
+            });
         }
     })
     .catch(err => {
         console.error(err);
-        Swal.fire('Error', 'Network error. Please try again.', 'error');
+        App.alert({
+            icon: 'error',
+            title: 'Request Failed',
+            text: 'A network error occurred. Please check your connection and try again.'
+        });
     });
 }

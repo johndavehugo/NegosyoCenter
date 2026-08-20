@@ -130,15 +130,28 @@ function addBusiness() {
         .then(r => r.json())
         .then(res => {
             if (res.status === 'success') {
-                alert(res.message);
+                var name = $('input[name=addBusinessName]').val() || 'Business';
                 $('#addBusinessModal').modal('hide');
                 $('#tblBusiness').DataTable().ajax.reload();
+                App.toast({
+                    icon: 'success',
+                    title: 'Business Added',
+                    text: name + ' has been registered successfully.'
+                });
             } else {
-                alert('Error: ' + res.message);
+                App.alert({
+                    icon: 'error',
+                    title: 'Could Not Save',
+                    text: res.message || 'An error occurred while saving the business record.'
+                });
             }
         })
         .catch(err => {
             console.error(err);
-            alert('Network error');
+            App.alert({
+                icon: 'error',
+                title: 'Request Failed',
+                text: 'A network error occurred. Please check your connection and try again.'
+            });
         });
 };
