@@ -160,7 +160,9 @@ switch ($resource) {
         $controller = new PriceMonitoringController();
 
         if ($method === 'GET') {
-            if (
+            if (($_GET['action'] ?? '') === 'public') {
+                $response = $controller->getPublicCommodities();
+            } elseif (
                 isset($_GET['id']) &&
                 $_GET['id'] !== ''
             ) {

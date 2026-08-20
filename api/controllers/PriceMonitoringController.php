@@ -1233,6 +1233,48 @@ class PriceMonitoringController
         }
     }
 
+    public function getPublicCommodities()
+    {
+        try {
+            $stmt = $this->con->prepare("
+                SELECT
+                    c.id,
+                    c.product_name,
+                    c.category_id,
+                    cc.name AS category_name,
+                    c.brand_name,
+                    c.unit_of_measure,
+                    c.srp,
+                    c.agency_id,
+                    a.name AS agency_name,
+                    a.code AS agency_code
+                FROM commodities c
+                INNER JOIN commodity_categories cc
+                    ON c.category_id = cc.id
+                INNER JOIN agencies a
+                    ON cc.agency_id = a.id
+                WHERE c.is_active = 1
+                  AND c.srp IS NOT NULL
+                  AND c.srp > 0
+                ORDER BY c.product_name ASC
+            ");
+
+            $stmt->execute();
+
+            return $this->success(
+                '',
+                $stmt->fetchAll(PDO::FETCH_ASSOC)
+            );
+        } catch (PDOException $e) {
+            error_log('getPublicCommodities: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: ' . $e->getMessage(),
+                []
+            );
+        }
+    }
+
     public function deletePrice($id)
     {
         $id = $this->id($id);
