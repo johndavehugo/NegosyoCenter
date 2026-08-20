@@ -48,47 +48,53 @@ async function fillUpdateModal(id) {
                 await address.prefill('#updBusRegion', '#updBusProvince', '#updBusCity', '#updBusBarangay', business.juridical);
                 await address.prefill('#updEmpRegion', '#updEmpProvince', '#updEmpCity', '#updEmpBarangay', business.employer);
             } else {
-                alert(data.message);
+                ncSwal.error('Could Not Load Record', data.message || 'The business record could not be fetched. Please try again.');
             }
         })
         .catch(error => {
-            alert('Error: ' + error);
+            console.error(error);
+            ncSwal.error('Network Error', 'Could not reach the server. Please check your connection and try again.');
         });
 }
 
 function updateBusiness() {
+    var busName = $('#updBusinessName').val().trim();
+
     const busData = {
-        //Business
-        juri_entity_no: $('#updBusEntityNo').val(),
-        juri_name: $('#updBusinessName').val(),
+        // Business
+        juri_entity_no:  $('#updBusEntityNo').val(),
+        juri_name:       busName,
         line_of_industry: $('#updIndustry').val(),
-        capitalization: $('#updCapitalization').val(),
-        contact_no: $('#updContactNo').val(),
-        contact_email: $('#updEmail').val(),
+        capitalization:  $('#updCapitalization').val(),
+        contact_no:      $('#updContactNo').val(),
+        contact_email:   $('#updEmail').val(),
 
-        //Owner
-        employer_entity_no: $('#updEmpEntityNo').val(),
-        employer_full_name: $('#updOwnerName').val(),
-        special_category: $('#updSpecialCategory').val(),
+        // Owner
+        employer_entity_no:  $('#updEmpEntityNo').val(),
+        employer_full_name:  $('#updOwnerName').val(),
+        special_category:    $('#updSpecialCategory').val(),
 
-        //Juridical Address
-        juri_region: $('#updBusRegion').val(),
-        juri_province: $('#updBusProvince').val(),
-        juri_city: $('#updBusCity').val(),
-        juri_barangay: $('#updBusBarangay').val(),
-        juri_street: $('#updBusStreet').val(),
+        // Juridical address
+        juri_region:      $('#updBusRegion').val(),
+        juri_province:    $('#updBusProvince').val(),
+        juri_city:        $('#updBusCity').val(),
+        juri_barangay:    $('#updBusBarangay').val(),
+        juri_street:      $('#updBusStreet').val(),
         juri_subdivision: $('#updBusSubdivision').val(),
-        juri_upblb_num: $('#updBusUpblb').val(),
+        juri_upblb_num:   $('#updBusUpblb').val(),
 
-        //Owner Address
-        employer_region: $('#updEmpRegion').val(),
-        employer_province: $('#updEmpProvince').val(),
-        employer_city: $('#updEmpCity').val(),
-        employer_barangay: $('#updEmpBarangay').val(),
-        employer_street: $('#updEmpStreet').val(),
+        // Owner address
+        employer_region:      $('#updEmpRegion').val(),
+        employer_province:    $('#updEmpProvince').val(),
+        employer_city:        $('#updEmpCity').val(),
+        employer_barangay:    $('#updEmpBarangay').val(),
+        employer_street:      $('#updEmpStreet').val(),
         employer_subdivision: $('#updEmpSubdivision').val(),
-        employer_upblb_num: $('#updEmpUpblb').val()
+        employer_upblb_num:   $('#updEmpUpblb').val()
     };
+
+    // Show loading while request is in flight
+    ncSwal.loading('Updating business...');
 
     fetch('../../api/routes.php/business', {
         method: 'PUT',
@@ -97,13 +103,23 @@ function updateBusiness() {
     })
         .then(response => response.json())
         .then(data => {
-            alert(data.message);
+            ncSwal.close();
             if (data.status === 'success') {
                 $('#updateBusinessModal').modal('hide');
                 $('#tblBusiness').DataTable().ajax.reload();
+                // Success toast — non-blocking, auto-dismisses
+                ncSwal.toast(
+                    'success',
+                    'Business Updated',
+                    busName ? '<strong>' + busName + '</strong> has been updated.' : 'Business details updated successfully.'
+                );
+            } else {
+                ncSwal.error('Update Failed', data.message || 'No changes were saved. Please check the details and try again.');
             }
         })
         .catch(error => {
-            alert('Error: ' + error);
+            ncSwal.close();
+            console.error(error);
+            ncSwal.error('Network Error', 'Could not reach the server. Please check your connection and try again.');
         });
 }

@@ -27,7 +27,6 @@ $('#addBusinessModal').on('shown.bs.modal', function () {
             }
         });
     }
-
 });
 
 $('#addBusinessModal').on('hidden.bs.modal', function () {
@@ -51,7 +50,7 @@ $('#scimsBusSearch').on('select2:select', function (e) {
     $('#addBusinessModal').data('scimsBusiness', e.params.data.business);
     var b = e.params.data.business;
 
-    //Business
+    // Business
     $('#addBusinessName').val(b.juri_name || '');
     $('#addBusEntityNo').val(b.juri_entity_no || '');
     $('#addContactNo').val(b.juri_contact_no || '');
@@ -61,7 +60,7 @@ $('#scimsBusSearch').on('select2:select', function (e) {
     $('#addBusUpblb').val(b.juri_upblb_num || '');
     $('#addIndustry').val(b.line_of_industry || '');
 
-    //Owner
+    // Owner
     $('#addOwnerName').val(b.emp_name || '');
     $('#addEmpEntityNo').val(b.emp_entity_no || '');
     $('#addEmpStreet').val(b.emp_street || '');
@@ -81,44 +80,48 @@ $('#scimsBusSearch').on('select2:select', function (e) {
 
 function addBusiness() {
     var b = $('#addBusinessModal').data('scimsBusiness') || {};
+
+    var busName = $('input[name=addBusinessName]').val().trim();
+    var ownerName = $('input[name=addOwnerName]').val().trim();
+
     const data = {
+        // Employer address
+        emp_region:       $('select[name=addEmpRegion]').val(),
+        emp_province:     $('select[name=addEmpProvince]').val(),
+        emp_city:         $('select[name=addEmpCity]').val(),
+        emp_barangay:     $('select[name=addEmpBarangay]').val(),
+        emp_street:       $('input[name=addEmpStreet]').val(),
+        emp_subdivision:  $('input[name=addEmpSubdivision]').val(),
+        emp_upblb_num:    $('input[name=addEmpUpblb]').val(),
+        emp_address_id:   b.emp_address_id,
 
-        //employer address
-        emp_region: $('select[name=addEmpRegion]').val(),
-        emp_province: $('select[name=addEmpProvince]').val(),
-        emp_city: $('select[name=addEmpCity]').val(),
-        emp_barangay: $('select[name=addEmpBarangay]').val(),
-        emp_street: $('input[name=addEmpStreet]').val(),
-        emp_subdivision: $('input[name=addEmpSubdivision]').val(),
-        emp_upblb_num: $('input[name=addEmpUpblb]').val(),
-        emp_address_id: b.emp_address_id,
-
-
-        //employer
-        emp_name: $('input[name=addOwnerName]').val(),
-        emp_entity_no: $('input[name=addEmpEntityNo]').val(),
+        // Employer
+        emp_name:             ownerName,
+        emp_entity_no:        $('input[name=addEmpEntityNo]').val(),
         emp_special_category: $('select[name=addSpecialCategory]').val(),
-        emp_id: b.emp_id,
+        emp_id:               b.emp_id,
 
-        //juridical address
-        juri_region: $('select[name=addBusRegion]').val(),
-        juri_province: $('select[name=addBusProvince]').val(),
-        juri_city: $('select[name=addBusCity]').val(),
-        juri_barangay: $('select[name=addBusBarangay]').val(),
-        juri_street: $('input[name=addBusStreet]').val(),
+        // Juridical address
+        juri_region:      $('select[name=addBusRegion]').val(),
+        juri_province:    $('select[name=addBusProvince]').val(),
+        juri_city:        $('select[name=addBusCity]').val(),
+        juri_barangay:    $('select[name=addBusBarangay]').val(),
+        juri_street:      $('input[name=addBusStreet]').val(),
         juri_subdivision: $('input[name=addBusSubdivision]').val(),
-        juri_upblb_num: $('input[name=addBusUpblb]').val(),
-        juri_address_id: b.juri_address_id,
+        juri_upblb_num:   $('input[name=addBusUpblb]').val(),
+        juri_address_id:  b.juri_address_id,
 
-        //juridical
-        juri_name: $('input[name=addBusinessName]').val(),
-        juri_entity_no: $('input[name=addBusEntityNo]').val(),
+        // Juridical
+        juri_name:             busName,
+        juri_entity_no:        $('input[name=addBusEntityNo]').val(),
         juri_line_of_industry: $('select[name=addIndustry]').val(),
-        juri_capitalization: $('input[name=addCapitalization]').val(),
-        juri_contact_no: $('input[name=addContactNo]').val(),
-        juri_contact_email: $('input[name=addEmail]').val(),
-
+        juri_capitalization:   $('input[name=addCapitalization]').val(),
+        juri_contact_no:       $('input[name=addContactNo]').val(),
+        juri_contact_email:    $('input[name=addEmail]').val(),
     };
+
+    // Show loading while request is in flight
+    ncSwal.loading('Saving business...');
 
     fetch('../../api/routes.php/business', {
         method: 'POST',
@@ -127,16 +130,23 @@ function addBusiness() {
     })
         .then(r => r.json())
         .then(res => {
+            ncSwal.close();
             if (res.status === 'success') {
-                alert(res.message);
                 $('#addBusinessModal').modal('hide');
                 $('#tblBusiness').DataTable().ajax.reload();
+                // Success toast — non-blocking, auto-dismisses
+                ncSwal.toast(
+                    'success',
+                    'Business Added',
+                    busName ? '<strong>' + busName + '</strong> has been registered.' : 'Business registered successfully.'
+                );
             } else {
-                alert('Error: ' + res.message);
+                ncSwal.error('Could Not Save', res.message || 'An error occurred while saving the business.');
             }
         })
         .catch(err => {
+            ncSwal.close();
             console.error(err);
-            alert('Network error');
+            ncSwal.error('Network Error', 'Could not reach the server. Please check your connection and try again.');
         });
-};
+}
