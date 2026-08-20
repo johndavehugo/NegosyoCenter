@@ -74,7 +74,12 @@ function viewBusiness(entityNo) {
             $('#viewClassification').html(statusBadge(j.msme_category || '—', 'class'));
 
         } else {
-            alert('Business not found.');
+            msme.alert({
+                icon: 'warning',
+                title: 'Not Found',
+                text: 'This business record could not be loaded.'
+            });
+            return;
         }
 
         $('#viewBusinessModal').modal('show');

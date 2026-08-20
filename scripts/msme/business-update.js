@@ -50,11 +50,20 @@ async function fillUpdateModal(id) {
                 await address.prefill('#updBusRegion', '#updBusProvince', '#updBusCity', '#updBusBarangay', business.juridical);
                 await address.prefill('#updEmpRegion', '#updEmpProvince', '#updEmpCity', '#updEmpBarangay', business.employer);
             } else {
-                alert(data.message);
+                msme.alert({
+                    icon: 'error',
+                    title: 'Could Not Load Record',
+                    text: data.message || 'The business record could not be retrieved.'
+                });
             }
         })
         .catch(error => {
-            alert('Error: ' + error);
+            console.error(error);
+            msme.alert({
+                icon: 'error',
+                title: 'Request Failed',
+                text: 'A network error occurred. Please check your connection and try again.'
+            });
         });
 }
 
@@ -99,13 +108,29 @@ function updateBusiness() {
     })
         .then(response => response.json())
         .then(data => {
-            alert(data.message);
             if (data.status === 'success') {
+                var name = $('#updBusinessName').val() || 'Business';
                 $('#updateBusinessModal').modal('hide');
                 $('#tblBusiness').DataTable().ajax.reload();
+                msme.toast({
+                    icon: 'success',
+                    title: 'Record Updated',
+                    text: 'Changes to ' + name + ' have been saved.'
+                });
+            } else {
+                msme.alert({
+                    icon: 'error',
+                    title: 'Could Not Update',
+                    text: data.message || 'An error occurred while saving the changes.'
+                });
             }
         })
         .catch(error => {
-            alert('Error: ' + error);
+            console.error(error);
+            msme.alert({
+                icon: 'error',
+                title: 'Request Failed',
+                text: 'A network error occurred. Please check your connection and try again.'
+            });
         });
 }
