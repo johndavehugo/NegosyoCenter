@@ -35,6 +35,59 @@
           </a>
         </li>
 
+                <!-- Economic Map -->
+                <li id="module_economic_map" class="nav-item has-treeview <?= (basename($_SERVER['PHP_SELF']) === 'economic-map.php') ? 'menu-open' : '' ?>">
+
+                    <a href="#" class="nav-link <?= (basename($_SERVER['PHP_SELF']) === 'economic-map.php') ? 'active' : '' ?>">
+                        <i class="nav-icon fas fa-map-marked-alt"></i>
+
+                        <p>
+                            ECONOMIC MAP
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+
+                    <ul class="nav nav-treeview">
+
+                        <li class="nav-item">
+                            <a href="../economic-map/economic-map.php#hotspot" class="nav-link">
+                                <i class="fas fa-fire nav-icon"></i>
+                                <p>Economic Hotspot Map</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="../economic-map/economic-map.php#distribution" class="nav-link">
+                                <i class="fas fa-chart-pie nav-icon"></i>
+                                <p>MSME Distribution Map</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="../economic-map/economic-map.php#risk" class="nav-link">
+                                <i class="fas fa-shield-alt nav-icon"></i>
+                                <p>Economic Risk Map</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="../economic-map/economic-map.php#pressure" class="nav-link">
+                                <i class="fas fa-chart-line nav-icon"></i>
+                                <p>Price / Economic Pressure Map</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="../economic-map/economic-map.php#opportunity" class="nav-link">
+                                <i class="fas fa-lightbulb nav-icon"></i>
+                                <p>Economic Opportunity Map</p>
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </li>
+
                 <!-- Calamity -->
                 <li id="module_calamity" class="nav-item">
                     <a href="../calamity/calamity.php" class="nav-link">
