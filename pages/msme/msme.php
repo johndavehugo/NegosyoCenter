@@ -280,14 +280,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
     
-    <script src="../../scripts/common/address.js?v=2"></script>
-    <script src="../../scripts/msme/swal-helper.js?v=3"></script>
-    <script src="../../scripts/msme/business-table.js?v=2"></script>
-    <script src="../../scripts/msme/business-view.js?v=2"></script>
-    <script src="../../scripts/msme/business-add.js?v=3"></script>
-    <script src="../../scripts/msme/business-update.js?v=3"></script>
-    <script src="../../scripts/msme/business-renew.js?v=5"></script>
-    <script src="../../scripts/msme/business-status.js?v=3"></script>
+    <script src="../../scripts/common/address.js"> </script>
+    <script src="../../scripts/msme/business-table.js"> </script>
+    <script src="../../scripts/msme/business-view.js"></script>
+    <script src="../../scripts/msme/business-add.js"></script>
+    <script src="../../scripts/msme/business-update.js"></script>
+    <script src="../../scripts/msme/business-renew.js"></script>
+    <script src="../../scripts/msme/business-status.js?v=2"></script>
 
 
 </body>
