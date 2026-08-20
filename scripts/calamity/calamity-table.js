@@ -1,4 +1,5 @@
 var affectedDataTable = null;
+var calamityTable = null;
 
 function statusBadge(status) {
     var badge = 'secondary';
@@ -12,41 +13,68 @@ function formatMoney(amount) {
     return Number(amount).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
 }
 
-$(function () {
-            $('#tblCalamityIncidents').DataTable({
-                "responsive": true,
-                "lengthChange": false,
-                "autoWidth": false,
-                "processing": true,
-                "serverSide": true,
-                "paging": true,
-                "lengthChange": true,
-                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
-                "ajax": {
-                    "url": "../../server-side/calamity-handler.php",
-                    "type": "GET",
-                },
-                "columns": [
-                    { "data": "name" },
-                    { "data": "calamity_type" },
-                    { "data": "declaration_date" },
-                    { "data": "affected_count" },
-                    {
-                        "data": null,
-                        "render": function(data, type, row) {
-                            return '<div style="display: flex; justify-content: center"><button type="button" class="btn btn-info btn-sm btn-outline-info-custom" onclick="viewAffectedBusinesses(' + row.id + ',\'' + row.name + '\')">' +
-                                '<i class="fas fa-building mr-1"></i>View Businesses</button></div>';
-                        }
-                    }
-                ]
-            })
+function loadCalamityTable() {
+    $.getJSON('../../server-side/calamity-handler.php?draw=1&start=0&length=1000&search[value]=&order[0][column]=0&order[0][dir]=asc&_=' + Date.now())
+        .done(function (res) {
+            if (calamityTable) {
+                calamityTable.clear();
+                calamityTable.rows.add(res.data);
+                calamityTable.draw(false); // draw(false) = stay on current page
+            }
         });
+}
+
+$(function () {
+    calamityTable = $('#tblCalamityIncidents').DataTable({
+        "responsive": true,
+        "autoWidth": false,
+        "processing": false,
+        "serverSide": false,
+        "paging": true,
+        "lengthChange": true,
+        "order": [[2, "desc"]], // default: declaration_date newest first
+        "data": [],
+        "columns": [
+            { "data": "name" },
+            { "data": "calamity_type" },
+            { "data": "declaration_date" },
+            { "data": "affected_count", "orderable": true },
+            {
+                "data": null,
+                "orderable": false,
+                "render": function (data, type, row) {
+                    var safeName = row.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    return '<div style="display:flex;justify-content:center;gap:4px;">' +
+                        '<button class="btn btn-warning btn-sm" onclick="fillEditCalamity(' + row.id + ')">' +
+                        '<i class="fas fa-pen mr-1"></i>Edit</button>' +
+                        '<button class="btn btn-info btn-sm btn-outline-info-custom" onclick="viewAffectedBusinesses(' + row.id + ',\'' + safeName + '\')">' +
+                        '<i class="fas fa-building mr-1"></i>View Businesses</button>' +
+                        '</div>';
+                }
+            }
+        ]
+    });
+
+    // Initial load
+    loadCalamityTable();
+});
+
+function reloadCalamityTable() {
+    $.getJSON('../../server-side/calamity-handler.php?draw=1&start=0&length=1000&search[value]=&order[0][column]=0&order[0][dir]=asc&_=' + Date.now())
+        .done(function (res) {
+            if (calamityTable) {
+                calamityTable.clear();
+                calamityTable.rows.add(res.data);
+                calamityTable.draw(false); // stay on current page after update
+            }
+        });
+}
 
 function viewAffectedBusinesses(calamityId, calamityName) {
     $('#viewCalamityName').text(calamityName || '—');
 
     if (affectedDataTable) {
-        affectedDataTable.ajax.url('../../server-side/calamity-handler.php?action=affected&calamity_id=' + calamityId).load();
+        affectedDataTable.ajax.url('../../server-side/calamity-handler.php?action=affected&calamity_id=' + calamityId + '&_=' + Date.now()).load();
     } else {
         affectedDataTable = $('#tblAffectedBusinesses').DataTable({
             "responsive": true,
@@ -55,35 +83,37 @@ function viewAffectedBusinesses(calamityId, calamityName) {
             "serverSide": true,
             "paging": true,
             "lengthChange": true,
-            "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
             "ajax": {
                 "url": "../../server-side/calamity-handler.php?action=affected&calamity_id=" + calamityId,
                 "type": "GET",
+                "data": function (d) {
+                    d._ = Date.now(); // cache bust
+                }
             },
             "columns": [
                 { "data": "business_name" },
                 { "data": "entity_no" },
                 { "data": "owner_full_name" },
-                { "data": "date_occurred" },
+                { "data": "declaration_date" },
                 { "data": "nature_of_damage" },
                 {
                     "data": "estimated_cost_of_damages",
-                    "render": function(data, type, row) {
-                        return formatMoney(data);
-                    }
+                    "render": function (data) { return formatMoney(data); }
                 },
                 {
                     "data": "status",
-                    "render": function(data, type, row) {
-                        return statusBadge(data);
-                    }
+                    "render": function (data) { return statusBadge(data); }
                 },
                 { "data": "remarks" },
                 {
                     "data": null,
-                    "render": function(data, type, row) {
-                        return '<div style="display: flex; justify-content: center"><button type="button" class="btn btn-warning btn-sm" onclick="fillUpdateIncident(' + row.id + ')">' +
-                            '<i class="fas fa-pen mr-1"></i>Update</button></div>';
+                    "orderable": false,
+                    "render": function (data, type, row) {
+                        return '<div style="display:flex;justify-content:center;gap:4px;">' +
+                            '<button class="btn btn-warning btn-sm" onclick="fillUpdateIncident(' + row.id + ')">' +
+                            '<i class="fas fa-pen mr-1"></i>Update</button>' +
+                            '<button class="btn btn-danger btn-sm" onclick="deleteAffectedBusiness(' + row.affected_id + ')">' +
+                            '<i class="fas fa-trash-alt mr-1"></i>Delete</button></div>';
                     }
                 }
             ]
@@ -91,4 +121,39 @@ function viewAffectedBusinesses(calamityId, calamityName) {
     }
 
     $('#viewAffectedBusinessesModal').modal('show');
+}
+
+function deleteAffectedBusiness(affectedId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This affected business will be removed from the calamity incident.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('../../api/routes.php/calamity?id=' + encodeURIComponent(affectedId), {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    Swal.fire('Deleted!', res.message, 'success');
+                    if (affectedDataTable) {
+                        affectedDataTable.ajax.reload();
+                    }
+                    reloadCalamityTable();
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'Network error. Please try again.', 'error');
+            });
+        }
+    });
 }

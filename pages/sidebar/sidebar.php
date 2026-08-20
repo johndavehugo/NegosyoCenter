@@ -1,11 +1,15 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
 
   <a class="brand-link user-panel pb-3 mb-3 d-flex">
-    <img src="/NegosyoCenter/dist/img/nclogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-    <span class="brand-text font-weight-light text-lg">Negosyo Center</span>
-  </a>
 
+    <img src="../../dist/img/nclogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+    <span class="brand-text font-weight-light text-lg">Negosyo Center</span>
+
+  </a>
+  <!-- Sidebar -->
   <div class="sidebar">
+    <!-- Sidebar user panel (optional) -->
+
     <nav class="mt-2">
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
@@ -27,17 +31,21 @@
           </a>
         </li>
 
-        <!-- Calamity Monitoring -->
-        <li id="statistics_sidebar" class="nav-item">
-          <a href="/NegosyoCenter/pages/calamity/calamity.php"
-             class="nav-link cursor-e <?= (basename($_SERVER['PHP_SELF']) === 'calamity.php') ? 'active' : '' ?>">
+        <li id="statistics_sidebar" class="nav-item ">
+          <a href="../calamity/calamity.php" class="nav-link sidebar-statistics cursor-e">
             <i class="nav-icon fa-brands fa-watchman-monitoring"></i>
-            <p class="pt-2">Calamity Monitoring</p>
+            <p class="pt-2">
+              CALAMITY MONITORING
+            </p>
           </a>
         </li>
 
       </ul>
     </nav>
   </div>
+
+  <!-- /.sidebar -->
+
+
 
 </aside>
