@@ -195,6 +195,7 @@ require_once __DIR__ . '/../../global/industries.php';
                                             <select class="form-control msme-input" id="updSpecialCategory"
                                                 name="updSpecialCategory">
                                                 <option value="" hidden>Select Special Sector Classification</option>
+                                                <option value="None">None</option>
                                                 <option value="4ps Beneficiary">4ps Beneficiary</option>
                                                 <option value="Solo Parent">Solo Parent</option>
                                                 <option value="Person with Disability">Person with Disability (PWD)
