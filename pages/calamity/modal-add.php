@@ -32,7 +32,7 @@
 
 <form id="addIncidentForm" method="POST">
 <div class="modal fade cal-modal" id="addIncidentModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-xl" role="document" style="max-width: 1400px;">
         <div class="modal-content" style="background-color: #1a3a6b; color: white; border: 2px solid #b91c1c; border-radius: 10px;">
 
             <div class="modal-header border-0" style="background: linear-gradient(90deg, #1a3a6b 60%, #b91c1c 100%); border-radius: 8px 8px 0 0;">
@@ -74,7 +74,7 @@
                                         <th style="min-width:110px;">Nature of Damage</th>
                                         <th style="min-width:150px;">Status</th>
                                         <th style="min-width:150px;">Estimated Damage (PHP)</th>
-                                        <th style="min-width:160px;">Remarks</th>
+                                        <th style="min-width:200px;">Remarks</th>
                                         <th style="width:60px; text-align:center;">Action</th>
                                     </tr>
                                 </thead>

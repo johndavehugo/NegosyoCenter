@@ -71,13 +71,6 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="../economic-map/economic-map.php#pressure" class="nav-link">
-                                <i class="fas fa-chart-line nav-icon"></i>
-                                <p>Price / Economic Pressure Map</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
                             <a href="../economic-map/economic-map.php#opportunity" class="nav-link">
                                 <i class="fas fa-lightbulb nav-icon"></i>
                                 <p>Economic Opportunity Map</p>
