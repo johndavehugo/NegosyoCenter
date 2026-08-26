@@ -236,7 +236,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- ./wrapper -->
 
     
-    <?php include 'modal-view.php'; ?>
     <?php include 'modal-add.php'; ?>
     <?php include 'modal-update.php'; ?>
     <?php include 'modal-renew.php'; ?>
@@ -284,7 +283,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="../../scripts/common/address.js"> </script>
     <script src="../../scripts/common/currency.js"> </script>
     <script src="../../scripts/msme/business-table.js"> </script>
-    <script src="../../scripts/msme/business-view.js"></script>
     <script src="../../scripts/msme/business-add.js"></script>
     <script src="../../scripts/msme/business-update.js"></script>
     <script src="../../scripts/msme/business-renew.js"></script>

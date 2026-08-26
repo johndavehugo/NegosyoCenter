@@ -61,7 +61,7 @@ $(function () {
                         '<i class="material-icons" style="font-size:20px;vertical-align:middle;">more_vert</i>' +
                         '</button>' +
                         '<div class="dropdown-menu dropdown-menu-right tbl-action-menu">' +
-                        '<a class="dropdown-item" href="#" onclick="viewBusiness(\'' + id + '\')">' +
+                        '<a class="dropdown-item" href="business-view.php?id=' + encodeURIComponent(id) + '">' +
                         '<i class="material-icons tbl-action-icon">visibility</i>View' +
                         '</a>' +
                         '<a class="dropdown-item" href="#" onclick="fillUpdateModal(\'' + id + '\')">' +
