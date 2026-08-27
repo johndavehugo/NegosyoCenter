@@ -68,15 +68,12 @@
     var mapHotspot = null;
     var mapDist = null;
     var mapRisk = null;
-    var mapPressure = null;
     var mapOpportunity = null;
     var distData = [];       // per-barangay rows
     var distLayer = null;
     var activeCategory = 'all';
     var riskData = [];
     var riskLayer = null;
-    var pressureData = [];
-    var pressureLayer = null;
     var oppData = [];
     var oppLayer = null;
 
@@ -85,12 +82,10 @@
         initHotspotMap();
         initDistMap();
         initRiskMap();
-        initPressureMap();
         initOpportunityMap();
         loadHotspots();
         loadDistribution();
         loadRisk();
-        loadPressure();
         loadOpportunity();
         initAreaSearch();
         syncActiveTab();
@@ -103,48 +98,46 @@
         $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
             syncSidebar();
             var href = $(this).attr('href');
-            if (href === '#pane-hotspot') mapHotspot.invalidateSize();
-            else if (href === '#pane-distribution') mapDist.invalidateSize();
-            else if (href === '#pane-risk') mapRisk.invalidateSize();
-            else if (href === '#pane-pressure') mapPressure.invalidateSize();
-            else mapOpportunity.invalidateSize();
+            setTimeout(function () {
+                if (href === '#pane-hotspot') mapHotspot.invalidateSize();
+                else if (href === '#pane-distribution') mapDist.invalidateSize();
+                else if (href === '#pane-risk') mapRisk.invalidateSize();
+                else if (href === '#pane-opportunity') mapOpportunity.invalidateSize();
+            }, 200);
         });
     });
 
     // ── Tab & sidebar sync ─────────────────────────────────────────────
     function syncActiveTab() {
         var hash = window.location.hash;
-        if (hash === '#distribution') {
-            $('#tab-distribution').tab('show');
-        } else if (hash === '#risk') {
-            $('#tab-risk').tab('show');
-        } else if (hash === '#pressure') {
-            $('#tab-pressure').tab('show');
-        } else if (hash === '#opportunity') {
-            $('#tab-opportunity').tab('show');
-        }
+        showTabFromHash(hash);
         $(window).on('hashchange', function () {
-            var h = window.location.hash;
-            if (h === '#distribution') $('#tab-distribution').tab('show');
-            else if (h === '#risk') $('#tab-risk').tab('show');
-            else if (h === '#pressure') $('#tab-pressure').tab('show');
-            else if (h === '#opportunity') $('#tab-opportunity').tab('show');
-            else $('#tab-hotspot').tab('show');
+            showTabFromHash(window.location.hash);
         });
+    }
+
+    function showTabFromHash(h) {
+        if ((h === '#distribution' || h === '#pane-distribution') && !$('#tab-distribution').hasClass('active')) {
+            $('#tab-distribution').tab('show');
+        } else if ((h === '#risk' || h === '#pane-risk') && !$('#tab-risk').hasClass('active')) {
+            $('#tab-risk').tab('show');
+        } else if ((h === '#opportunity' || h === '#pane-opportunity') && !$('#tab-opportunity').hasClass('active')) {
+            $('#tab-opportunity').tab('show');
+        } else if ((h === '#hotspot' || h === '#pane-hotspot') && !$('#tab-hotspot').hasClass('active')) {
+            $('#tab-hotspot').tab('show');
+        }
     }
 
     function syncSidebar() {
         var $li = $('#module_economic_map');
         $li.addClass('menu-open').find('> .nav-link').addClass('active');
         var onOpp = $('#tab-opportunity').hasClass('active');
-        var onPressure = $('#tab-pressure').hasClass('active');
         var onRisk = $('#tab-risk').hasClass('active');
         var onDist = $('#tab-distribution').hasClass('active');
         $li.find('a[href*="#opportunity"]').toggleClass('active', onOpp);
-        $li.find('a[href*="#pressure"]').toggleClass('active', !onOpp && onPressure);
-        $li.find('a[href*="#risk"]').toggleClass('active', !onOpp && !onPressure && onRisk);
-        $li.find('a[href*="#distribution"]').toggleClass('active', !onOpp && !onPressure && !onRisk && onDist);
-        $li.find('a[href*="#hotspot"]').toggleClass('active', !onOpp && !onPressure && !onRisk && !onDist);
+        $li.find('a[href*="#risk"]').toggleClass('active', !onOpp && onRisk);
+        $li.find('a[href*="#distribution"]').toggleClass('active', !onOpp && !onRisk && onDist);
+        $li.find('a[href*="#hotspot"]').toggleClass('active', !onOpp && !onRisk && !onDist);
     }
 
     // ── Helpers ────────────────────────────────────────────────────────
@@ -497,7 +490,11 @@
                               ((res.total_msmes || 0) !== 1 ? 's' : '') + ' assessed');
     }
 
+    var riskLegend = null;
+
     function renderRiskLegend() {
+        var existing = mapRisk.getContainer().querySelector('.risk-legend-control');
+        if (existing) existing.remove();
         var levels = [
             ['Critical', '#dc3545'],
             ['High', '#fd7e14'],
@@ -509,13 +506,13 @@
             html += '<div><span class="legend-dot" style="background:' + l[1] +
                     ';"></span>' + l[0] + '</div>';
         });
-        var legend = L.control({ position: 'bottomright' });
-        legend.onAdd = function () {
-            var div = L.DomUtil.create('div', 'map-legend');
+        riskLegend = L.control({ position: 'bottomright' });
+        riskLegend.onAdd = function () {
+            var div = L.DomUtil.create('div', 'map-legend risk-legend-control');
             div.innerHTML = html;
             return div;
         };
-        legend.addTo(mapRisk);
+        riskLegend.addTo(mapRisk);
     }
 
     function renderRiskMarkers() {
@@ -569,170 +566,6 @@
         return html;
     }
 
-    // ── Price / Economic Pressure Map ──────────────────────────────────
-    function initPressureMap() {
-        mapPressure = L.map('mapPressure', {
-            scrollWheelZoom: false
-        }).setView([10.4824, 123.4183], 12);
-        baseTile(mapPressure);
-
-        BARANGAYS.forEach(function (b) {
-            L.circleMarker([b[1], b[2]], {
-                radius: 4, color: '#adb5bd', weight: 1,
-                fillColor: '#adb5bd', fillOpacity: .9
-            }).addTo(mapPressure)
-              .bindTooltip(b[0], { direction: 'top', opacity: .85 });
-        });
-    }
-
-    function loadPressure() {
-        $.getJSON(HANDLER, { action: 'economic_pressure' }, function (res) {
-            if (res.status !== 'success') {
-                console.error('economic_pressure error:', res.message);
-                return;
-            }
-            pressureData = res.data || [];
-            renderPressureCards(res.categories || []);
-            renderPressureMarkers(res.has_price_data);
-            renderPressureLegend(res.has_price_data);
-        }).fail(function (xhr) {
-            console.error('economic_pressure request failed:', xhr.statusText);
-        });
-    }
-
-    function fmtDate(d) {
-        if (!d) return '—';
-        var dt = new Date(d);
-        if (isNaN(dt.getTime())) return d;
-        return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
-
-    function renderPressureCards(categories) {
-        var html = '';
-        categories.forEach(function (c) {
-            var level = c.level || 'No data';
-            var color = c.color || '#6c757d';
-            var priceText = (c.avg_price !== null && c.avg_price !== undefined)
-                            ? '&#8369;' + c.avg_price.toLocaleString('en-US') : 'no price';
-            var srpText = (c.avg_srp !== null && c.avg_srp !== undefined)
-                          ? '&#8369;' + c.avg_srp.toLocaleString('en-US') : '—';
-
-            html += '<div class="pressure-card" style="border-left-color:' + color + ';">' +
-                    '<div class="d-flex justify-content-between align-items-start">' +
-                    '<div>' +
-                    '<div class="pc-name">' + c.name + '</div>' +
-                    '<div class="pc-agency">' + c.agency + '</div>' +
-                    '</div>' +
-                    '<span class="badge msme-badge-unknown" style="background:' + color + ';color:#fff;">' +
-                    level + '</span>' +
-                    '</div>' +
-                    '<div class="pc-metric mt-1">Avg ' + priceText +
-                    ' &middot; SRP ' + srpText +
-                    ' &middot; ' + fmt(c.price_count) + ' priced</div>' +
-                    '</div>';
-        });
-
-        $('#pressureCards').html(html);
-
-        var latest = null;
-        categories.forEach(function (c) {
-            if (c.period_to && (!latest || c.period_to > latest)) latest = c.period_to;
-        });
-        $('#pressureAsOf').text('as of ' + fmtDate(latest));
-    }
-
-    function renderPressureLegend(hasPriceData) {
-        var levels = [
-            ['Critical', '#dc3545'],
-            ['High', '#fd7e14'],
-            ['Moderate', '#ffc107'],
-            ['Low', '#28a745']
-        ];
-        if (!hasPriceData) {
-            levels.push(['No data', '#6c757d']);
-        }
-        var html = '<h6>Economic Pressure</h6>';
-        levels.forEach(function (l) {
-            html += '<div><span class="legend-dot" style="background:' + l[1] +
-                    ';"></span>' + l[0] + '</div>';
-        });
-        var legend = L.control({ position: 'bottomright' });
-        legend.onAdd = function () {
-            var div = L.DomUtil.create('div', 'map-legend');
-            div.innerHTML = html;
-            return div;
-        };
-        legend.addTo(mapPressure);
-    }
-
-    function renderPressureMarkers(hasPriceData) {
-        if (pressureLayer) {
-            mapPressure.removeLayer(pressureLayer);
-        }
-        pressureLayer = L.layerGroup().addTo(mapPressure);
-
-        var badgeTotal = 0;
-        pressureData.forEach(function (row) {
-            badgeTotal += row.total || 0;
-            var color = row.color || '#6c757d';
-            var radius = hasPriceData ? Math.max(9, 9 + 12 * Math.sqrt(row.score)) : 7;
-            var mk = L.circleMarker([row.lat, row.lng], {
-                radius: radius,
-                color: color,
-                weight: 2,
-                fillColor: color,
-                fillOpacity: .55
-            }).addTo(pressureLayer);
-
-            mk.bindTooltip(
-                '<b>' + row.barangay + '</b><br>' + (row.level || 'No data') +
-                ' economic pressure',
-                { direction: 'top', opacity: .9 }
-            );
-            mk.bindPopup(buildPressurePopup(row, hasPriceData));
-        });
-
-        $('#pressureBadge').text(fmt(badgeTotal) + ' MSME' + (badgeTotal !== 1 ? 's' : '') +
-                                (hasPriceData ? ' assessed' : ' &middot; no price data'));
-    }
-
-    function buildPressurePopup(row, hasPriceData) {
-        var color = row.color || '#6c757d';
-        var sectorHtml = '';
-        var keys = Object.keys(row.sectors || {});
-        if (keys.length) {
-            var maxN = 1;
-            keys.forEach(function (k) { if (row.sectors[k] > maxN) maxN = row.sectors[k]; });
-            sectorHtml = '<table class="brgy-breakdown mt-1">';
-            keys.forEach(function (k) {
-                sectorHtml += '<tr><td style="width:52%;">' + k + '</td>' +
-                              '<td style="width:14%;text-align:right;"><b>' +
-                              fmt(row.sectors[k]) + '</b></td>' +
-                              '<td style="padding-left:8px;"><span class="breakdown-bar" style="width:' +
-                              Math.round((row.sectors[k] / maxN) * 100) +
-                              '%;background:#495057;"></span></td></tr>';
-            });
-            sectorHtml += '</table>';
-        } else {
-            sectorHtml = '<div class="text-muted small mt-1">No sector data</div>';
-        }
-
-        var html = '<div style="min-width:220px;">' +
-                   '<b>' + row.barangay + '</b><br>' +
-                   '<span class="badge msme-badge-unknown" style="background:' + color + ';color:#fff;">' +
-                   (row.level || 'No data') + ' pressure</span>' +
-                   '<hr class="my-2" style="border-top:1px solid #e9ecef;">' +
-                   '<div class="text-muted" style="font-size:.7rem;font-weight:600;' +
-                   'text-transform:uppercase;letter-spacing:.04em;">MSMEs by sector</div>' +
-                   sectorHtml +
-                   '<hr class="my-2" style="border-top:1px solid #e9ecef;">' +
-                   '<div class="d-flex justify-content-between align-items-center">' +
-                   '<span class="text-muted">Pressure score</span>' +
-                   '<b style="color:' + color + ';">' + row.score.toFixed(3) + '</b></div>' +
-                   '</div>';
-        return html;
-    }
-
     // ── Economic Opportunity Map ───────────────────────────────────────
     var OPP_COMPONENTS = [
         ['commercial',     'Commercial potential'],
@@ -778,7 +611,7 @@
     function oppColor(level) {
         switch (level) {
             case 'Very High': return '#198754';
-            case 'High':     return '#28a745';
+            case 'High':     return '#8BC34A';
             case 'Moderate': return '#ffc107';
             default:         return '#6c757d';
         }
@@ -889,15 +722,90 @@
 // ── Area / street search ──────────────────────────────────────────
     var areaSearchTimer = null;
 
+    function renderBarangayList(filter) {
+        var q = (filter || '').toLowerCase();
+        var html = '';
+        BARANGAYS.forEach(function (b) {
+            if (q && b[0].toLowerCase().indexOf(q) === -1) return;
+            html += '<div class="area-match-item" data-type="barangay" ' +
+                    'data-barangay="' + $('<span>').text(b[0]).html() + '" ' +
+                    'data-street="">' +
+                    '<i class="material-icons ami-icon">location_city</i>' +
+                    '<span>' + $('<span>').text(b[0]).html() + '</span>' +
+                    '<span class="ami-type">Barangay</span>' +
+                    '</div>';
+        });
+        return html;
+    }
+
     function initAreaSearch() {
+        $('#areaSearch').on('focus', function () {
+            var q = $.trim(this.value);
+            if (q.length < 2) {
+                var html = renderBarangayList('');
+                if (html) {
+                    $('#areaMatches').html(html).removeClass('d-none');
+                    bindMatchClicks();
+                }
+            }
+        });
+
         $('#areaSearch').on('input', function () {
             clearTimeout(areaSearchTimer);
             var q = $.trim(this.value);
-            if (q.length < 2) {
-                $('#areaMatches').addClass('d-none').empty();
+            if (q.length < 1) {
+                var html = renderBarangayList('');
+                if (html) {
+                    $('#areaMatches').html(html).removeClass('d-none');
+                    bindMatchClicks();
+                } else {
+                    $('#areaMatches').addClass('d-none').empty();
+                }
                 return;
             }
-            areaSearchTimer = setTimeout(function () { areaSearch(q); }, 250);
+            var localHtml = renderBarangayList(q);
+            if (q.length < 2) {
+                if (localHtml) {
+                    $('#areaMatches').html(localHtml).removeClass('d-none');
+                    bindMatchClicks();
+                } else {
+                    $('#areaMatches').addClass('d-none').empty();
+                }
+                return;
+            }
+            areaSearchTimer = setTimeout(function () {
+                $.getJSON(HANDLER, { action: 'area_search', q: q }, function (res) {
+                    var streetHtml = '';
+                    if (res.status === 'success') {
+                        res.matches.forEach(function (m) {
+                            if (m.type !== 'street') return;
+                            streetHtml += '<div class="area-match-item" data-type="street" ' +
+                                    'data-barangay="' + $('<span>').text(m.barangay).html() + '" ' +
+                                    'data-street="' + $('<span>').text(m.street || '').html() + '" ' +
+                                    'data-lat="' + (m.lat || '') + '" ' +
+                                    'data-lng="' + (m.lng || '') + '">' +
+                                    '<i class="material-icons ami-icon">streetview</i>' +
+                                    '<span>' + $('<span>').text(m.label).html() + '</span>' +
+                                    '<span class="ami-type">Street</span>' +
+                                    '</div>';
+                        });
+                    }
+                    var combined = localHtml + streetHtml;
+                    if (combined) {
+                        $('#areaMatches').html(combined).removeClass('d-none');
+                        bindMatchClicks();
+                    } else {
+                        $('#areaMatches').addClass('d-none').empty();
+                    }
+                }).fail(function () {
+                    if (localHtml) {
+                        $('#areaMatches').html(localHtml).removeClass('d-none');
+                        bindMatchClicks();
+                    } else {
+                        $('#areaMatches').addClass('d-none').empty();
+                    }
+                });
+            }, 250);
         });
 
         $('#areaSearchClear').on('click', function () {
@@ -914,38 +822,24 @@
         });
     }
 
-    function areaSearch(q) {
-        $.getJSON(HANDLER, { action: 'area_search', q: q }, function (res) {
-            if (res.status !== 'success' || !res.matches.length) {
-                $('#areaMatches').addClass('d-none').empty();
-                return;
+    function bindMatchClicks() {
+        $('#areaMatches .area-match-item').off('click').on('click', function () {
+            var $this = $(this);
+            var match = {
+                type: $this.data('type'),
+                barangay: $this.data('barangay'),
+                street: $this.data('street'),
+                lat: $this.data('lat'),
+                lng: $this.data('lng')
+            };
+            $('#areaSearch').val(match.street ? match.street + ' \u00b7 ' + match.barangay : match.barangay);
+            $('#areaMatches').addClass('d-none').empty();
+            loadAreaSummary(match);
+            if (match.lat && match.lng) {
+                flyToCoords([parseFloat(match.lat), parseFloat(match.lng)], match.barangay);
+            } else {
+                flyToBarangay(match.barangay);
             }
-            var html = '';
-            res.matches.forEach(function (m) {
-                var icon = m.type === 'barangay' ? 'location_city' : 'streetview';
-                html += '<div class="area-match-item" data-type="' + m.type + '" ' +
-                        'data-barangay="' + $('<span>').text(m.barangay).html() + '" ' +
-                        'data-street="' + $('<span>').text(m.street || '').html() + '">' +
-                        '<i class="material-icons ami-icon">' + icon + '</i>' +
-                        '<span>' + $('<span>').text(m.label).html() + '</span>' +
-                        '<span class="ami-type">' + (m.type === 'barangay' ? 'Barangay' : 'Street') + '</span>' +
-                        '</div>';
-            });
-            $('#areaMatches').html(html).removeClass('d-none');
-
-            $('#areaMatches .area-match-item').off('click').on('click', function () {
-                var $this = $(this);
-                var match = {
-                    type: $this.data('type'),
-                    barangay: $this.data('barangay'),
-                    street: $this.data('street')
-                };
-                $('#areaSearch').val(match.street ? match.street + ' \u00b7 ' + match.barangay : match.barangay);
-                $('#areaMatches').addClass('d-none').empty();
-                loadAreaSummary(match);
-            });
-        }).fail(function (xhr) {
-            console.error('area_search request failed:', xhr.statusText);
         });
     }
 
@@ -1018,6 +912,81 @@
                           pct + '%;background:' + CAT_COLORS[cat] + ';"></span></td></tr>';
         });
         $('#asSectors').html(sectorHtml || '<tr><td colspan="3" class="text-muted small">No businesses recorded</td></tr>');
+    }
+
+    // ── Fly to searched barangay ────────────────────────────────────────
+    function flyToCoords(coords, barangayName) {
+        if (!coords || !coords[0] || !coords[1]) {
+            flyToBarangay(barangayName);
+            return;
+        }
+
+        var maps = [
+            { map: mapHotspot,  id: 'pane-hotspot' },
+            { map: mapDist,     id: 'pane-distribution' },
+            { map: mapRisk,     id: 'pane-risk' },
+            { map: mapOpportunity, id: 'pane-opportunity' }
+        ];
+
+        maps.forEach(function (entry) {
+            if ($('#' + entry.id).hasClass('active') || $('#' + entry.id).hasClass('show')) {
+                var m = entry.map;
+                if (!m) return;
+                m.flyTo(coords, 17, { duration: 1.2 });
+
+                var marker = null;
+                var minDist = Infinity;
+                m.eachLayer(function (layer) {
+                    if (layer instanceof L.CircleMarker && layer.getLatLng) {
+                        var d = Math.abs(layer.getLatLng().lat - coords[0]) +
+                                Math.abs(layer.getLatLng().lng - coords[1]);
+                        if (d < minDist && layer.getPopup()) {
+                            minDist = d;
+                            marker = layer;
+                        }
+                    }
+                });
+                if (marker) {
+                    setTimeout(function () { marker.openPopup(); }, 1300);
+                }
+            }
+        });
+    }
+
+    function flyToBarangay(name) {
+        var coords = null;
+        for (var i = 0; i < BARANGAYS.length; i++) {
+            if (BARANGAYS[i][0].toLowerCase() === name.toLowerCase()) {
+                coords = [BARANGAYS[i][1], BARANGAYS[i][2]];
+                break;
+            }
+        }
+        if (!coords) return;
+
+        var maps = [
+            { map: mapHotspot,  id: 'pane-hotspot' },
+            { map: mapDist,     id: 'pane-distribution' },
+            { map: mapRisk,     id: 'pane-risk' },
+            { map: mapOpportunity, id: 'pane-opportunity' }
+        ];
+
+        maps.forEach(function (entry) {
+            if ($('#' + entry.id).hasClass('active') || $('#' + entry.id).hasClass('show')) {
+                var m = entry.map;
+                if (!m) return;
+                m.flyTo(coords, 15, { duration: 1.2 });
+
+                m.eachLayer(function (layer) {
+                    if (layer instanceof L.CircleMarker &&
+                        layer.getLatLng &&
+                        Math.abs(layer.getLatLng().lat - coords[0]) < 0.0001 &&
+                        Math.abs(layer.getLatLng().lng - coords[1]) < 0.0001 &&
+                        layer.getPopup()) {
+                        setTimeout(function () { layer.openPopup(); }, 1300);
+                    }
+                });
+            }
+        });
     }
 
 }(jQuery));
