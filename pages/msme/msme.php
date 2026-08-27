@@ -93,6 +93,240 @@ scratch. This page gets rid of all links and provides the needed markup only.
             -moz-appearance: textfield;
             appearance: textfield;
         }
+
+        /* ── In-page Business View Panel ─────────────────────── */
+
+        #bvTableArea {
+            transition: opacity 0.15s ease;
+        }
+
+        /* Panel fills the full content-wrapper height */
+        #bvPanel {
+            min-height: calc(100vh - 57px);
+        }
+
+        /* Loading state — full height, centered */
+        #bvLoading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 57px - 80px); /* viewport minus navbar minus panel padding */
+        }
+        .bv-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+        }
+        .bv-loading-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-color: #e7f0ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            animation: bv-pulse 1.2s ease-in-out infinite;
+        }
+        .bv-loading-icon .material-icons {
+            font-size: 32px;
+            color: #007bff;
+        }
+        .bv-loading-text {
+            font-size: 0.9rem;
+            color: #007bff;
+        }
+        @keyframes bv-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0,123,255,0.25); }
+            50%       { box-shadow: 0 0 0 10px rgba(0,123,255,0); }
+        }
+
+        /* Back to list link */
+        .bv-back-to-list {
+            font-size: 0.875rem;
+            color: #6c757d;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: color 0.12s ease;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .bv-back-to-list:hover { color: #007bff; }
+
+        /* Profile card */
+        .bv-profile-card,
+        .bv-address-card,
+        .bv-menu-card,
+        .bv-content-card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.07);
+        }
+
+        .bv-business-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background-color: #e7f0ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+        }
+        .bv-business-icon .material-icons { font-size: 34px; color: #007bff; }
+
+        .bv-business-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            line-height: 1.3;
+            text-align: center;
+        }
+        .bv-entity-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #f1f3f5;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 3px 10px 3px 8px;
+            border-radius: 20px;
+        }
+        .bv-entity-chip .material-icons { font-size: 13px !important; color: #adb5bd; }
+
+        /* Info list */
+        .bv-info-list .list-group-item {
+            padding: 8px 12px;
+            border-left: none;
+            border-right: none;
+            font-size: 0.875rem;
+        }
+        .bv-info-list .list-group-item:first-child { border-top: none; }
+        .bv-info-list .list-group-item b {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #9ca3af;
+        }
+        .bv-info-list .list-group-item .float-right {
+            color: #1a1a2e;
+            font-weight: 400;
+            max-width: 60%;
+            text-align: right;
+        }
+
+        /* Address card */
+        .bv-address-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+        .bv-address-value {
+            font-size: 0.875rem;
+            color: #495057;
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+        .bv-section-divider {
+            border: none;
+            border-top: 1px solid #e9ecef;
+            margin: 12px 0;
+        }
+
+        /* Right panel menu */
+        .bv-menu-item {
+            cursor: pointer;
+            user-select: none;
+            padding: 13px 16px;
+            font-size: 0.9rem;
+            color: #212529;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.12s ease;
+        }
+        .bv-menu-item:hover { background-color: #f8f9fa; }
+        .bv-menu-item .bv-menu-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e7f0ff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .bv-menu-item .bv-menu-icon .material-icons { font-size: 17px; color: #007bff; }
+        .bv-menu-item .bv-chevron .material-icons { font-size: 16px; color: #adb5bd; }
+
+        /* Content card header */
+        .bv-content-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .bv-back-btn {
+            color: #6c757d;
+            background: transparent;
+            border: none;
+            padding: 4px 8px 4px 0;
+            line-height: 1;
+            cursor: pointer;
+            transition: color 0.12s ease;
+        }
+        .bv-back-btn:hover { color: #212529; }
+        .bv-content-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        /* Content sections */
+        .bv-section-body { padding: 16px; }
+        .bv-field-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 3px;
+            display: block;
+        }
+        .bv-field-value { font-size: 0.9rem; color: #1a1a2e; }
+        .bv-owner-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #e9ecef;
+            color: #495057;
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 1rem;
+        }
+        .bv-owner-chip .material-icons { font-size: 13px !important; color: #6c757d; }
+        .bv-addr-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 24px;
+        }
+        @media (max-width: 576px) { .bv-addr-grid { grid-template-columns: 1fr; } }
     </style>
 
 </head>
@@ -163,7 +397,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
         <div id="body_wrapper" class="content-wrapper">
             <!-- PUT THE CONTENTS HERE -->
-            <div class="content pt-4 pb-2">
+            <div id="bvTableArea" class="content pt-4 pb-2">
                 <div class="container-fluid">
                     <div class="card card-raised mb-3">
                         <div class="card-body d-flex align-items-center justify-content-between px-4 py-3">
@@ -195,10 +429,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     </div>
                 </div>
             </div>
+
         </div>
-
-
-
     </div>
 
 
@@ -283,6 +515,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="../../scripts/common/address.js"> </script>
     <script src="../../scripts/common/currency.js"> </script>
     <script src="../../scripts/msme/business-table.js"> </script>
+    <script src="../../scripts/msme/business-view.js"></script>
     <script src="../../scripts/msme/business-add.js"></script>
     <script src="../../scripts/msme/business-update.js"></script>
     <script src="../../scripts/msme/business-renew.js"></script>

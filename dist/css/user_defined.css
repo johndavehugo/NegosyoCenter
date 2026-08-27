@@ -998,3 +998,244 @@ body {
     font-size: 11px !important;
     line-height: 1;
 }
+
+
+/* =============================================================
+   SIDEBAR — Modern & Polished Redesign
+   Scoped to .main-sidebar and .sidebar-* classes.
+   No AdminLTE core overrides — purely additive.
+   ============================================================= */
+
+/* ── Brand area ─────────────────────────────────────────────── */
+.main-sidebar .sidebar-brand-link {
+    padding: 16px 14px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
+}
+.main-sidebar .sidebar-brand-link:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+.sidebar-brand-img {
+    width: 34px !important;
+    height: 34px !important;
+    flex-shrink: 0;
+    opacity: 0.92;
+}
+.sidebar-brand-text-wrap {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    overflow: hidden;
+    min-width: 0;
+}
+.sidebar-brand-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+}
+.sidebar-brand-sub {
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.42);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.02em;
+    margin-top: 1px;
+    line-height: 1.3;
+}
+
+/* ── Section labels ─────────────────────────────────────────── */
+.sidebar-section-label {
+    font-size: 0.63rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    color: rgba(255, 255, 255, 0.28);
+    padding: 16px 18px 5px;
+    list-style: none;
+    pointer-events: none;
+    user-select: none;
+    display: block;
+}
+
+/* ── Nav list spacing ───────────────────────────────────────── */
+.sidebar-nav-list {
+    padding: 0 8px !important;
+}
+
+/* ── Nav link base ──────────────────────────────────────────── */
+.main-sidebar .sidebar-nav-link {
+    display: flex !important;
+    align-items: center !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+    margin-bottom: 2px !important;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease !important;
+    white-space: nowrap;
+}
+.main-sidebar .sidebar-nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.09) !important;
+    color: #fff !important;
+}
+
+/* Active nav link — solid blue pill */
+.main-sidebar .sidebar-nav-link.active {
+    background-color: #007bff !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.38) !important;
+}
+.main-sidebar .sidebar-nav-link.active .sidebar-nav-icon .material-icons {
+    color: #fff !important;
+}
+.main-sidebar .sidebar-nav-link.active .sidebar-nav-text {
+    color: #fff !important;
+}
+
+/* ── Icon wrapper ───────────────────────────────────────────── */
+.sidebar-nav-icon {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 7px;
+    background-color: transparent;
+    margin-right: 10px;
+    transition: background-color 0.15s ease;
+    flex-shrink: 0;
+}
+.main-sidebar .sidebar-nav-link:hover .sidebar-nav-icon {
+    background-color: transparent;
+}
+.main-sidebar .sidebar-nav-link.active .sidebar-nav-icon {
+    background-color: transparent;
+}
+.sidebar-nav-icon .material-icons {
+    font-size: 18px !important;
+    color: rgba(255, 255, 255, 0.60);
+    line-height: 1;
+    display: block;
+}
+.sidebar-nav-icon .sidebar-icon {
+    font-size: 15px !important;
+    color: rgba(255, 255, 255, 0.60);
+    line-height: 1;
+    display: block;
+    width: 16px;
+    text-align: center;
+}
+.main-sidebar .sidebar-nav-link:hover .sidebar-nav-icon .material-icons,
+.main-sidebar .sidebar-nav-link:hover .sidebar-nav-icon .sidebar-icon {
+    color: rgba(255, 255, 255, 0.90);
+}
+.main-sidebar .sidebar-nav-link.active .sidebar-nav-icon .material-icons,
+.main-sidebar .sidebar-nav-link.active .sidebar-nav-icon .sidebar-icon {
+    color: #fff !important;
+}
+
+/* ── Nav text — override AdminLTE <p> margin inside nav ─────── */
+.sidebar-nav-list .sidebar-nav-text {
+    font-size: 0.865rem !important;
+    font-weight: 500 !important;
+    color: rgba(255, 255, 255, 0.78) !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 1 1 auto;
+    display: flex !important;
+    align-items: center;
+    line-height: 1 !important;
+}
+.main-sidebar .sidebar-nav-link.active .sidebar-nav-text {
+    color: #fff !important;
+}
+
+/* ── Treeview chevron — fix float conflict ───────────────────── */
+.sidebar-arrow {
+    font-size: 13px !important;
+    color: rgba(255, 255, 255, 0.38) !important;
+    margin-left: auto;
+    float: none !important;
+    transition: transform 0.2s ease !important;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.menu-open > .nav-link .sidebar-arrow {
+    transform: rotate(-90deg);
+}
+
+/* ── Sub-nav (treeview children) ─────────────────────────────── */
+.sidebar-sub-nav {
+    padding: 2px 0 4px 0 !important;
+    padding-left: 0 !important;   /* remove AdminLTE default indent */
+}
+.sidebar-sub-link {
+    padding: 7px 10px 7px 14px !important;
+    border-radius: 8px !important;
+    margin-bottom: 1px !important;
+}
+.sidebar-sub-icon {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border-radius: 6px;
+    background-color: transparent;
+    margin-right: 9px;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+}
+.main-sidebar .sidebar-sub-link:hover .sidebar-sub-icon {
+    background-color: transparent;
+}
+.main-sidebar .sidebar-sub-link.active .sidebar-sub-icon {
+    background-color: transparent;
+}
+.sidebar-sub-icon .material-icons {
+    font-size: 15px !important;
+    color: rgba(255, 255, 255, 0.50);
+    line-height: 1;
+    display: block;
+}
+.sidebar-sub-icon .sidebar-icon {
+    font-size: 12px !important;
+    color: rgba(255, 255, 255, 0.50);
+    line-height: 1;
+    display: block;
+    width: 14px;
+    text-align: center;
+}
+.main-sidebar .sidebar-sub-link:hover .sidebar-sub-icon .material-icons,
+.main-sidebar .sidebar-sub-link:hover .sidebar-sub-icon .sidebar-icon {
+    color: rgba(255, 255, 255, 0.85);
+}
+.main-sidebar .sidebar-sub-link.active .sidebar-sub-icon .material-icons,
+.main-sidebar .sidebar-sub-link.active .sidebar-sub-icon .sidebar-icon {
+    color: #fff !important;
+}
+
+/* ── Collapsed sidebar (sidebar-mini mode) ───────────────────── */
+.sidebar-mini.sidebar-collapse .main-sidebar .sidebar-nav-icon {
+    margin-right: 0;
+}
+.sidebar-mini.sidebar-collapse .sidebar-section-label {
+    visibility: hidden;
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+.sidebar-mini.sidebar-collapse .sidebar-brand-text-wrap {
+    display: none;
+}
