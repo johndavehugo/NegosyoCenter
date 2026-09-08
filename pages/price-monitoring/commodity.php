@@ -140,6 +140,7 @@
                                style="width:100%;">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Commodity Name</th>
 <th>Category</th>
 <th>Brand Name</th>

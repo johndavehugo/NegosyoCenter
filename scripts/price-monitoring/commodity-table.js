@@ -59,10 +59,10 @@ $(function () {
         searchable: false,
         render: function (data, type, row) {
             return `
-                <button class="btn btn-sm btn-primary edit-commodity" data-id="${row.id}">
+                <button class="btn btn-sm btn-primary btn-edit" data-id="${row.id}">
                     Edit
                 </button>
-                <button class="btn btn-sm btn-danger delete-commodity" data-id="${row.id}">
+                <button class="btn btn-sm btn-danger btn-delete" data-id="${row.id}">
                     Delete
                 </button>
             `;

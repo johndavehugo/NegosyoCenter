@@ -162,7 +162,7 @@ $(document).ready(function () {
         }
     },
     {
-        data: 'Establishments',
+        data: 'establishments_display',
         defaultContent: '-'
     },
     {
