@@ -30,6 +30,11 @@ $(document).on('click', '.btn-edit', function () {
             $('#updateCommodityCategory').val(row.category_id);
             $('#updateCommodityBrand').val(row.brand_name);
             $('#updateCommodityUnit').val(row.unit_of_measure);
+            $('#updateCommoditySrp').val(row.srp !== null && row.srp !== undefined ? row.srp : '');
+            $('#updateCommodityPrevailingPrice').val(
+                row.prevailing_price !== null && row.prevailing_price !== undefined ? row.prevailing_price : ''
+            );
+            $('#updateCommodityEstablishments').val(row.Establishments || '');
             $('#updateCommodityModal').appendTo('body').modal('show');
         })
         .catch(function (err) {
@@ -50,7 +55,10 @@ function updateCommodity() {
         product_name: $('#updateCommodityProductName').val().trim(),
         category_id: $('#updateCommodityCategory').val(),
         brand_name: $('#updateCommodityBrand').val().trim(),
-        unit_of_measure: $('#updateCommodityUnit').val().trim()
+        unit_of_measure: $('#updateCommodityUnit').val().trim(),
+        srp: $('#updateCommoditySrp').val(),
+        prevailing_price: $('#updateCommodityPrevailingPrice').val(),
+        Establishments: $('#updateCommodityEstablishments').val().trim()
     };
 
     if (!data.product_name || !data.category_id || !data.unit_of_measure) {

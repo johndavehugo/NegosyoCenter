@@ -1,10 +1,55 @@
 var priceTable;
 
-const agencies = {
-    1: 'DTI',
-    2: 'DA',
-    3: 'DOE'
-};
+
+function formatAgencyLabel(agency) {
+    if (!agency || !agency.name) return agency ? agency.name : '';
+    return agency.code ? `${agency.name} (${agency.code})` : agency.name;
+}
+
+function loadAgencies() {
+    const base = window.location.pathname.split('/pages/')[0];
+
+    const url = window.location.origin +
+        base +
+        '/api/routes.php/price?action=agencies';
+
+    fetch(url)
+        .then(response => response.json())
+        .then(result => {
+            if (result.status !== 'success') {
+                throw new Error(result.message || 'Unable to load agencies.');
+            }
+
+            const select = $('#price_agency');
+
+            select.empty();
+
+            if (!result.data || result.data.length === 0) {
+                throw new Error('No agencies available.');
+            }
+
+            result.data.forEach(agency => {
+                select.append(
+                    $('<option>', {
+                        value: agency.id,
+                        text: formatAgencyLabel(agency)
+                    })
+                );
+            });
+
+            const firstId = result.data[0].id;
+            select.val(firstId).trigger('change');
+        })
+        .catch(error => {
+            console.error('[AGENCY] Error:', error);
+
+            Swal.fire(
+                'Error',
+                error.message || 'Unable to load agencies.',
+                'error'
+            );
+        });
+}
 
 function loadPrices() {
     const agencyId = $('#price_agency').val();
@@ -95,80 +140,100 @@ $(document).ready(function () {
         responsive: true,
         autoWidth: false,
         columns: [
-            { data: 'product_name', defaultContent: '-' },
-            { data: 'category_name', defaultContent: '-' },
-            {
-                data: null,
-                render: function (data, type, row) {
-                    var brand = row.brand_name || '';
-                    var unit = row.unit_of_measure || '';
+    {
+        data: 'product_name',
+        defaultContent: '-'
+    },
+    {
+        data: 'category_name',
+        defaultContent: '-'
+    },
+    {
+        data: null,
+        render: function (data, type, row) {
+            var brand = row.brand_name || '';
+            var unit = row.unit_of_measure || '';
 
-                    if (brand && unit) {
-                        return brand + ' / ' + unit;
-                    }
-
-                    return brand || unit || '-';
-                }
-            },
-            {
-                data: null,
-                render: function (data, type, row) {
-                    return row.agency_name || row.agency_code || '-';
-                }
-            },
-            {
-                data: 'srp',
-                render: function (data) {
-                    return data
-                        ? '₱' + Number(data).toLocaleString('en-PH', {
-                            minimumFractionDigits: 2
-                        })
-                        : '-';
-                }
-            },
-            {
-                data: 'status',
-                render: function (data) {
-                    if (data === 'ACTIVE')
-                        return '<span class="badge badge-success">ACTIVE</span>';
-
-                    if (data === 'INACTIVE')
-                        return '<span class="badge badge-secondary">INACTIVE</span>';
-
-                    return '<span class="badge badge-secondary">INACTIVE</span>';
-                }
-            },
-            {
-                data: null,
-                orderable: false,
-                render: function (data, type, row) {
-                    if (!row.id) {
-                        return `
-                            <button class="btn btn-success btn-sm btn-add-price"
-                                    data-id="${row.commodity_id}">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        `;
-                    }
-
-                    return `
-                        <button class="btn btn-primary btn-sm btn-edit-price"
-                                data-id="${row.id}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    `;
-                }
+            if (brand && unit) {
+                return brand + ' / ' + unit;
             }
-        ]
+
+            return brand || unit || '-';
+        }
+    },
+    {
+        data: 'Establishments',
+        defaultContent: '-'
+    },
+    {
+        data: null,
+        render: function (data, type, row) {
+            return row.agency_name || row.agency_code || '-';
+        }
+    },
+    {
+        data: 'srp',
+        render: function (data) {
+            return data
+                ? '₱' + Number(data).toLocaleString('en-PH', {
+                    minimumFractionDigits: 2
+                })
+                : '-';
+        }
+    },
+    {
+        data: 'prevailing_price',
+        render: function (data) {
+            return data
+                ? '₱' + Number(data).toLocaleString('en-PH', {
+                    minimumFractionDigits: 2
+                })
+                : '-';
+        }
+    },
+    {
+        data: 'status',
+        render: function (data) {
+            if (data === 'ACTIVE')
+                return '<span class="badge badge-success">ACTIVE</span>';
+
+            if (data === 'INACTIVE')
+                return '<span class="badge badge-secondary">INACTIVE</span>';
+
+            return '<span class="badge badge-secondary">INACTIVE</span>';
+        }
+    },
+    {
+        data: null,
+        orderable: false,
+        render: function (data, type, row) {
+            if (!row.id) {
+                return `
+                    <button class="btn btn-success btn-sm btn-add-price"
+                            data-id="${row.commodity_id}">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                `;
+            }
+
+            return `
+                <button class="btn btn-primary btn-sm btn-edit-price"
+                        data-id="${row.id}">
+                    <i class="fas fa-edit"></i>
+                </button>
+            `;
+        }
+    }
+]
     });
 
     function updateAgencyUI() {
-        const agency = agencies[$('#price_agency').val()] || 'DOE';
+    const agency = $('#price_agency option:selected').text() || 'Agency';
 
-        $('#agency_title').text(agency + ' Price Monitoring');
-        $('#agency_subtitle').text(agency + ' Price Monitoring System');
-        $('#selected_agency_name').text(agency);
-    }
+    $('#agency_title').text(agency + ' Price Monitoring');
+    $('#agency_subtitle').text(agency + ' Price Monitoring System');
+    $('#selected_agency_name').text(agency);
+}
 
     $('#price_agency').on('change', function () {
         updateAgencyUI();
@@ -182,27 +247,27 @@ $(document).ready(function () {
             .draw();
     });
 
-    updateAgencyUI();
-    loadPrices();
+    loadAgencies();
 
-    // =====================================================
-    // ADD PRICE / INITIAL STATUS
-    // =====================================================
+   
     $(document).on('click', '.btn-add-price', function () {
-        const commodityId = $(this).data('id');
+    const commodityId = $(this).data('id');
+    const row = priceTable.row($(this).closest('tr')).data();
 
-        $('#priceForm')[0].reset();
-        $('#priceId').val('');
-        $('#priceCommodityId').val(commodityId);
-        $('#priceStatus').val('ACTIVE');
+    $('#priceForm')[0].reset();
+    $('#priceId').val('');
+    $('#priceCommodityId').val(commodityId);
 
-        $('#priceModalLabel').text('Add Price / Set Status');
-        $('#priceModal').appendTo('body').modal('show');
-    });
+   $('#priceSrp').val(row.srp || '');
+$('#pricePrevailingPrice').val(row.prevailing_price || '');
 
-    // =====================================================
-    // EDIT PRICE & STATUS
-    // =====================================================
+const currentStatus = String(row.status || 'ACTIVE').toUpperCase();
+
+    $('#priceModalLabel').text('Add Price / Set Status');
+    $('#priceModal').appendTo('body').modal('show');
+});
+
+   
     $(document).on('click', '.btn-edit-price', function () {
     const row = priceTable.row($(this).closest('tr')).data();
 
@@ -212,28 +277,40 @@ $(document).ready(function () {
     }
 
     $('#priceForm')[0].reset();
+
     $('#priceId').val(row.id || 0);
     $('#priceCommodityId').val(row.commodity_id || '');
-    $('#priceSrp').val(row.srp || '');
 
-    // Select correct status in dropdown
-    const currentStatus = String(row.status || 'ACTIVE').toUpperCase();
+    $('#priceSrp').val(
+        row.srp !== null && row.srp !== undefined
+            ? row.srp
+            : ''
+    );
+
+    $('#pricePrevailingPrice').val(
+    row.prevailing_price !== null &&
+    row.prevailing_price !== undefined
+        ? row.prevailing_price
+        : ''
+);
+
+    const currentStatus = String(
+        row.status || 'ACTIVE'
+    ).toUpperCase();
+
     $('#priceStatus').val(currentStatus);
 
-    $('#priceModalLabel').text('Edit SRP & Status');
+    $('#priceModalLabel').text('Edit SRP, Prevailing Price & Status');
     $('#priceModal').appendTo('body').modal('show');
 });
 
-    // Reset form when modal is closed
     $('#priceModal').on('hidden.bs.modal', function () {
         document.getElementById('priceForm').reset();
     });
 
 });
 
-// =========================================================
-// SAVE / UPDATE PRICE & STATUS
-// =========================================================
+
 function savePrice() {
     const id = $('#priceId').val();
 const isEditing = id !== '' && id !== null && id !== '0' && id !== 0;
@@ -243,6 +320,7 @@ const data = {
     agency_id: $('#price_agency').val(),
     monitored_by_agency_id: $('#price_agency').val(),
     srp: $('#priceSrp').val(),
+    prevailing_price: $('#pricePrevailingPrice').val(),
     status: $('#priceStatus').val()
 };
 
@@ -259,7 +337,7 @@ if (isEditing) {
         if (res.status === 'success') {
             $('#priceModal').modal('hide');
             Swal.fire('Success!', res.message || 'Price record updated successfully.', 'success').then(() => {
-                // Call loadPrices directly instead of ajax.reload
+               
                 if (typeof loadPrices === 'function') {
                     loadPrices();
                 } else {

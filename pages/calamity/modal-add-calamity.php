@@ -1,10 +1,10 @@
 <form id="addCalamityForm" method="POST">
 <div class="modal fade" id="addCalamityModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content" style="background-color: #343a40; color: white;">
+        <div class="modal-content" style="background-color: #1a3a6b; color: white; border: 2px solid #b91c1c; border-radius: 10px;">
 
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title">Add Calamity</h5>
+            <div class="modal-header border-0" style="background: linear-gradient(90deg, #1a3a6b 60%, #b91c1c 100%); border-radius: 8px 8px 0 0;">
+                <h5 class="modal-title"><i class="fas fa-cloud-rain mr-2"></i>Add Calamity</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
 
@@ -47,9 +47,11 @@
                 </div>
             </div>
 
-            <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-success" id="btnSaveCalamity" onclick="addCalamity()">Save</button>
+            <div class="modal-footer border-0" style="background: rgba(0,0,0,0.15); border-radius: 0 0 8px 8px;">
+                <button type="button" class="btn btn-outline-light" data-dismiss="modal">Close</button>
+                <button type="button" class="btn" style="background:#b91c1c;color:#fff;border:none;" id="btnSaveCalamity" onclick="addCalamity()">
+                    <i class="fas fa-save mr-1"></i>Save
+                </button>
             </div>
 
         </div>

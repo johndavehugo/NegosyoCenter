@@ -3,6 +3,8 @@ var stepper;
 address.cascade('#addBusRegion', '#addBusProvince', '#addBusCity', '#addBusBarangay');
 address.cascade('#addEmpRegion', '#addEmpProvince', '#addEmpCity', '#addEmpBarangay');
 
+bindCurrencyInput($('#addCapitalization'));
+
 $('#addBusinessModal').on('shown.bs.modal', function () {
     stepper = new Stepper($('.bs-stepper')[0]);
 
@@ -114,7 +116,7 @@ function addBusiness() {
         juri_name: $('input[name=addBusinessName]').val(),
         juri_entity_no: $('input[name=addBusEntityNo]').val(),
         juri_line_of_industry: $('select[name=addIndustry]').val(),
-        juri_capitalization: $('input[name=addCapitalization]').val(),
+        juri_capitalization: currencyParse($('input[name=addCapitalization]').val()),
         juri_contact_no: $('input[name=addContactNo]').val(),
         juri_contact_email: $('input[name=addEmail]').val(),
 
@@ -128,15 +130,28 @@ function addBusiness() {
         .then(r => r.json())
         .then(res => {
             if (res.status === 'success') {
-                alert(res.message);
+                var name = $('input[name=addBusinessName]').val() || 'Business';
                 $('#addBusinessModal').modal('hide');
                 $('#tblBusiness').DataTable().ajax.reload();
+                App.toast({
+                    icon: 'success',
+                    title: 'Business Added',
+                    text: name + ' has been registered successfully.'
+                });
             } else {
-                alert('Error: ' + res.message);
+                App.alert({
+                    icon: 'error',
+                    title: 'Could Not Save',
+                    text: res.message || 'An error occurred while saving the business record.'
+                });
             }
         })
         .catch(err => {
             console.error(err);
-            alert('Network error');
+            App.alert({
+                icon: 'error',
+                title: 'Request Failed',
+                text: 'A network error occurred. Please check your connection and try again.'
+            });
         });
 };

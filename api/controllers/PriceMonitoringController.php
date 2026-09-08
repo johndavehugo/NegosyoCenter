@@ -64,13 +64,31 @@ class PriceMonitoringController
     private function findAgency($id)
     {
         $stmt = $this->con->prepare("
-            SELECT id, code, name
+            SELECT id, code, name, coverage
             FROM agencies
             WHERE id = ?
             LIMIT 1
         ");
 
         $stmt->execute([$id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    private function findAgencyByCode($code, $excludeId = null)
+    {
+        $sql = "SELECT id FROM agencies WHERE code = ?";
+        $params = [$code];
+
+        if ($excludeId !== null) {
+            $sql .= " AND id != ?";
+            $params[] = $excludeId;
+        }
+
+        $sql .= " LIMIT 1";
+
+        $stmt = $this->con->prepare($sql);
+        $stmt->execute($params);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -103,6 +121,8 @@ class PriceMonitoringController
                 c.brand_name,
                 c.unit_of_measure,
                 c.srp,
+                c.prevailing_price,
+                c.Establishments,
                 cc.name AS category_name,
                 cc.agency_id AS category_agency_id
             FROM commodities c
@@ -166,7 +186,8 @@ class PriceMonitoringController
                 c.brand_name,
                 c.unit_of_measure,
                 c.srp,
-                cc.name AS category_name,
+c.prevailing_price,
+cc.name AS category_name,
                 cc.agency_id,
                 a.name AS agency_name,
                 a.code AS agency_code
@@ -204,9 +225,15 @@ class PriceMonitoringController
             'brand_name' => $row['brand_name'],
             'unit_of_measure' => $row['unit_of_measure'],
             'srp' => $row['srp'] !== null && $row['srp'] !== ''
-                ? (float)$row['srp']
-                : null,
-            'status' => strtoupper((string)($row['status'] ?? 'ACTIVE')),
+    ? (float)$row['srp']
+    : null,
+
+'prevailing_price' => $row['prevailing_price'] !== null &&
+                      $row['prevailing_price'] !== ''
+    ? (float)$row['prevailing_price']
+    : null,
+
+'status' => strtoupper((string)($row['status'] ?? 'ACTIVE')),
             'monitored_at' => $row['monitored_at'],
             'agency_id' => $row['agency_id'] !== null
                 ? (int)$row['agency_id']
@@ -220,7 +247,7 @@ class PriceMonitoringController
     {
         try {
             $stmt = $this->con->prepare("
-                SELECT id, code, name
+                SELECT id, code, name, coverage
                 FROM agencies
                 ORDER BY name ASC
             ");
@@ -237,6 +264,520 @@ class PriceMonitoringController
             );
         }
     }
+
+    public function addAgency(array $data)
+    {
+        $code = $this->input($data, ['code']);
+        $name = $this->input($data, ['name']);
+        $coverage = $this->input($data, ['coverage'], null);
+
+        if ($code === '' || $name === '') {
+            return $this->error(
+                'Agency Code and Agency Name are required.'
+            );
+        }
+
+        try {
+            if ($this->findAgencyByCode($code)) {
+                return $this->error(
+                    'An agency with this code already exists.'
+                );
+            }
+
+            $stmt = $this->con->prepare("
+                INSERT INTO agencies
+                (
+                    code,
+                    name,
+                    coverage
+                )
+                VALUES (?, ?, ?)
+            ");
+
+            $stmt->execute([
+                $code,
+                $name,
+                $coverage !== '' ? $coverage : null
+            ]);
+
+            $id = (int)$this->con->lastInsertId();
+
+            return $this->success(
+                'Agency has been added successfully.',
+                [
+                    'id' => $id
+                ]
+            );
+        } catch (PDOException $e) {
+            error_log('addAgency: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: Unable to add agency.'
+            );
+        }
+    }
+
+    public function updateAgency(array $data)
+    {
+        $id = $this->id(
+            $this->input($data, ['id', 'agency_id'])
+        );
+
+        $code = $this->input($data, ['code']);
+        $name = $this->input($data, ['name']);
+        $coverage = $this->input($data, ['coverage'], null);
+
+        if ($id === null) {
+            return $this->error('Invalid agency ID.');
+        }
+
+        if ($code === '' || $name === '') {
+            return $this->error(
+                'Agency Code and Agency Name are required.'
+            );
+        }
+
+        try {
+            if (!$this->findAgency($id)) {
+                return $this->error('Agency not found.');
+            }
+
+            if ($this->findAgencyByCode($code, $id)) {
+                return $this->error(
+                    'Another agency already uses this code.'
+                );
+            }
+
+            $stmt = $this->con->prepare("
+                UPDATE agencies
+                SET
+                    code = ?,
+                    name = ?,
+                    coverage = ?
+                WHERE id = ?
+            ");
+
+            $stmt->execute([
+                $code,
+                $name,
+                $coverage !== '' ? $coverage : null,
+                $id
+            ]);
+
+            return $this->success(
+                'Agency updated successfully.',
+                $this->findAgency($id)
+            );
+        } catch (PDOException $e) {
+            error_log('updateAgency: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: Unable to update agency.'
+            );
+        }
+    }
+
+    public function deleteAgency($id)
+    {
+        $id = $this->id($id);
+
+        if ($id === null) {
+            return $this->error('Invalid agency ID.');
+        }
+
+        try {
+            if (!$this->findAgency($id)) {
+                return $this->error('Agency not found.');
+            }
+
+            $stmt = $this->con->prepare("
+                SELECT COUNT(*) AS total
+                FROM commodity_categories
+                WHERE agency_id = ?
+            ");
+            $stmt->execute([$id]);
+            $categoryCount = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+            if ($categoryCount > 0) {
+                return $this->error(
+                    "This agency cannot be deleted because it is used by {$categoryCount} categor" .
+                    ($categoryCount === 1 ? 'y' : 'ies') . '. Reassign or delete those first.'
+                );
+            }
+
+            $stmt = $this->con->prepare("
+                SELECT COUNT(*) AS total
+                FROM commodities
+                WHERE agency_id = ?
+            ");
+            $stmt->execute([$id]);
+            $commodityCount = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+            if ($commodityCount > 0) {
+                return $this->error(
+                    "This agency cannot be deleted because it is used by {$commodityCount} commodit" .
+                    ($commodityCount === 1 ? 'y' : 'ies') . '. Reassign or delete those first.'
+                );
+            }
+
+            $stmt = $this->con->prepare("
+                DELETE FROM agencies
+                WHERE id = ?
+            ");
+
+            $stmt->execute([$id]);
+
+            if ($stmt->rowCount() === 0) {
+                return $this->error('Agency could not be deleted.');
+            }
+
+            return $this->success('Agency deleted successfully.');
+        } catch (PDOException $e) {
+            error_log('deleteAgency: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: Unable to delete agency.'
+            );
+        }
+    }
+
+
+    private function findEstablishment($id)
+    {
+        $stmt = $this->con->prepare("
+            SELECT id, name, branch, address, agency_id
+            FROM establishments
+            WHERE id = ?
+            LIMIT 1
+        ");
+
+        $stmt->execute([$id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // =========================================================
+    // ESTABLISHMENTS (e.g. Gaisano Fiestamart, Puregold, NCCC)
+    // =========================================================
+
+    public function getEstablishments()
+    {
+        try {
+            $stmt = $this->con->prepare("
+                SELECT
+                    e.id,
+                    e.name,
+                    e.branch,
+                    e.address,
+                    e.agency_id,
+                    a.name AS agency_name,
+                    a.code AS agency_code
+                FROM establishments e
+                LEFT JOIN agencies a
+                    ON e.agency_id = a.id
+                ORDER BY e.name ASC
+            ");
+
+            $stmt->execute();
+
+            return $this->success('', $stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (PDOException $e) {
+            error_log('getEstablishments: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: ' . $e->getMessage(),
+                []
+            );
+        }
+    }
+
+    public function addEstablishment(array $data)
+    {
+        $name = $this->input($data, ['name']);
+        $branch = $this->input($data, ['branch'], null);
+        $address = $this->input($data, ['address'], null);
+        $agencyId = $this->id($this->input($data, ['agency_id']));
+
+        if ($name === '') {
+            return $this->error('Establishment name is required.');
+        }
+
+        try {
+            $stmt = $this->con->prepare("
+                INSERT INTO establishments
+                (
+                    name,
+                    branch,
+                    address,
+                    agency_id
+                )
+                VALUES (?, ?, ?, ?)
+            ");
+
+            $stmt->execute([
+                $name,
+                $branch !== '' ? $branch : null,
+                $address !== '' ? $address : null,
+                $agencyId
+            ]);
+
+            $id = (int)$this->con->lastInsertId();
+
+            return $this->success(
+                'Establishment has been added successfully.',
+                ['id' => $id]
+            );
+        } catch (PDOException $e) {
+            error_log('addEstablishment: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: Unable to add establishment.'
+            );
+        }
+    }
+
+    public function updateEstablishment(array $data)
+    {
+        $id = $this->id($this->input($data, ['id', 'establishment_id']));
+        $name = $this->input($data, ['name']);
+        $branch = $this->input($data, ['branch'], null);
+        $address = $this->input($data, ['address'], null);
+        $agencyId = $this->id($this->input($data, ['agency_id']));
+
+        if ($id === null) {
+            return $this->error('Invalid establishment ID.');
+        }
+
+        if ($name === '') {
+            return $this->error('Establishment name is required.');
+        }
+
+        try {
+            if (!$this->findEstablishment($id)) {
+                return $this->error('Establishment not found.');
+            }
+
+            $stmt = $this->con->prepare("
+                UPDATE establishments
+                SET
+                    name = ?,
+                    branch = ?,
+                    address = ?,
+                    agency_id = ?
+                WHERE id = ?
+            ");
+
+            $stmt->execute([
+                $name,
+                $branch !== '' ? $branch : null,
+                $address !== '' ? $address : null,
+                $agencyId,
+                $id
+            ]);
+
+            return $this->success(
+                'Establishment updated successfully.',
+                $this->findEstablishment($id)
+            );
+        } catch (PDOException $e) {
+            error_log('updateEstablishment: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: Unable to update establishment.'
+            );
+        }
+    }
+
+    public function deleteEstablishment($id)
+    {
+        $id = $this->id($id);
+
+        if ($id === null) {
+            return $this->error('Invalid establishment ID.');
+        }
+
+        try {
+            if (!$this->findEstablishment($id)) {
+                return $this->error('Establishment not found.');
+            }
+
+            $stmt = $this->con->prepare("
+                SELECT COUNT(*) AS total
+                FROM establishment_prices
+                WHERE establishment_id = ?
+            ");
+            $stmt->execute([$id]);
+            $priceCount = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+            if ($priceCount > 0) {
+                return $this->error(
+                    "This establishment cannot be deleted because it has {$priceCount} price record" .
+                    ($priceCount === 1 ? '' : 's') . '. Reassign or delete those first.'
+                );
+            }
+
+            $stmt = $this->con->prepare("
+                DELETE FROM establishments
+                WHERE id = ?
+            ");
+
+            $stmt->execute([$id]);
+
+            if ($stmt->rowCount() === 0) {
+                return $this->error('Establishment could not be deleted.');
+            }
+
+            return $this->success('Establishment deleted successfully.');
+        } catch (PDOException $e) {
+            error_log('deleteEstablishment: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: Unable to delete establishment.'
+            );
+        }
+    }
+
+    // =========================================================
+    // ESTABLISHMENT PRICES (per-store pricing + comparison)
+    // =========================================================
+
+    public function getEstablishmentProducts($establishmentId)
+    {
+        $establishmentId = $this->id($establishmentId);
+
+        if ($establishmentId === null) {
+            return $this->error('Establishment ID is required.', []);
+        }
+
+        try {
+            $stmt = $this->con->prepare("
+                SELECT
+                    c.id AS commodity_id,
+                    c.product_name,
+                    cc.name AS category_name,
+                    c.brand_name,
+                    c.unit_of_measure,
+                    ep.id AS price_id,
+                    ep.price,
+                    UPPER(COALESCE(ep.status, 'INACTIVE')) AS status,
+                    ep.recorded_at
+                FROM commodities c
+                INNER JOIN commodity_categories cc
+                    ON c.category_id = cc.id
+                LEFT JOIN establishment_prices ep
+                    ON ep.commodity_id = c.id
+                    AND ep.establishment_id = ?
+                ORDER BY c.product_name ASC
+            ");
+
+            $stmt->execute([$establishmentId]);
+
+            return $this->success('', $stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (PDOException $e) {
+            error_log('getEstablishmentProducts: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: ' . $e->getMessage(),
+                []
+            );
+        }
+    }
+
+    public function setEstablishmentPrice(array $data)
+    {
+        $commodityId = $this->id(
+            $this->input($data, ['commodity_id'])
+        );
+
+        $establishmentId = $this->id(
+            $this->input($data, ['establishment_id'])
+        );
+
+        $priceInput = $this->input($data, ['price']);
+        $statusInput = $this->input($data, ['status'], 'ACTIVE');
+
+        if ($commodityId === null || $establishmentId === null) {
+            return $this->error('Commodity and establishment are required.');
+        }
+
+        $priceError = $this->validatePrice($priceInput, 'Price');
+        if ($priceError) {
+            return $priceError;
+        }
+
+        try {
+            $price = (float)$priceInput;
+            $status = $this->normalizeStatus($statusInput);
+
+            $stmt = $this->con->prepare("
+                INSERT INTO establishment_prices
+                (
+                    commodity_id,
+                    establishment_id,
+                    price,
+                    status
+                )
+                VALUES (?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                    price = VALUES(price),
+                    status = VALUES(status),
+                    recorded_at = CURRENT_TIMESTAMP
+            ");
+
+            $stmt->execute([
+                $commodityId,
+                $establishmentId,
+                $price,
+                $status
+            ]);
+
+            return $this->success('Price saved successfully.');
+        } catch (PDOException $e) {
+            error_log('setEstablishmentPrice: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: ' . $e->getMessage()
+            );
+        }
+    }
+
+    public function getPriceComparison($commodityId)
+    {
+        $commodityId = $this->id($commodityId);
+
+        if ($commodityId === null) {
+            return $this->error('Commodity ID is required.', []);
+        }
+
+        try {
+            $stmt = $this->con->prepare("
+                SELECT
+                    e.id AS establishment_id,
+                    e.name AS establishment_name,
+                    e.branch,
+                    ep.price,
+                    ep.recorded_at
+                FROM establishment_prices ep
+                INNER JOIN establishments e
+                    ON ep.establishment_id = e.id
+                WHERE ep.commodity_id = ?
+                    AND ep.status = 'ACTIVE'
+                ORDER BY ep.price ASC
+            ");
+
+            $stmt->execute([$commodityId]);
+
+            return $this->success('', $stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (PDOException $e) {
+            error_log('getPriceComparison: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: ' . $e->getMessage(),
+                []
+            );
+        }
+    }
+
 
     public function getPrices($agencyId = null)
     {
@@ -256,6 +797,8 @@ class PriceMonitoringController
                     c.brand_name,
                     c.unit_of_measure,
                     c.srp,
+                    c.prevailing_price,
+                    c.Establishments AS establishments_display,
                     UPPER(COALESCE(p.status, 'ACTIVE')) AS status,
                     p.monitored_at,
                     cc.agency_id AS monitored_by_agency_id,
@@ -379,7 +922,11 @@ class PriceMonitoringController
         );
 
         $srpInput = $this->input($data, ['srp']);
-        $statusInput = $this->input($data, ['status'], 'ACTIVE');
+$prevailingPriceInput = $this->input(
+    $data,
+    ['prevailing_price']
+);
+$statusInput = $this->input($data, ['status'], 'ACTIVE');
 
         if ($commodityId === null || $agencyId === null) {
             return $this->error(
@@ -391,6 +938,15 @@ class PriceMonitoringController
         if ($srpError) {
             return $srpError;
         }
+
+        $prevailingPriceError = $this->validatePrice(
+    $prevailingPriceInput,
+    'Prevailing Price'
+);
+
+if ($prevailingPriceError) {
+    return $prevailingPriceError;
+}
 
         try {
             $commodity = $this->findCommodity($commodityId);
@@ -411,16 +967,24 @@ class PriceMonitoringController
             }
 
             $srp = (float)$srpInput;
-            $status = $this->normalizeStatus($statusInput);
+$prevailingPrice = (float)$prevailingPriceInput;
+$status = $this->normalizeStatus($statusInput);
 
             $this->con->beginTransaction();
 
             $stmtSrp = $this->con->prepare("
-                UPDATE commodities
-                SET srp = ?
-                WHERE id = ?
-            ");
-            $stmtSrp->execute([$srp, $commodityId]);
+    UPDATE commodities
+    SET
+        srp = ?,
+        prevailing_price = ?
+    WHERE id = ?
+");
+
+$stmtSrp->execute([
+    $srp,
+    $prevailingPrice,
+    $commodityId
+]);
 
             $stmt = $this->con->prepare("
                 INSERT INTO price_logs
@@ -450,7 +1014,8 @@ class PriceMonitoringController
                     'commodity_id' => $commodityId,
                     'monitored_by_agency_id' => $agencyId,
                     'srp' => $srp,
-                    'status' => $status
+'prevailing_price' => $prevailingPrice,
+'status' => $status
                 ]
             );
         } catch (PDOException $e) {
@@ -484,12 +1049,18 @@ class PriceMonitoringController
         );
 
         $srpInput = $this->input(
-            $data,
-            ['srp', 'srp_price'],
-            null
-        );
+    $data,
+    ['srp', 'srp_price'],
+    null
+);
 
-        $statusInput = $this->input($data, ['status'], 'ACTIVE');
+$prevailingPriceInput = $this->input(
+    $data,
+    ['prevailing_price'],
+    null
+);
+
+$statusInput = $this->input($data, ['status'], 'ACTIVE');
 
         if ($commodityId === null) {
             return $this->error(
@@ -498,15 +1069,24 @@ class PriceMonitoringController
         }
 
         $srpError = $this->validatePrice(
-            $srpInput,
-            'SRP'
-        );
+    $srpInput,
+    'SRP'
+);
 
-        if ($srpError) {
-            return $srpError;
-        }
+if ($srpError) {
+    return $srpError;
+}
 
-        try {
+$prevailingPriceError = $this->validatePrice(
+    $prevailingPriceInput,
+    'Prevailing Price'
+);
+
+if ($prevailingPriceError) {
+    return $prevailingPriceError;
+}
+
+try {
             $commodity = $this->findCommodity($commodityId);
 
             if (!$commodity) {
@@ -520,21 +1100,25 @@ class PriceMonitoringController
             }
 
             $srp = (float)$srpInput;
-            $status = $this->normalizeStatus($statusInput);
+$prevailingPrice = (float)$prevailingPriceInput;
+$status = $this->normalizeStatus($statusInput);
 
             $this->con->beginTransaction();
 
             // 1. Update SRP in commodities table
-            $stmt = $this->con->prepare("
-                UPDATE commodities
-                SET srp = ?
-                WHERE id = ?
-            ");
+           $stmt = $this->con->prepare("
+    UPDATE commodities
+    SET
+        srp = ?,
+        prevailing_price = ?
+    WHERE id = ?
+");
 
-            $stmt->execute([
-                $srp,
-                $commodityId
-            ]);
+$stmt->execute([
+    $srp,
+    $prevailingPrice,
+    $commodityId
+]);
 
             // 2. Check if a price log record exists for this commodity
             $checkStmt = $this->con->prepare("
@@ -827,6 +1411,8 @@ class PriceMonitoringController
                     c.brand_name,
                     c.unit_of_measure,
                     c.srp,
+                    c.prevailing_price,
+                    c.Establishments,
                     c.agency_id,
                     a.name AS agency_name,
                     a.code AS agency_code
@@ -874,6 +1460,8 @@ class PriceMonitoringController
                     c.brand_name,
                     c.unit_of_measure,
                     c.srp,
+                    c.prevailing_price,
+                    c.Establishments,
                     cc.name AS category_name,
                     a.name AS agency_name,
                     a.code AS agency_code
@@ -941,6 +1529,18 @@ class PriceMonitoringController
             null
         );
 
+        $prevailingPriceInput = $this->input(
+            $data,
+            ['prevailing_price'],
+            null
+        );
+
+        $establishments = $this->input(
+            $data,
+            ['Establishments', 'establishments'],
+            ''
+        );
+
         if (
             $productName === '' ||
             $categoryId === null ||
@@ -966,6 +1566,24 @@ class PriceMonitoringController
         if ($srp !== null && $srp < 0) {
             return $this->error(
                 'SRP cannot be negative.'
+            );
+        }
+
+        $prevailingPrice = $this->normalizeSrp($prevailingPriceInput);
+
+        if (
+            $prevailingPriceInput !== null &&
+            trim((string)$prevailingPriceInput) !== '' &&
+            $prevailingPrice === null
+        ) {
+            return $this->error(
+                'Invalid Prevailing Price value.'
+            );
+        }
+
+        if ($prevailingPrice !== null && $prevailingPrice < 0) {
+            return $this->error(
+                'Prevailing Price cannot be negative.'
             );
         }
 
@@ -996,9 +1614,11 @@ class PriceMonitoringController
                     agency_id,
                     brand_name,
                     unit_of_measure,
-                    srp
+                    srp,
+                    prevailing_price,
+                    Establishments
                 )
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
@@ -1007,7 +1627,9 @@ class PriceMonitoringController
                 $agencyId,
                 $brandName,
                 $unitOfMeasure,
-                $srp
+                $srp,
+                $prevailingPrice,
+                $establishments
             ]);
 
             $id = (int)$this->con->lastInsertId();
@@ -1061,6 +1683,18 @@ class PriceMonitoringController
         $srpInput = $this->input(
             $data,
             ['srp'],
+            null
+        );
+
+        $prevailingPriceInput = $this->input(
+            $data,
+            ['prevailing_price'],
+            null
+        );
+
+        $establishmentsInput = $this->input(
+            $data,
+            ['Establishments', 'establishments'],
             null
         );
 
@@ -1118,6 +1752,31 @@ class PriceMonitoringController
                 }
             }
 
+            $prevailingPrice = $current['prevailing_price'];
+
+            if (
+                $prevailingPriceInput !== null &&
+                trim((string)$prevailingPriceInput) !== ''
+            ) {
+                $prevailingPrice = $this->normalizeSrp($prevailingPriceInput);
+
+                if ($prevailingPrice === null) {
+                    return $this->error(
+                        'Invalid Prevailing Price value.'
+                    );
+                }
+
+                if ($prevailingPrice < 0) {
+                    return $this->error(
+                        'Prevailing Price cannot be negative.'
+                    );
+                }
+            }
+
+            $establishments = $establishmentsInput !== null
+                ? $establishmentsInput
+                : ($current['Establishments'] ?? '');
+
             $category = $this->findCategory($categoryId);
 
             if (!$category) {
@@ -1144,7 +1803,9 @@ class PriceMonitoringController
                     agency_id = ?,
                     brand_name = ?,
                     unit_of_measure = ?,
-                    srp = ?
+                    srp = ?,
+                    prevailing_price = ?,
+                    Establishments = ?
                 WHERE id = ?
             ");
 
@@ -1155,6 +1816,8 @@ class PriceMonitoringController
                 $brandName,
                 $unitOfMeasure,
                 $srp,
+                $prevailingPrice,
+                $establishments,
                 $id
             ]);
 

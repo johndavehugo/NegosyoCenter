@@ -56,7 +56,7 @@ function viewBusiness(entityNo) {
 
             // Plain text fields
             $('#viewOwner').text(e.full_name || '—');
-            $('#viewCapitalization').text(j.capitalization || '—');
+            $('#viewCapitalization').text(currencyFormat(j.capitalization || '—'));
             $('#viewContactNo').text(j.contact_no || '—');
             $('#viewEmail').text(j.contact_email || '—');
             $('#viewSector').text(j.line_of_industry || '—');
@@ -74,7 +74,12 @@ function viewBusiness(entityNo) {
             $('#viewClassification').html(statusBadge(j.msme_category || '—', 'class'));
 
         } else {
-            alert('Business not found.');
+            App.alert({
+                icon: 'warning',
+                title: 'Not Found',
+                text: 'This business record could not be loaded.'
+            });
+            return;
         }
 
         $('#viewBusinessModal').modal('show');

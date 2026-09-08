@@ -1,3 +1,23 @@
+
+$('#addCategoryModal').on('show.bs.modal', function () {
+    $.getJSON('../../api/routes.php/price?action=agencies')
+        .done(function (res) {
+            var opts = '<option value="" hidden>Select Agency</option>';
+
+            if (res.status === 'success' && Array.isArray(res.data)) {
+                res.data.forEach(function (a) {
+                    opts += `<option value="${a.id}">${a.name} (${a.code || ''})</option>`;
+                });
+            }
+
+            $('#addAgencyType').html(opts);
+        })
+        .fail(function (err) {
+            console.error(err);
+            Swal.fire('Error', 'Failed to load agencies.', 'error');
+        });
+});
+
 $('#addCategoryModal').on('hidden.bs.modal', function () {
     document.getElementById('addCategoryForm').reset();
 });

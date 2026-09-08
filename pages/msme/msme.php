@@ -41,7 +41,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
     <link rel="stylesheet" href="../../dist/css/user_defined.css?v=5">
     <link rel="stylesheet" href="../../plugins/dropzone/min/dropzone.min.css" type="text/css" />
-    <link rel="icon" type="image/png" sizes="40x16" href="../../dist/img/splogo.png">
+    <link rel="icon" type="image/png" sizes="40x16" href="../../dist/img/nclogo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="../../plugins/ekko-lightbox/ekko-lightbox.css">
 
@@ -268,6 +268,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="../../plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
     <script src="../../plugins/fontawesomekit/a757e6f388.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>
+    <script src="../../scripts/common/alert.js"></script>
     <script src="../../plugins/ekko-lightbox/ekko-lightbox.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -281,6 +282,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     
     <script src="../../scripts/common/address.js"> </script>
+    <script src="../../scripts/common/currency.js"> </script>
     <script src="../../scripts/msme/business-table.js"> </script>
     <script src="../../scripts/msme/business-view.js"></script>
     <script src="../../scripts/msme/business-add.js"></script>

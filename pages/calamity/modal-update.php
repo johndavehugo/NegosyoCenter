@@ -1,10 +1,26 @@
-<form id="updateIncidentForm" method="POST">
-<div class="modal fade" id="updateIncidentModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content" style="background-color: #343a40; color: white;">
+<style>
+    .cal-update-modal .select2-container--default .select2-selection--single {
+        background-color: #fff; border: 1px solid #ced4da;
+        border-radius: 4px; height: 38px;
+    }
+    .cal-update-modal .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #343a40; line-height: 36px; padding-left: 10px; padding-right: 30px;
+    }
+    .cal-update-modal .select2-container--default .select2-selection--single .select2-selection__arrow { height: 36px; }
+    .cal-update-modal .select2-container--default .select2-selection--single .select2-selection__placeholder { color: #6c757d; }
+    .cal-update-modal .select2-container--default .select2-selection--single .select2-selection__clear {
+        color: #dc3545; font-size: 18px; font-weight: bold; margin-right: 6px; cursor: pointer;
+    }
+    .cal-update-modal .select2-results__options { max-height: 250px; overflow-y: auto; }
+</style>
 
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title">Update Calamity Incident</h5>
+<form id="updateIncidentForm" method="POST">
+<div class="modal fade cal-update-modal" id="updateIncidentModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" style="background-color: #1a3a6b; color: white; border: 2px solid #b91c1c; border-radius: 10px;">
+
+            <div class="modal-header border-0" style="background: linear-gradient(90deg, #1a3a6b 60%, #b91c1c 100%); border-radius: 8px 8px 0 0;">
+                <h5 class="modal-title"><i class="fas fa-pen mr-2"></i>Update Calamity Incident</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
 
@@ -14,8 +30,8 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Type of Calamity <span class="text-danger">*</span></label>
-                            <select class="form-control" id="updateIncidentCalamity" name="updateIncidentCalamity">
-                                <option value="" hidden>Select Calamity</option>
+                            <select id="updateIncidentCalamity" name="updateIncidentCalamity" style="width:100%">
+                                <option value=""></option>
                             </select>
                         </div>
                     </div>
@@ -30,16 +46,16 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Business Affected <span class="text-danger">*</span></label>
-                            <select class="form-control" id="updateIncidentJuridical" name="updateIncidentJuridical">
-                                <option value="" hidden>Select Business</option>
+                            <select id="updateIncidentJuridical" name="updateIncidentJuridical" style="width:100%">
+                                <option value=""></option>
                             </select>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Nature of Damage <span class="text-danger">*</span></label>
-                            <select class="form-control" id="updateIncidentNature" name="updateIncidentNature">
-                                <option value="" hidden>Select Nature of Damage</option>
+                            <select id="updateIncidentNature" name="updateIncidentNature" style="width:100%">
+                                <option value=""></option>
                                 <option value="PARTIAL">Partial</option>
                                 <option value="TOTAL">Total</option>
                             </select>
@@ -74,9 +90,11 @@
                 </div>
             </div>
 
-            <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-success" id="btnUpdateIncident" onclick="updateIncident()">Save</button>
+            <div class="modal-footer border-0" style="background: rgba(0,0,0,0.15); border-radius: 0 0 8px 8px;">
+                <button type="button" class="btn btn-outline-light" data-dismiss="modal">Close</button>
+                <button type="button" class="btn" style="background:#b91c1c;color:#fff;border:none;" id="btnUpdateIncident" onclick="updateIncident()">
+                    <i class="fas fa-save mr-1"></i>Save
+                </button>
             </div>
 
         </div>

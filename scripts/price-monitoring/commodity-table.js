@@ -25,59 +25,62 @@ $(function () {
             }
         },
 
-        columns: [
-            { data: 'id', defaultContent: '-' },
-            { data: 'product_name', defaultContent: '-' },
-            { data: 'category_name', defaultContent: '-' },
-            { data: 'brand_name', defaultContent: '-' },
-            { data: 'unit_of_measure', defaultContent: '-' },
-            {
-                data: 'srp',
-                defaultContent: '0.00',
-                render: function (data) {
-                    const amount = Number(data);
-                    if (data === null || data === undefined || data === '' || isNaN(amount)) {
-                        return '₱0.00';
-                    }
-                    return '₱' + amount.toLocaleString('en-PH', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                }
-            },
-            { data: 'agency_name', defaultContent: '-' },
-            {
-                data: null,
-                orderable: false,
-                searchable: false,
-                render: function (data, type, row) {
-                    return `
-                        <button
-                            class="btn btn-warning btn-sm btn-edit"
-                            data-id="${row.id}"
-                            title="Edit Commodity">
-                            <i class="fas fa-edit"></i>
-                        </button>
-
-                        <button
-                            class="btn btn-danger btn-sm btn-delete"
-                            data-id="${row.id}"
-                            title="Delete Commodity">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    `;
-                }
-            }
-        ]
+       columns: [
+    { data: 'id' },
+    { data: 'product_name' },
+    { data: 'category_name' },
+    { data: 'brand_name' },
+    { data: 'unit_of_measure' },
+    {
+        data: 'srp',
+        render: function (data) {
+            return data
+                ? '₱' + parseFloat(data).toLocaleString('en-PH', {
+                    minimumFractionDigits: 2
+                })
+                : 'N/A';
+        }
+    },
+    {
+        data: 'prevailing_price',
+        render: function (data) {
+            return data
+                ? '₱' + parseFloat(data).toLocaleString('en-PH', {
+                    minimumFractionDigits: 2
+                })
+                : 'N/A';
+        }
+    },
+    { data: 'Establishments' },
+    { data: 'agency_name' },
+    {
+        data: null,
+        orderable: false,
+        searchable: false,
+        render: function (data, type, row) {
+            return `
+                <button class="btn btn-sm btn-primary edit-commodity" data-id="${row.id}">
+                    Edit
+                </button>
+                <button class="btn btn-sm btn-danger delete-commodity" data-id="${row.id}">
+                    Delete
+                </button>
+            `;
+        }
+    }
+]
     });
 
 
     // Open Add modal
-    $('#btn_add_calamity').on('click', function () {
+    $('#btn_add_commodity').on('click', function () {
         $('#product_name').val('');
         $('#category_id').val('');
         $('#brand_name').val('');
         $('#unit_of_measure').val('');
+        $('#srp').val('');
+        $('#prevailing_price').val('');
+        $('#establishments').val('');
 
         $('#commodityModalLabel').text('Add Commodity');
         $('#btnSaveCommodity').text('Save');
@@ -128,6 +131,9 @@ $(function () {
         const categoryId = $('#category_id').val() || '';
         const brandName = String($('#brand_name').val() || '').trim();
         const unitOfMeasure = String($('#unit_of_measure').val() || '').trim();
+        const srp = $('#srp').val();
+        const prevailingPrice = $('#prevailing_price').val();
+        const establishments = String($('#establishments').val() || '').trim();
 
         if (!productName) {
             Swal.fire('Required Field', 'Please enter the Commodity Name.', 'warning');
@@ -146,7 +152,10 @@ $(function () {
             product_name: productName,
             category_id: categoryId,
             brand_name: brandName,
-            unit_of_measure: unitOfMeasure
+            unit_of_measure: unitOfMeasure,
+            srp: srp,
+            prevailing_price: prevailingPrice,
+            Establishments: establishments
         };
 
         $.ajax({
@@ -163,12 +172,15 @@ $(function () {
 
                 Swal.fire('Success', response.message || 'Commodity added successfully.', 'success');
 
-                $('#addCalamityModal').modal('hide');
+                $('#addCommodityModal').modal('hide');
 
                 $('#product_name').val('');
                 $('#category_id').val('');
                 $('#brand_name').val('');
                 $('#unit_of_measure').val('');
+                $('#srp').val('');
+                $('#prevailing_price').val('');
+                $('#establishments').val('');
 
                 table.ajax.reload(null, false);
             },

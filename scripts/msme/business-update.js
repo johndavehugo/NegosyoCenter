@@ -3,6 +3,8 @@ var updStepper;
 address.cascade('#updBusRegion', '#updBusProvince', '#updBusCity', '#updBusBarangay');
 address.cascade('#updEmpRegion', '#updEmpProvince', '#updEmpCity', '#updEmpBarangay');
 
+bindCurrencyInput($('#updCapitalization'));
+
 $('#updateBusinessModal').on('shown.bs.modal', function () {
     updStepper = new Stepper($('.upd-stepper')[0]);
 });
@@ -27,7 +29,7 @@ async function fillUpdateModal(id) {
                 const business = data.data;
                 $('#updBusinessName').val(business.juridical.name);
                 $('#updBusEntityNo').val(business.juridical.entity_no);
-                $('#updCapitalization').val(business.juridical.capitalization);
+                $('#updCapitalization').val(business.juridical.capitalization ? currencyFormat(business.juridical.capitalization, false) : '');
                 $('#updIndustry').val(business.juridical.line_of_industry);
                 $('#updContactNo').val(business.juridical.contact_no);
                 $('#updEmail').val(business.juridical.contact_email);
@@ -48,11 +50,20 @@ async function fillUpdateModal(id) {
                 await address.prefill('#updBusRegion', '#updBusProvince', '#updBusCity', '#updBusBarangay', business.juridical);
                 await address.prefill('#updEmpRegion', '#updEmpProvince', '#updEmpCity', '#updEmpBarangay', business.employer);
             } else {
-                alert(data.message);
+                App.alert({
+                    icon: 'error',
+                    title: 'Could Not Load Record',
+                    text: data.message || 'The business record could not be retrieved.'
+                });
             }
         })
         .catch(error => {
-            alert('Error: ' + error);
+            console.error(error);
+            App.alert({
+                icon: 'error',
+                title: 'Request Failed',
+                text: 'A network error occurred. Please check your connection and try again.'
+            });
         });
 }
 
@@ -62,7 +73,7 @@ function updateBusiness() {
         juri_entity_no: $('#updBusEntityNo').val(),
         juri_name: $('#updBusinessName').val(),
         line_of_industry: $('#updIndustry').val(),
-        capitalization: $('#updCapitalization').val(),
+        capitalization: currencyParse($('#updCapitalization').val()),
         contact_no: $('#updContactNo').val(),
         contact_email: $('#updEmail').val(),
 
@@ -97,13 +108,29 @@ function updateBusiness() {
     })
         .then(response => response.json())
         .then(data => {
-            alert(data.message);
             if (data.status === 'success') {
+                var name = $('#updBusinessName').val() || 'Business';
                 $('#updateBusinessModal').modal('hide');
                 $('#tblBusiness').DataTable().ajax.reload();
+                App.toast({
+                    icon: 'success',
+                    title: 'Record Updated',
+                    text: 'Changes to ' + name + ' have been saved.'
+                });
+            } else {
+                App.alert({
+                    icon: 'error',
+                    title: 'Could Not Update',
+                    text: data.message || 'An error occurred while saving the changes.'
+                });
             }
         })
         .catch(error => {
-            alert('Error: ' + error);
+            console.error(error);
+            App.alert({
+                icon: 'error',
+                title: 'Request Failed',
+                text: 'A network error occurred. Please check your connection and try again.'
+            });
         });
 }

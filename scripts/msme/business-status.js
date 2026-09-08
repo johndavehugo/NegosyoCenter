@@ -30,37 +30,93 @@ function fillStatusModal(id) {
 
                 $('#statusBusinessModal').modal('show');
             } else {
-                alert(data.message);
+                App.alert({
+                    icon: 'error',
+                    title: 'Could Not Load Record',
+                    text: data.message || 'The business record could not be retrieved.'
+                });
             }
         })
         .catch(error => {
-            alert('Error: ' + error);
+            console.error(error);
+            App.alert({
+                icon: 'error',
+                title: 'Request Failed',
+                text: 'A network error occurred. Please check your connection and try again.'
+            });
         });
 }
 
+// Called by the radio buttons in modal-status.php to preview the selected state
+function previewStatusChange(value) {
+    // Visual feedback is handled entirely by the CSS radio-card styles —
+    // nothing extra needed here. Function kept so the onchange attr doesn't throw.
+}
 
 function changeBusinessStatus() {
-    const data = {
-        juri_entity_no: $('#statusBusEntityNo').val(),
-        juri_bus_status: $('input[name="statusNewStatus"]:checked').val() || '',
-    };
+    const newStatus = $('input[name="statusNewStatus"]:checked').val() || '';
+    const name      = $('#statusBusName').val()     || 'this business';
+    const entityNo  = $('#statusBusEntityNo').val() || '—';
 
-    fetch('../../api/routes.php/business/status', {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            if (data.status === 'success') {
-                $('#statusBusinessModal').modal('hide');
-                $('#tblBusiness').DataTable().ajax.reload();
-            }
-        })
-        .catch(error => {
-            alert('Error: ' + error);
+    if (!newStatus) {
+        App.alert({
+            icon: 'warning',
+            title: 'No Status Selected',
+            text: 'Please select a new status before continuing.'
         });
+        return;
+    }
+
+    var isDeactivating = newStatus === 'INACTIVE';
+
+    App.confirm({
+        icon:    isDeactivating ? 'warning' : 'question',
+        danger:  isDeactivating,
+        title:   isDeactivating ? 'Deactivate Business?' : 'Activate Business?',
+        html:    '<strong>' + name + '</strong>'
+               + ' <span style="color:#6c757d;font-size:.875em;">(' + entityNo + ')</span>'
+               + ' will be marked as <strong>'
+               + (isDeactivating ? 'Inactive' : 'Active') + '</strong>.',
+        confirmButtonText: isDeactivating ? 'Deactivate' : 'Activate',
+        cancelButtonText:  'Cancel'
+    }).then(result => {
+        if (!result.isConfirmed) return;
+
+        const data = {
+            juri_entity_no:  entityNo,
+            juri_bus_status: newStatus
+        };
+
+        fetch('../../api/routes.php/business/status', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    $('#statusBusinessModal').modal('hide');
+                    $('#tblBusiness').DataTable().ajax.reload();
+                    App.toast({
+                        icon: 'success',
+                        title: 'Status Updated',
+                        text: res.message || name + ' is now ' + newStatus.toLowerCase() + '.'
+                    });
+                } else {
+                    App.alert({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: res.message || 'An error occurred while updating the status.'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                App.alert({
+                    icon: 'error',
+                    title: 'Request Failed',
+                    text: 'A network error occurred. Please check your connection and try again.'
+                });
+            });
+    });
 }
