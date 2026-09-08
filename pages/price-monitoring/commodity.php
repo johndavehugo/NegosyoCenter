@@ -227,10 +227,10 @@
                            placeholder="Actual observed selling price" autocomplete="off">
                 </div>
                 <div class="form-group mb-0">
-                    <label class="msme-label">Establishments</label>
-                    <input type="text" id="establishments" name="establishments"
-                           class="form-control msme-input"
-                           placeholder="e.g. Gaisano Fiestamart, Puregold" autocomplete="off">
+                    <label class="msme-label">Establishment</label>
+                    <select id="establishments" name="establishments" class="form-control msme-input">
+                        <option value="">-- Select Establishment --</option>
+                    </select>
                 </div>
             </div>
 
@@ -299,10 +299,10 @@
                                class="form-control msme-input" autocomplete="off">
                     </div>
                     <div class="form-group mb-0">
-                        <label class="msme-label">Establishments</label>
-                        <input type="text" id="updateCommodityEstablishments"
-                               class="form-control msme-input"
-                               placeholder="e.g. Gaisano Fiestamart, Puregold" autocomplete="off">
+                        <label class="msme-label">Establishment</label>
+                        <select id="updateCommodityEstablishments" class="form-control msme-input">
+                            <option value="">-- Select Establishment --</option>
+                        </select>
                     </div>
                 </div>
 

@@ -1,6 +1,7 @@
 $(function () {
 
     loadCategories();
+    loadEstablishmentsFromMSME();
 
     const table = $('#tblCommodity').DataTable({
         responsive: true,
@@ -224,6 +225,39 @@ $(function () {
             error: function (xhr) {
                 console.error(xhr.responseText);
                 Swal.fire('Error', 'Unable to load DOE categories.', 'error');
+            }
+        });
+    }
+
+    // Load establishments for the dropdown — pulled from registered MSME
+    // businesses (MSMEController::getBusinesses()) instead of free typing.
+    // length: -1 tells getBusinesses() to skip pagination and return all rows.
+    function loadEstablishmentsFromMSME() {
+        $.ajax({
+            url: '../../api/routes.php/business',
+            type: 'GET',
+            data: { length: -1 },
+            dataType: 'json',
+            success: function (response) {
+                if (response.status !== 'success') {
+                    Swal.fire('Error', response.message || 'Unable to load establishments.', 'error');
+                    return;
+                }
+
+                let html = '<option value="">-- Select Establishment --</option>';
+
+                $.each(response.data || [], function (i, item) {
+                    const name = item.juridical && item.juridical.name ? item.juridical.name : '';
+                    if (name) {
+                        html += `<option value="${name}">${name}</option>`;
+                    }
+                });
+
+                $('#establishments').html(html);
+            },
+            error: function (xhr) {
+                console.error(xhr.responseText);
+                Swal.fire('Error', 'Unable to load establishments.', 'error');
             }
         });
     }

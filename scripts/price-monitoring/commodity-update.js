@@ -16,6 +16,28 @@ function loadCategoryOptions(selectId) {
     });
 }
 
+// Loads establishment options (from registered MSME businesses) into the
+// target dropdown — same pattern as loadCategoryOptions above.
+function loadEstablishmentOptionsForEdit(selectId) {
+    return new Promise(function (resolve, reject) {
+        $.getJSON('../../api/routes.php/business', { length: -1 })
+            .done(function (res) {
+                var opts = '<option value="">-- Select Establishment --</option>';
+                if (res.status === 'success' && Array.isArray(res.data)) {
+                    res.data.forEach(function (item) {
+                        var name = item.juridical && item.juridical.name ? item.juridical.name : '';
+                        if (name) {
+                            opts += `<option value="${name}">${name}</option>`;
+                        }
+                    });
+                }
+                $('#' + selectId).html(opts);
+                resolve();
+            })
+            .fail(reject);
+    });
+}
+
 $(document).on('click', '.btn-edit', function () {
     var row = $('#tblCommodity').DataTable().row($(this).closest('tr')).data();
     if (!row || !row.id) {
@@ -24,6 +46,9 @@ $(document).on('click', '.btn-edit', function () {
     }
 
     loadCategoryOptions('updateCommodityCategory')
+        .then(function () {
+            return loadEstablishmentOptionsForEdit('updateCommodityEstablishments');
+        })
         .then(function () {
             $('#updateCommodityId').val(row.id);
             $('#updateCommodityProductName').val(row.product_name);
