@@ -374,12 +374,17 @@
             font-style: italic;
         }
         .bv-section-body select.form-control {
-            padding: 12px 40px 12px 16px;
+            padding: 10px 36px 10px 14px;
+            height: auto;
+            line-height: 1.6;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 12px center;
+            background-position: right 10px center;
             background-repeat: no-repeat;
             background-size: 16px 12px;
             cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
 
         /* Enhanced field labels */
