@@ -109,9 +109,9 @@
         .breakdown-bar { height: 7px; border-radius: 4px; display: block; min-width: 2px; }
 
         .stat-pill { border-left: 4px solid #007bff !important; }
-        .stat-pill .value { font-size: 1.15rem; font-weight: 700; line-height: 1; color: #6c757d; }
-        .stat-pill .label { font-size: 1.05rem; font-weight: 700; text-transform: uppercase;
-                            letter-spacing: .04em; color: #1a1a2e; line-height: 1.2; }
+        .stat-pill .value { font-size: 1.55rem; font-weight: 700; line-height: 1; color: #1a1a2e; }
+        .stat-pill .label { font-size: 1.05rem; font-weight: 700; text-transform: none;
+                            letter-spacing: 0; color: #1a1a2e; line-height: 1.2; }
 
         .no-data-msg {
             display: flex; align-items: center; justify-content: center;
@@ -353,7 +353,7 @@
                                 </div>
                                 <div class="card stat-pill mb-3" style="border-left-color:#28a745!important;">
                                     <div class="card-body py-3">
-                                        <div class="label">Barangays with businesses</div>
+                                        <div class="label">Barangay's with Businesses</div>
                                         <div class="value" id="hotspotWithBusiness">—</div>
                                     </div>
                                 </div>
@@ -491,7 +491,7 @@
                                             event (from Calamity Monitoring).
                                         </div>
                                     </div>
-                                </div>
+                                </div>  
 
                                 <div class="card map-card">
                                     <div class="card-body py-3">
@@ -608,7 +608,7 @@
                         <div class="text-muted small">
                             <i class="material-icons align-middle" style="font-size:15px;">info_outline</i>
                             Opportunity levels: <span class="legend-dot" style="background:#198754;"></span>Very High
-                            <span class="legend-dot" style="background:#8BC34A;"></span>High
+                            <span class="legend-dot" style="background:#28a745;"></span>High
                             <span class="legend-dot" style="background:#ffc107;"></span>Moderate
                             <span class="legend-dot" style="background:#6c757d;"></span>Low
                             &mdash; click a circle to see which opportunity drivers apply.
