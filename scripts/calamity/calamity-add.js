@@ -26,6 +26,22 @@ function destroySelect2Add() {
     });
 }
 
+// Re-runs the open dropdown query (keeping the typed term) so a freshly
+// picked business immediately vanishes from the search list — and an
+// unpicked one reappears. No-op when the dropdown is closed.
+function refreshOpenJuridicalResults($sel) {
+    var s2 = $sel.data('select2');
+    if (!s2 || typeof s2.isOpen !== 'function' || !s2.isOpen()) {
+        return;
+    }
+    var $search = (s2.dropdown && s2.dropdown.$search) ? s2.dropdown.$search : $();
+    if (!$search.length) {
+        return;
+    }
+    $search.trigger('input');
+    $search.focus();
+}
+
 function initSelect2Add() {
     $('#addIncidentCalamity').select2({
         dropdownParent: $('#addIncidentModal'),
@@ -51,7 +67,29 @@ function initSelect2Add() {
             if (selected.indexOf(data.id) !== -1) {
                 return null;
             }
-            return data.text;
+            // Rich row: business name + entity no • owner
+            var info = businessCache[data.id] || {};
+            var name = info.name || data.text;
+            var subParts = [];
+            if (info.entity_no) subParts.push(info.entity_no);
+            if (info.owner_full_name) subParts.push(info.owner_full_name);
+            var $el = $('<span><span class="biz-opt-name"></span></span>');
+            $el.find('.biz-opt-name').text(name);
+            if (subParts.length) {
+                $el.append($('<span class="biz-opt-sub"></span>').text(subParts.join(' • ')));
+            }
+            return $el;
+        },
+        templateSelection: function (data) {
+            if (!data.id) {
+                return data.text;
+            }
+            var info = businessCache[data.id] || {};
+            var label = info.name || data.text;
+            if (info.entity_no) {
+                label += ' — ' + info.entity_no;
+            }
+            return label;
         },
         ajax: {
             url: '../../api/routes.php/calamity?action=juridical_search',
@@ -81,13 +119,46 @@ function initSelect2Add() {
                 return { results: results };
             }
         }
-    }).on('change', function () {
+    }).off('change.bizAff').on('change.bizAff', function () {
         renderAffectedBusinesses();
-    }).on('select2:select', function () {
-        var s2 = $(this).data('select2');
-        if (s2 && s2.$search.length) {
-            s2.$search.trigger('input').trigger('focus');
+        refreshOpenJuridicalResults($(this));
+    }).off('select2:select.bizAff').on('select2:select.bizAff', function (e) {
+        var data = (e.params && e.params.data) || {};
+        var id = String(data.id || '');
+        // Guarantee the picked business is known (normally already cached
+        // by processResults) so the table row renders immediately.
+        if (id && !businessCache[id] && data.text !== undefined) {
+            var parts = String(data.text).split(' — ');
+            businessCache[id] = {
+                name: parts[0] || data.text,
+                entity_no: parts[1] || '',
+                owner_full_name: ''
+            };
         }
+        // 1) Show it in Selected Affected Businesses right away.
+        renderAffectedBusinesses();
+        // 2) Instantly drop the picked row from the open search list
+        // (the background refresh below then reloads a clean list).
+        var s2 = $(this).data('select2');
+        if (id && s2 && typeof s2.isOpen === 'function' && s2.isOpen() &&
+            s2.dropdown && s2.dropdown.$dropdown) {
+            var label = (businessCache[id] && businessCache[id].name) || '';
+            s2.dropdown.$dropdown
+                .find('li.select2-results__option--highlighted')
+                .filter(function () {
+                    return label && $(this).text().indexOf(label) !== -1;
+                })
+                .remove();
+        }
+        refreshOpenJuridicalResults($(this));
+        // keep typing focus inside the open dropdown
+        var $search = (s2 && s2.dropdown && s2.dropdown.$search) ? s2.dropdown.$search : $();
+        if ($search.length) {
+            $search.focus();
+        }
+    }).off('select2:unselect.bizAff').on('select2:unselect.bizAff', function () {
+        renderAffectedBusinesses();
+        refreshOpenJuridicalResults($(this));
     });
 }
 
@@ -131,9 +202,10 @@ function renderAffectedBusinesses() {
 
     selected.forEach(function (item, index) {
         var info = businessCache[item.id] || {};
+        var displayName = info.name || (item.text ? String(item.text).split(' — ')[0] : '');
         var $tr = $('<tr>');
         $tr.append('<td>' + (index + 1) + '</td>');
-        $tr.append('<td>' + (item.text ? item.text.split(' — ')[0] : '') + '</td>');
+        $tr.append('<td>' + displayName + '</td>');
         $tr.append('<td>' + (info.entity_no || '') + '</td>');
         $tr.append('<td>' + (info.owner_full_name || '') + '</td>');
         $tr.append(
@@ -216,10 +288,10 @@ $(document).on('input', '#affectedBusinessesTable .remarks-input', function () {
 });
 
 $(document).on('click', '#affectedBusinessesTable .btn-remove-business', function () {
-    var id = $(this).data('id');
+    var id = String($(this).data('id'));
     var select = $('#addIncidentJuridical');
     var current = select.val() || [];
-    select.val(current.filter(function (v) { return v !== id; })).trigger('change');
+    select.val(current.filter(function (v) { return String(v) !== id; })).trigger('change');
     delete businessDetails[id];
     updateTotalDamage();
 });

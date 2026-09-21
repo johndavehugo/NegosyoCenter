@@ -9,6 +9,7 @@ header('Content-Type: application/json');
 require_once 'controllers/MSMEController.php';
 require_once 'controllers/CalamityController.php';
 require_once 'controllers/PriceMonitoringController.php';
+require_once 'controllers/EconomicMapController.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -33,6 +34,42 @@ if (!empty($segments[0]) && strpos($segments[0], '.php') === false) {
 }
 
 switch ($resource) {
+
+    case 'economic-map':
+        if ($method === 'GET') {
+            $controller = new EconomicMapController();
+            $action = $_GET['action'] ?? '';
+            switch ($action) {
+                case 'economic_hotspots':
+                    $response = $controller->getHotspots();
+                    break;
+                case 'msme_distribution':
+                    $response = $controller->getDistribution();
+                    break;
+                case 'economic_risk':
+                    $response = $controller->getRisk();
+                    break;
+                case 'economic_opportunity':
+                    $response = $controller->getOpportunity();
+                    break;
+                case 'area_search':
+                    $response = $controller->areaSearch($_GET['q'] ?? '');
+                    break;
+                case 'sector_businesses':
+                    $response = $controller->sectorBusinesses();
+                    break;
+                case 'sectors':
+                    $response = $controller->getSectors();
+                    break;
+                default:
+                    http_response_code(400);
+                    $response = ['status' => 'error', 'message' => 'Unknown action. Use economic_hotspots, msme_distribution, economic_risk, economic_opportunity, sectors, or sector_businesses.'];
+            }
+        } else {
+            http_response_code(405);
+            $response = ['status' => 'error', 'message' => 'Only GET is supported for /economic-map.'];
+        }
+        break;
 
     case 'business':
         if ($method === 'GET') {

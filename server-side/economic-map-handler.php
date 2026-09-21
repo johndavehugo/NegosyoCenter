@@ -87,24 +87,33 @@ $BARANGAY_OPPORTUNITY = [
 ];
 
 // ── categorize_msme_industry ────────────────────────────────
-// Maps a line_of_industry value to one of the eight MSME
-// distribution categories used by the Economic Map.
+// Maps a line_of_industry value to one of the 17 PSIC-aligned
+// sectors used by the Economic Map distribution view.
 // ─────────────────────────────────────────────────────────────
 function categorize_msme_industry($line)
 {
     $line = strtoupper(trim((string) $line));
     if ($line === '') {
-        return 'Other services';
+        return 'Other Community, Social and Personal Service Activities';
     }
 
     $rules = [
-        'Retail'              => ['WHOLESALE', 'RETAIL', 'SARI-SARI', 'STORE', 'TRADE'],
-        'Food services'       => ['FOOD SERVICE', 'FOODS', 'EATERY', 'CAFETERIA', 'HOTELS', 'RESTAURANT'],
-        'Manufacturing'       => ['MANUFACTUR', 'FACTORY', 'FABRICATION', 'PROCESSING', 'GARMENT', 'PRODUCTION', 'MILL'],
-        'Agriculture-related' => ['AGRICULTUR', 'FARM', 'FISHING', 'FISHERY', 'LIVESTOCK', 'POULTRY', 'CROPS', 'PLANTATION'],
-        'Transportation'      => ['TRANSPORT', 'STORAGE', 'COMMUNICATION', 'LOGISTIC', 'COURIER', 'SHIPPING'],
-        'Tourism'             => ['TOURISM', 'TOURIST', 'RESORT', 'TRAVEL', 'HOSPITALITY'],
-        'Construction'        => ['CONSTRUCTION', 'BUILDING', 'CONTRACTOR', 'CIVIL WORKS'],
+        'Agriculture'                                             => ['AGRICULTUR', 'FARM', 'LIVESTOCK', 'POULTRY', 'CROPS', 'PLANTATION', 'AGRI'],
+        'Fishing'                                                 => ['FISHING', 'FISHERY', 'AQUACULTURE', 'FISH POND', 'SEAWEED'],
+        'Mining and Quarrying'                                    => ['MINING', 'QUARRY', 'MINERAL', 'SAND AND GRAVEL', 'EXTRACTION'],
+        'Manufacturing'                                           => ['MANUFACTUR', 'FACTORY', 'FABRICATION', 'PROCESSING', 'GARMENT', 'PRODUCTION', 'MILL', 'BAKERY', 'BAKING', 'PRINTING'],
+        'Electricity, Gas, and Water Supply'                      => ['ELECTRIC', 'POWER', 'GAS', 'WATER SUPPLY', 'UTILITIES'],
+        'Construction'                                            => ['CONSTRUCTION', 'BUILDING', 'CONTRACTOR', 'CIVIL WORKS', 'ENGINEERING'],
+        'Wholesale and Retail Trade'                              => ['WHOLESALE', 'RETAIL', 'SARI-SARI', 'STORE', 'TRADING', 'TRADE', 'DEALER', 'MARKET', 'SUPERMARKET', 'PHARMACY', 'HARDWARE'],
+        'Hotels and Restaurants'                                  => ['HOTEL', 'INN', 'LODGING', 'PENSION', 'RESTAURANT', 'EATERY', 'FOOD SERVICE', 'FOODS', 'CAFETERIA', 'CATERING', 'FAST FOOD', 'CANTEEN'],
+        'Transport, Storage, and Communication'                   => ['TRANSPORT', 'STORAGE', 'COMMUNICATION', 'LOGISTIC', 'COURIER', 'SHIPPING', 'FREIGHT', 'TRUCKING', 'TAXI', 'TRICYCLE'],
+        'Financial Intermediation'                                => ['BANK', 'LENDING', 'FINANCE', 'CREDIT', 'INSURANCE', 'PAWNSHOP', 'REMITTANCE', 'MICROFINANCE'],
+        'Real Estate, Renting, and Business Activities'           => ['REAL ESTATE', 'RENTING', 'RENTAL', 'LEASING', 'PROPERTY', 'CONSULTANCY', 'CONSULTING', 'ADVERTISING', 'MANPOWER'],
+        'Public Administration and Defense'                       => ['PUBLIC ADMIN', 'GOVERNMENT', 'DEFENSE', 'LGU', 'BARANGAY HALL'],
+        'Education'                                               => ['EDUCATION', 'SCHOOL', 'TUTORIAL', 'REVIEW', 'TRAINING', 'DAYCARE', 'LEARNING'],
+        'Health and Social Worker'                                => ['HEALTH', 'CLINIC', 'HOSPITAL', 'DENTAL', 'MEDICAL', 'PHARMACY', 'SOCIAL WORK', 'WELLNESS', 'SPA'],
+        'Activities of Private Households as Employers...'        => ['HOUSEHOLD', 'DOMESTIC', 'PRIVATE HOUSEHOLD'],
+        'Extra-territorial Organizations and Bodies'              => ['EXTRA-TERRITORIAL', 'INTERNATIONAL', 'NGO', 'EMBASSY'],
     ];
 
     foreach ($rules as $category => $keywords) {
@@ -115,7 +124,7 @@ function categorize_msme_industry($line)
         }
     }
 
-    return 'Other services';
+    return 'Other Community, Social and Personal Service Activities';
 }
 
 // ── SCIMS (vamosmobile.app) helpers ─────────────────────────
@@ -345,14 +354,23 @@ if ($action === 'msme_distribution') {
     $refresh = isset($_GET['refresh']);
     try {
         $categories = [
-            'Retail'              => 0,
-            'Food services'       => 0,
-            'Manufacturing'       => 0,
-            'Agriculture-related' => 0,
-            'Transportation'      => 0,
-            'Tourism'             => 0,
-            'Construction'        => 0,
-            'Other services'      => 0,
+            'Agriculture'                                             => 0,
+            'Fishing'                                                 => 0,
+            'Mining and Quarrying'                                    => 0,
+            'Manufacturing'                                           => 0,
+            'Electricity, Gas, and Water Supply'                      => 0,
+            'Construction'                                            => 0,
+            'Wholesale and Retail Trade'                              => 0,
+            'Hotels and Restaurants'                                  => 0,
+            'Transport, Storage, and Communication'                   => 0,
+            'Financial Intermediation'                                => 0,
+            'Real Estate, Renting, and Business Activities'           => 0,
+            'Public Administration and Defense'                       => 0,
+            'Education'                                               => 0,
+            'Health and Social Worker'                                => 0,
+            'Other Community, Social and Personal Service Activities' => 0,
+            'Activities of Private Households as Employers...'        => 0,
+            'Extra-territorial Organizations and Bodies'              => 0,
         ];
 
         $byBarangay = [];
