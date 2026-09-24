@@ -1,0 +1,8 @@
+.highlight-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: .4rem .6rem; border-radius: 8px; margin-bottom: .35rem;
+    background: #f0f9ff; font-size: .77rem; border: 1px solid #bae6fd;
+}
+.highlight-item i { color: #16a34a; font-size: 16px; }
+.highlight-item .hi-label { color: #64748b; }
+.highlight-item .hi-barangay { font-weight: 700; color: #1e293b; }

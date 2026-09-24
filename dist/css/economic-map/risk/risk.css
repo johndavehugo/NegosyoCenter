@@ -1,0 +1,9 @@
+.pressure-card {
+    border: 1px solid #e2e8f0; border-left: 4px solid #64748b;
+    border-radius: 8px; padding: .55rem .8rem; margin-bottom: .55rem;
+    background: #fff; transition: box-shadow .15s;
+}
+.pressure-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.pressure-card .pc-name { font-size: .79rem; font-weight: 600; color: #1e293b; }
+.pressure-card .pc-agency { font-size: .66rem; color: #64748b; }
+.pressure-card .pc-metric { font-size: .73rem; color: #495057; }

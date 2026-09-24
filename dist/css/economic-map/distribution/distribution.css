@@ -1,0 +1,60 @@
+.sector-search {
+    display: flex; align-items: center; gap: 6px;
+    border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: .35rem .6rem; background: #f8fafc;
+}
+.sector-search i { font-size: 16px; color: #9ca3af; flex-shrink: 0; }
+.sector-search input {
+    border: none; outline: none; background: transparent;
+    font-size: .8rem; width: 100%; color: #1e293b;
+}
+.sector-all-btn {
+    display: flex; align-items: center; gap: 7px; width: 100%;
+    font-size: .78rem; font-weight: 700; color: #343a40;
+    background: #f1f3f5; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: .45rem .65rem; margin-bottom: 6px; cursor: pointer;
+    transition: background .12s, border-color .12s;
+}
+.sector-all-btn i { font-size: 16px; color: #64748b; }
+.sector-all-btn:hover { background: #e9ecef; }
+.sector-all-btn.active { background: #1e4db7; border-color: #1e4db7; color: #fff; }
+.sector-all-btn.active i { color: #fff; }
+.sector-all-btn.dimmed { opacity: .55; }
+.sector-list {
+    max-height: 300px; overflow-y: auto;
+    border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;
+}
+.sector-row {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    padding: .45rem .65rem; cursor: pointer; text-align: left;
+    background: #fff; border: none; border-bottom: 1px solid #f1f5f9;
+    font-size: .75rem; transition: background .12s;
+}
+.sector-row:last-child { border-bottom: none; }
+.sector-row:hover { background: #eff6ff; }
+.sector-row.active { background: #eff6ff; box-shadow: inset 3px 0 0 #1e4db7; }
+.sector-row .sector-name { flex: 1; font-weight: 600; color: #1e293b; line-height: 1.35; }
+.sector-row.active .sector-name { color: #1e4db7; }
+.sector-row .sector-count {
+    font-size: .68rem; font-weight: 700; color: #64748b;
+    background: #f1f5f9; border-radius: 20px; padding: 1px 8px;
+    white-space: nowrap; flex-shrink: 0;
+}
+.sector-row.active .sector-count { background: #1e4db7; color: #fff; }
+.sector-empty { padding: .7rem; font-size: .78rem; color: #9ca3af; text-align: center; }
+
+@media (min-width: 768px) {
+    .dist-pie-legend-col {
+        padding-top: 6px;
+        padding-bottom: 6px;
+    }
+    #distPieLegend > .row { position: relative; }
+    #distPieLegend > .row::before {
+        content: ''; position: absolute; top: 2px; bottom: 2px; left: 50%;
+        border-left: 1px solid #dee2e6;
+    }
+    #distPieLegend > .row > [class*="col-"] {
+        padding-left: 26px;
+        padding-right: 26px;
+    }
+}
