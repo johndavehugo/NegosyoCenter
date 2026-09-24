@@ -291,20 +291,35 @@ class PriceMonitoringController
 
         $results = [];
 
-        // Check if establishments are stored as a comma-separated string in the commodities table
+        // Establishments are stored as comma-separated entries.
+        // Each entry can be either a plain name ("Store A") or a
+        // pipe-encoded tuple ("Store A|120.00|110.00") written by
+        // the Establishment Prices tab in the edit modal.
         $establishmentField = $commodity['Establishments'] ?? $commodity['establishments'] ?? '';
 
         if (!empty($establishmentField)) {
-            $estNames = array_map('trim', explode(',', $establishmentField));
-            
-            foreach ($estNames as $index => $estName) {
+            $estEntries = array_map('trim', explode(',', $establishmentField));
+
+            foreach ($estEntries as $index => $entry) {
+                if ($entry === '') continue;
+
+                // Parse pipe-encoded format: Name|SRP|PrevailingPrice
+                $parts         = explode('|', $entry);
+                $estName       = trim($parts[0] ?? '');
+                $estSrp        = isset($parts[1]) && $parts[1] !== ''
+                                    ? (float) $parts[1]
+                                    : (float) ($commodity['srp'] ?? 0);
+                $estPrevailing = isset($parts[2]) && $parts[2] !== ''
+                                    ? (float) $parts[2]
+                                    : $estSrp;
+
                 if ($estName !== '') {
                     $results[] = [
                         'establishment_id'   => $index + 1,
                         'establishment_name' => $estName,
                         'branch'             => null,
-                        'srp'                => $commodity['srp'] ?? 0,
-                        'prevailing_price'   => $commodity['prevailing_price'] ?? $commodity['srp'] ?? 0
+                        'srp'                => $estSrp,
+                        'prevailing_price'   => $estPrevailing
                     ];
                 }
             }

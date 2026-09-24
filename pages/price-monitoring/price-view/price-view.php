@@ -244,6 +244,123 @@
             vertical-align: middle;
         }
 
+        /* ── Comparison row highlights ──────────── */
+        .est-row-lowest {
+            background-color: #d1fae5 !important;
+        }
+        .est-row-lowest td { border-color: #a7f3d0 !important; }
+
+        .est-row-highest {
+            background-color: #fee2e2 !important;
+        }
+        .est-row-highest td { border-color: #fecaca !important; }
+
+        .est-row-above-srp {
+            background-color: #fef9c3 !important;
+        }
+        .est-row-above-srp td { border-color: #fde68a !important; }
+
+        /* ── Rank badge ─────────────────────────── */
+        .est-rank {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+        .est-rank-1 { background: #d1fae5; color: #065f46; }
+        .est-rank-last { background: #fee2e2; color: #991b1b; }
+
+        /* ── vs SRP badge ───────────────────────── */
+        .est-vs-badge {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .est-vs-below  { background: #d1fae5; color: #065f46; }
+        .est-vs-at     { background: #e5e7eb; color: #374151; }
+        .est-vs-above  { background: #fee2e2; color: #991b1b; }
+
+        /* ── SRP reference bar ──────────────────── */
+        .srp-reference-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #eff6ff;
+            border-bottom: 1px solid #bfdbfe;
+            padding: 10px 24px;
+            font-size: 0.875rem;
+            color: #1d4ed8;
+        }
+        .srp-ref-icon  { font-size: 14px; }
+        .srp-ref-label { color: #3b82f6; font-weight: 500; }
+        .srp-ref-value { font-weight: 700; }
+
+        /* ── Legend ─────────────────────────────── */
+        .est-legend {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 8px 24px;
+            background: #fafafa;
+            border-bottom: 1px solid var(--line);
+            font-size: 0.78rem;
+            color: var(--muted);
+            flex-wrap: wrap;
+        }
+        .est-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .est-legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        /* ── Est count badge ────────────────────── */
+        .est-count-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        /* ── Footer summary ─────────────────────── */
+        .est-summary {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            flex-wrap: wrap;
+        }
+        .est-summary-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.2;
+        }
+        .est-summary-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+        }
+        .est-summary-value { font-size: 0.88rem; color: #1a1a1a; }
+        .est-summary-sep   { color: #d1d5db; font-size: 1rem; }
+
         /* ── Footer ─────────────────────────────── */
         .site-footer {
             border-top: 1px solid var(--line);
@@ -315,36 +432,85 @@
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
 
-                <div class="modal-header align-items-center">
+                <div class="modal-header align-items-start">
                     <div>
-                        <h5 class="modal-title mb-0" id="modalCommodityTitle">Commodity Prices</h5>
-                        <small class="text-muted" id="modalCommoditySubtitle"></small>
+                        <h5 class="modal-title mb-1" id="modalCommodityTitle">Commodity Prices</h5>
+                        <div class="d-flex align-items-center" style="gap:8px;flex-wrap:wrap;">
+                            <small class="text-muted" id="modalCommoditySubtitle"></small>
+                            <span class="est-count-badge" id="estCountBadge" style="display:none;"></span>
+                        </div>
                     </div>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close ml-auto" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
 
                 <div class="modal-body p-0">
-                    <div class="table-responsive">
-                       <table class="table establishment-table mb-0">
-    <thead>
-        <tr>
-            <th class="pl-4">Establishment / Store</th>
-            <th class="text-right">SRP</th>
-            <th class="text-right pr-4">Prevailing Price</th>
-        </tr>
-    </thead>
-    <tbody id="establishmentListBody">
-        <!-- Populated dynamically -->
-    </tbody>
-</table>
+
+                    <!-- SRP reference bar -->
+                    <div class="srp-reference-bar" id="srpReferenceBar" style="display:none;">
+                        <i class="fas fa-tag srp-ref-icon"></i>
+                        <span class="srp-ref-label">Suggested Retail Price (SRP):</span>
+                        <span class="srp-ref-value" id="srpReferenceValue"></span>
                     </div>
+
+                    <!-- Legend -->
+                    <div class="est-legend" id="estLegend" style="display:none;">
+                        <span class="est-legend-item">
+                            <span class="est-legend-dot" style="background:#d1fae5;border:1.5px solid #10b981;"></span>
+                            Lowest price
+                        </span>
+                        <span class="est-legend-item">
+                            <span class="est-legend-dot" style="background:#fee2e2;border:1.5px solid #ef4444;"></span>
+                            Highest price
+                        </span>
+                        <span class="est-legend-item">
+                            <span class="est-legend-dot" style="background:#fef9c3;border:1.5px solid #f59e0b;"></span>
+                            Above SRP
+                        </span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table establishment-table mb-0" id="estCompareTable">
+                            <thead>
+                                <tr>
+                                    <th class="pl-4" style="width:40px;">#</th>
+                                    <th>Establishment / Store</th>
+                                    <th class="text-right">SRP (₱)</th>
+                                    <th class="text-right pr-4">Prevailing Price (₱)</th>
+                                    <th class="text-center pr-4">vs SRP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="establishmentListBody">
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn-ghost" id="btnBackToCommodities">Back</button>
-                    <button type="button" class="btn-ghost" data-dismiss="modal">Close</button>
+                <div class="modal-footer justify-content-between">
+                    <div class="est-summary" id="estSummary" style="display:none;">
+                        <span class="est-summary-item">
+                            <span class="est-summary-label">Avg Price</span>
+                            <span class="est-summary-value" id="estAvgPrice">—</span>
+                        </span>
+                        <span class="est-summary-sep">·</span>
+                        <span class="est-summary-item">
+                            <span class="est-summary-label">Lowest</span>
+                            <span class="est-summary-value text-success font-weight-bold" id="estLowestPrice">—</span>
+                        </span>
+                        <span class="est-summary-sep">·</span>
+                        <span class="est-summary-item">
+                            <span class="est-summary-label">Highest</span>
+                            <span class="est-summary-value text-danger font-weight-bold" id="estHighestPrice">—</span>
+                        </span>
+                    </div>
+                    <div class="ml-auto d-flex" style="gap:8px;">
+                        <button type="button" class="btn-ghost" id="btnBackToCommodities">
+                            <i class="fas fa-arrow-left mr-1"></i>Back
+                        </button>
+                        <button type="button" class="btn-ghost" data-dismiss="modal">Close</button>
+                    </div>
                 </div>
 
             </div>

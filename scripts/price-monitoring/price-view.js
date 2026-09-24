@@ -104,7 +104,11 @@ function loadCommodities() {
                 throw new Error(result.message || 'Unable to load commodities.');
             }
 
-            commoditiesCache = result.data || [];
+            // Strip pipe-encoded price data from Establishments field so
+            // category count badges only count distinct commodity entries.
+            commoditiesCache = (result.data || []).map(function (item) {
+                return item;
+            });
             loadCategories();
         })
         .catch(function (error) {
@@ -180,8 +184,13 @@ function openEstablishmentDetailModal(commodityId, productName, srp, unit) {
     $('#modalCommodityTitle').text(productName);
     $('#modalCommoditySubtitle').text(unit ? 'Unit: ' + unit : '');
 
+    // Reset UI
     var tbody = $('#establishmentListBody');
-    tbody.html('<tr><td colspan="3" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading establishments...</td></tr>');
+    tbody.html('<tr><td colspan="5" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading establishments...</td></tr>');
+    $('#estCountBadge').hide();
+    $('#srpReferenceBar').hide();
+    $('#estLegend').hide();
+    $('#estSummary').hide();
 
     $('#categoryCommoditiesModal').modal('hide');
     $('#establishmentDetailModal').modal('show');
@@ -190,26 +199,101 @@ function openEstablishmentDetailModal(commodityId, productName, srp, unit) {
         .then(function(response) { return response.json(); })
         .then(function(result) {
             tbody.empty();
-            if (result.status === 'success' && result.data && result.data.length > 0) {
-                result.data.forEach(function(est) {
-                    var displaySrp = est.srp !== undefined && est.srp !== null ? est.srp : srp;
-                    var displayPrevailing = est.prevailing_price !== undefined && est.prevailing_price !== null ? est.prevailing_price : displaySrp;
-                    var estName = est.establishment_name || est.name || 'Establishment';
 
-                    var row = $('<tr>');
-                    row.append('<td class="pl-4"><strong>' + escapeHtml(estName) + '</strong>' + 
-                        (est.branch ? '<br><small class="text-muted">' + escapeHtml(est.branch) + '</small>' : '') + '</td>');
+            if (result.status === 'success' && result.data && result.data.length > 0) {
+                var rows = result.data;
+
+                // Collect prevailing prices for comparison
+                var prices = rows.map(function(r) {
+                    return parseFloat(r.prevailing_price) || 0;
+                });
+                var minPrice = Math.min.apply(null, prices);
+                var maxPrice = Math.max.apply(null, prices);
+                var avgPrice = prices.reduce(function(a, b) { return a + b; }, 0) / prices.length;
+
+                // Show SRP reference bar
+                var srpNum = parseFloat(srp) || 0;
+                if (srpNum > 0) {
+                    $('#srpReferenceValue').text(formatPeso(srpNum));
+                    $('#srpReferenceBar').show();
+                }
+
+                // Show legend & count badge
+                $('#estCountBadge').text(rows.length + ' establishment' + (rows.length > 1 ? 's' : '')).show();
+                $('#estLegend').show();
+
+                // Sort by prevailing price ascending (cheapest first)
+                rows.sort(function(a, b) {
+                    return (parseFloat(a.prevailing_price) || 0) - (parseFloat(b.prevailing_price) || 0);
+                });
+
+                rows.forEach(function(est, index) {
+                    var displaySrp        = est.srp !== undefined && est.srp !== null ? parseFloat(est.srp) : srpNum;
+                    var displayPrevailing = est.prevailing_price !== undefined && est.prevailing_price !== null
+                        ? parseFloat(est.prevailing_price) : displaySrp;
+                    var estName = est.establishment_name || est.name || 'Establishment';
+                    var isLowest  = displayPrevailing === minPrice;
+                    var isHighest = displayPrevailing === maxPrice && rows.length > 1;
+                    var aboveSrp  = srpNum > 0 && displayPrevailing > srpNum && !isHighest;
+
+                    // Row class
+                    var rowClass = '';
+                    if (isLowest)       rowClass = 'est-row-lowest';
+                    else if (isHighest) rowClass = 'est-row-highest';
+                    else if (aboveSrp)  rowClass = 'est-row-above-srp';
+
+                    // Rank badge
+                    var rankClass = index === 0 ? 'est-rank-1' : (index === rows.length - 1 && rows.length > 1 ? 'est-rank-last' : '');
+                    var rankHtml = '<span class="est-rank ' + rankClass + '">' + (index + 1) + '</span>';
+
+                    // vs SRP badge
+                    var vsBadge = '';
+                    if (srpNum > 0) {
+                        var diff = displayPrevailing - srpNum;
+                        var pct  = ((diff / srpNum) * 100).toFixed(1);
+                        if (Math.abs(diff) < 0.005) {
+                            vsBadge = '<span class="est-vs-badge est-vs-at">At SRP</span>';
+                        } else if (diff < 0) {
+                            vsBadge = '<span class="est-vs-badge est-vs-below">−' + Math.abs(pct) + '%</span>';
+                        } else {
+                            vsBadge = '<span class="est-vs-badge est-vs-above">+' + pct + '%</span>';
+                        }
+                    } else {
+                        vsBadge = '<span class="est-vs-badge est-vs-at">—</span>';
+                    }
+
+                    var row = $('<tr class="' + rowClass + '">');
+                    row.append('<td class="pl-4">' + rankHtml + '</td>');
+                    row.append(
+                        '<td><strong>' + escapeHtml(estName) + '</strong>' +
+                        (est.branch ? '<br><small class="text-muted">' + escapeHtml(est.branch) + '</small>' : '') +
+                        '</td>'
+                    );
                     row.append('<td class="text-right text-muted">' + formatPeso(displaySrp) + '</td>');
-                    row.append('<td class="text-right pr-4 font-weight-bold text-dark">' + formatPeso(displayPrevailing) + '</td>');
+                    row.append('<td class="text-right pr-4 font-weight-bold">' + formatPeso(displayPrevailing) + '</td>');
+                    row.append('<td class="text-center pr-4">' + vsBadge + '</td>');
                     tbody.append(row);
                 });
+
+                // Footer summary
+                $('#estAvgPrice').text(formatPeso(avgPrice));
+                $('#estLowestPrice').text(formatPeso(minPrice));
+                $('#estHighestPrice').text(formatPeso(maxPrice));
+                $('#estSummary').show();
+
             } else {
-                tbody.html('<tr><td colspan="3" class="text-center text-muted py-4">No establishment details found for this item.</td></tr>');
+                tbody.html(
+                    '<tr><td colspan="5" class="text-center text-muted py-4">' +
+                    'No establishment details found for this item.</td></tr>'
+                );
             }
         })
         .catch(function(err) {
             console.error('Error fetching establishments:', err);
-            tbody.html('<tr><td colspan="3" class="text-center text-danger py-4">Failed to load establishment data.</td></tr>');
+            tbody.html(
+                '<tr><td colspan="5" class="text-center text-danger py-4">' +
+                'Failed to load establishment data.</td></tr>'
+            );
         });
 }
 

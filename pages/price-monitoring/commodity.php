@@ -18,6 +18,27 @@
     <!-- Select2 -->
     <link rel="stylesheet" href="../../plugins/select2/css/select2.min.css">
     <link rel="stylesheet" href="../../plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+    <style>
+        /* Multi-select establishments tag styling */
+        .select2-container--bootstrap4 .select2-selection--multiple {
+            min-height: calc(1.5em + .75rem + 2px);
+        }
+        .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice {
+            background-color: #007bff;
+            border-color: #0062cc;
+            color: #fff;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+        }
+        .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice__remove {
+            color: rgba(255,255,255,0.8);
+            margin-right: 4px;
+        }
+        .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice__remove:hover {
+            color: #fff;
+        }
+    </style>
     <!-- AdminLTE + shared styles -->
     <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
     <link rel="stylesheet" href="../../dist/css/user_defined.css?v=5">
@@ -178,141 +199,322 @@
 
 <!-- ── Add Commodity modal ──────────────────────────────────────────── -->
 <div class="modal fade" id="addCommodityModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content msme-modal-content">
 
             <div class="modal-header msme-modal-header">
-                <h5 class="modal-title d-flex align-items-center">
+                <h5 class="modal-title d-flex align-items-center mb-0">
                     <i class="material-icons text-primary mr-2" style="font-size:22px;">inventory_2</i>
                     Add Commodity
                 </h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close ml-auto" data-dismiss="modal">&times;</button>
             </div>
 
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="msme-label">Commodity Name <span class="text-danger">*</span></label>
-                    <input type="text" id="product_name" name="product_name"
-                           class="form-control msme-input"
-                           placeholder="Enter commodity name" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label class="msme-label">Category <span class="text-danger">*</span></label>
-                    <select id="category_id" name="category_id" class="form-control msme-input">
-                        <option value="">-- Select Category --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="msme-label">Brand</label>
-                    <input type="text" id="brand_name" name="brand_name"
-                           class="form-control msme-input"
-                           placeholder="Enter brand name" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label class="msme-label">Unit of Measure <span class="text-danger">*</span></label>
-                    <input type="text" id="unit_of_measure" name="unit_of_measure"
-                           class="form-control msme-input"
-                           placeholder="e.g. kg, pcs, liter" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label class="msme-label">SRP (₱)</label>
-                    <input type="number" step="0.01" min="0" id="srp" name="srp"
-                           class="form-control msme-input"
-                           placeholder="Suggested Retail Price" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label class="msme-label">Prevailing Price (₱)</label>
-                    <input type="number" step="0.01" min="0" id="prevailing_price" name="prevailing_price"
-                           class="form-control msme-input"
-                           placeholder="Actual observed selling price" autocomplete="off">
-                </div>
-                <div class="form-group mb-0">
-                    <label class="msme-label">Establishment</label>
-                    <select id="establishments" name="establishments" class="form-control msme-input">
-                        <option value="">-- Select Establishment --</option>
-                    </select>
-                </div>
+            <!-- Tabs -->
+            <div class="px-3 pt-2" style="border-bottom:1px solid #e9ecef;">
+                <ul class="nav nav-tabs border-0" id="addCommodityTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active px-3 py-2" id="add-tab-info-link"
+                           data-toggle="tab" href="#addTabInfo" role="tab">
+                            <i class="material-icons mr-1" style="font-size:16px;vertical-align:middle;">inventory_2</i>
+                            Commodity Info
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-2" id="add-tab-est-link"
+                           data-toggle="tab" href="#addTabEst" role="tab">
+                            <i class="material-icons mr-1" style="font-size:16px;vertical-align:middle;">store</i>
+                            Establishment Prices
+                            <span class="badge badge-primary ml-1" id="addEstBadge" style="display:none;"></span>
+                        </a>
+                    </li>
+                </ul>
             </div>
 
-            <div class="modal-footer msme-modal-footer">
-                <button type="button" class="btn btn-text-secondary"
-                        data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-raised-success d-flex align-items-center"
-                        id="btnSaveCommodity">
-                    <i class="material-icons mr-1" style="font-size:18px;">save</i>Save
-                </button>
-            </div>
+            <div class="tab-content">
 
+                <!-- ── Add Tab 1: Commodity Info ── -->
+                <div class="tab-pane fade show active" id="addTabInfo" role="tabpanel">
+                    <div class="modal-body">
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label class="msme-label">Commodity Name <span class="text-danger">*</span></label>
+                                    <input type="text" id="product_name" name="product_name"
+                                           class="form-control msme-input"
+                                           placeholder="Enter commodity name" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="msme-label">Category <span class="text-danger">*</span></label>
+                                    <select id="category_id" name="category_id" class="form-control msme-input">
+                                        <option value="">-- Select Category --</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="msme-label">Brand</label>
+                                    <input type="text" id="brand_name" name="brand_name"
+                                           class="form-control msme-input"
+                                           placeholder="Enter brand name" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="msme-label">Unit of Measure <span class="text-danger">*</span></label>
+                                    <input type="text" id="unit_of_measure" name="unit_of_measure"
+                                           class="form-control msme-input"
+                                           placeholder="e.g. kg, pcs, liter" autocomplete="off">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-0">
+                            <label class="msme-label">Establishments</label>
+                            <select id="establishments" name="establishments" class="form-control msme-input" multiple>
+                            </select>
+                            <small class="form-text text-muted">
+                                <i class="material-icons" style="font-size:13px;vertical-align:middle;">info</i>
+                                Select establishments, then go to <strong>Establishment Prices</strong> tab to set individual prices.
+                            </small>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer msme-modal-footer">
+                        <button type="button" class="btn btn-text-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-raised-primary d-flex align-items-center"
+                                id="btnNextToEstPrices">
+                            Next: Set Prices
+                            <i class="material-icons ml-1" style="font-size:18px;">arrow_forward</i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── Add Tab 2: Establishment Prices ── -->
+                <div class="tab-pane fade" id="addTabEst" role="tabpanel">
+                    <div class="modal-body p-0">
+
+                        <!-- Empty state -->
+                        <div id="addEstPriceEmpty" class="text-center text-muted py-5">
+                            <i class="material-icons" style="font-size:40px;color:#dee2e6;">store_mall_directory</i>
+                            <p class="mt-2 mb-0">No establishments selected yet.</p>
+                            <small>Go back to <strong>Commodity Info</strong> and select establishments first.</small>
+                        </div>
+
+                        <!-- Prices table -->
+                        <div id="addEstPriceTableWrap" style="display:none;">
+                            <table class="table mb-0" id="tblAddEstPrices" style="font-size:0.88rem;">
+                                <thead>
+                                    <tr style="background:#f8f9fa;">
+                                        <th class="pl-3" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-top:none;width:40%;">Establishment</th>
+                                        <th style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-top:none;width:30%;">SRP (₱)</th>
+                                        <th style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-top:none;width:30%;">Prevailing Price (₱)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="addEstPriceTableBody"></tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer msme-modal-footer justify-content-between">
+                        <button type="button" class="btn btn-text-secondary"
+                                id="btnBackToInfo">
+                            <i class="material-icons mr-1" style="font-size:18px;">arrow_back</i>Back
+                        </button>
+                        <div>
+                            <button type="button" class="btn btn-text-secondary mr-1" data-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-raised-success d-flex align-items-center d-inline-flex"
+                                    id="btnSaveCommodity">
+                                <i class="material-icons mr-1" style="font-size:18px;">save</i>Save Commodity
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 </div>
 
 <!-- ── Edit Commodity modal ─────────────────────────────────────────── -->
 <div class="modal fade" id="updateCommodityModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content msme-modal-content">
 
             <div class="modal-header msme-modal-header">
-                <h5 class="modal-title d-flex align-items-center">
-                    <i class="material-icons text-primary mr-2" style="font-size:22px;">edit</i>
-                    Edit Commodity
-                </h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <div>
+                    <h5 class="modal-title d-flex align-items-center mb-0">
+                        <i class="material-icons text-primary mr-2" style="font-size:22px;">edit</i>
+                        Edit Commodity
+                    </h5>
+                    <small class="text-muted" id="updateCommoditySubtitle"></small>
+                </div>
+                <button type="button" class="close ml-auto" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="px-3 pt-2" style="border-bottom:1px solid #e9ecef;">
+                <ul class="nav nav-tabs border-0" id="editCommodityTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active px-3 py-2" id="tab-info-link"
+                           data-toggle="tab" href="#tabCommodityInfo" role="tab">
+                            <i class="material-icons mr-1" style="font-size:16px;vertical-align:middle;">inventory_2</i>
+                            Commodity Info
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-2" id="tab-est-link"
+                           data-toggle="tab" href="#tabEstPrices" role="tab">
+                            <i class="material-icons mr-1" style="font-size:16px;vertical-align:middle;">store</i>
+                            Establishment Prices
+                            <span class="badge badge-primary ml-1" id="estPriceBadge" style="display:none;"></span>
+                        </a>
+                    </li>
+                </ul>
             </div>
 
             <form id="updateCommodityForm">
-                <div class="modal-body">
-                    <input type="hidden" id="updateCommodityId">
+                <div class="tab-content">
 
-                    <div class="form-group">
-                        <label class="msme-label">Commodity Name <span class="text-danger">*</span></label>
-                        <input type="text" id="updateCommodityProductName"
-                               class="form-control msme-input"
-                               placeholder="Enter commodity name" autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label class="msme-label">Category <span class="text-danger">*</span></label>
-                        <select id="updateCommodityCategory" class="form-control msme-input">
-                            <option value="">-- Select Category --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="msme-label">Brand</label>
-                        <input type="text" id="updateCommodityBrand"
-                               class="form-control msme-input"
-                               placeholder="Enter brand name" autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label class="msme-label">Unit of Measure <span class="text-danger">*</span></label>
-                        <input type="text" id="updateCommodityUnit"
-                               class="form-control msme-input"
-                               placeholder="e.g. kg, pcs, liter" autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label class="msme-label">SRP (₱)</label>
-                        <input type="number" step="0.01" min="0" id="updateCommoditySrp"
-                               class="form-control msme-input" autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label class="msme-label">Prevailing Price (₱)</label>
-                        <input type="number" step="0.01" min="0" id="updateCommodityPrevailingPrice"
-                               class="form-control msme-input" autocomplete="off">
-                    </div>
-                    <div class="form-group mb-0">
-                        <label class="msme-label">Establishment</label>
-                        <select id="updateCommodityEstablishments" class="form-control msme-input">
-                            <option value="">-- Select Establishment --</option>
-                        </select>
-                    </div>
-                </div>
+                    <!-- ── Tab 1: Commodity Info ── -->
+                    <div class="tab-pane fade show active" id="tabCommodityInfo" role="tabpanel">
+                        <div class="modal-body">
+                            <input type="hidden" id="updateCommodityId">
 
-                <div class="modal-footer msme-modal-footer">
-                    <button type="button" class="btn btn-text-secondary"
-                            data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-raised-primary d-flex align-items-center"
-                            onclick="updateCommodity()">
-                        <i class="material-icons mr-1" style="font-size:18px;">save</i>Update
-                    </button>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label class="msme-label">Commodity Name <span class="text-danger">*</span></label>
+                                        <input type="text" id="updateCommodityProductName"
+                                               class="form-control msme-input"
+                                               placeholder="Enter commodity name" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="msme-label">Category <span class="text-danger">*</span></label>
+                                        <select id="updateCommodityCategory" class="form-control msme-input">
+                                            <option value="">-- Select Category --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="msme-label">Brand</label>
+                                        <input type="text" id="updateCommodityBrand"
+                                               class="form-control msme-input"
+                                               placeholder="Enter brand name" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="msme-label">Unit of Measure <span class="text-danger">*</span></label>
+                                        <input type="text" id="updateCommodityUnit"
+                                               class="form-control msme-input"
+                                               placeholder="e.g. kg, pcs, liter" autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="msme-label">SRP (₱)</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text msme-input-prefix">₱</span>
+                                            </div>
+                                            <input type="number" step="0.01" min="0" id="updateCommoditySrp"
+                                                   class="form-control msme-input" placeholder="0.00" autocomplete="off">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="msme-label">Prevailing Price (₱)</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text msme-input-prefix">₱</span>
+                                            </div>
+                                            <input type="number" step="0.01" min="0" id="updateCommodityPrevailingPrice"
+                                                   class="form-control msme-input" placeholder="0.00" autocomplete="off">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <label class="msme-label">Establishments</label>
+                                <select id="updateCommodityEstablishments" class="form-control msme-input" multiple>
+                                    <option value="">-- Select Establishment --</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    <i class="material-icons" style="font-size:13px;vertical-align:middle;">info</i>
+                                    After saving, go to the <strong>Establishment Prices</strong> tab to set individual prices.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer msme-modal-footer">
+                            <button type="button" class="btn btn-text-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-raised-primary d-flex align-items-center"
+                                    onclick="updateCommodity()">
+                                <i class="material-icons mr-1" style="font-size:18px;">save</i>Save Info
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ── Tab 2: Establishment Prices ── -->
+                    <div class="tab-pane fade" id="tabEstPrices" role="tabpanel">
+                        <div class="modal-body p-0">
+
+                            <!-- Empty state -->
+                            <div id="estPriceEmpty" class="text-center text-muted py-5" style="display:none;">
+                                <i class="material-icons" style="font-size:40px;color:#dee2e6;">store_mall_directory</i>
+                                <p class="mt-2 mb-0">No establishments linked to this commodity yet.</p>
+                                <small>Go to <strong>Commodity Info</strong> tab and select establishments first.</small>
+                            </div>
+
+                            <!-- Prices table — no Action column, single Save All at footer -->
+                            <div id="estPriceTableWrap">
+                                <table class="table mb-0" id="tblEstPrices" style="font-size:0.88rem;">
+                                    <thead>
+                                        <tr style="background:#f8f9fa;">
+                                            <th class="pl-3" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-top:none;width:40%;">Establishment</th>
+                                            <th style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-top:none;width:30%;">SRP (₱)</th>
+                                            <th style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-top:none;width:30%;">Prevailing Price (₱)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="estPriceTableBody"></tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer msme-modal-footer justify-content-between">
+                            <small class="text-muted">
+                                <i class="material-icons" style="font-size:13px;vertical-align:middle;">info</i>
+                                Fill in prices then click <strong>Save All Prices</strong>.
+                            </small>
+                            <div>
+                                <button type="button" class="btn btn-text-secondary mr-1" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-raised-primary d-inline-flex align-items-center"
+                                        id="btnSaveAllPrices" onclick="saveAllEstPrices()">
+                                    <i class="material-icons mr-1" style="font-size:18px;">save</i>Save All Prices
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </form>
 
@@ -320,9 +522,72 @@
     </div>
 </div>
 
+<style>
+/* ── Shared tab styles (Add + Edit modals) ── */
+#addCommodityTabs .nav-link,
+#editCommodityTabs .nav-link {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #6c757d;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    padding: 8px 14px;
+    transition: color .15s, border-color .15s;
+}
+#addCommodityTabs .nav-link:hover,
+#editCommodityTabs .nav-link:hover {
+    color: #007bff;
+    border-bottom-color: #b3d1ff;
+}
+#addCommodityTabs .nav-link.active,
+#editCommodityTabs .nav-link.active {
+    color: #007bff;
+    font-weight: 600;
+    border-bottom: 2px solid #007bff;
+    background: transparent;
+}
+
+/* ── Shared establishment price table styles ── */
+#tblEstPrices tbody tr,
+#tblAddEstPrices tbody tr {
+    transition: background .1s;
+}
+#tblEstPrices tbody tr:hover,
+#tblAddEstPrices tbody tr:hover {
+    background: rgba(0,123,255,.03);
+}
+#tblEstPrices td,
+#tblAddEstPrices td {
+    vertical-align: middle;
+    padding: 10px 8px;
+}
+#tblEstPrices td:first-child,
+#tblAddEstPrices td:first-child { padding-left: 16px; }
+
+.est-price-input {
+    height: 34px;
+    font-size: 0.85rem;
+    border-radius: 6px !important;
+    border: 1px solid #dee2e6;
+    padding: 4px 10px;
+    width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.est-price-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,.15);
+    outline: none;
+}
+/* Saving / saved row states */
+.est-row-saving td { opacity: .6; pointer-events: none; }
+.est-row-saved td  { background: rgba(40,167,69,.06) !important; }
+</style>
+
 <!-- Scripts -->
 <script src="../../plugins/jquery/jquery.min.js"></script>
 <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/select2/js/select2.full.min.js"></script>
 <script src="../../dist/js/adminlte.min.js"></script>
 <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
 <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap4.js"></script>
