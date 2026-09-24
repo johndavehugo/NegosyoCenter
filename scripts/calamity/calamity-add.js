@@ -132,26 +132,26 @@ function renderAffectedBusinesses() {
     selected.forEach(function (item, index) {
         var info = businessCache[item.id] || {};
         var $tr = $('<tr>');
-        $tr.append('<td>' + (index + 1) + '</td>');
-        $tr.append('<td>' + (item.text ? item.text.split(' — ')[0] : '') + '</td>');
-        $tr.append('<td>' + (info.entity_no || '') + '</td>');
-        $tr.append('<td>' + (info.owner_full_name || '') + '</td>');
+        $tr.append('<td class="text-center">' + (index + 1) + '</td>');
+        $tr.append('<td class="col-name">' + (item.text ? item.text.split(' — ')[0] : '') + '</td>');
+        $tr.append('<td class="text-center">' + (info.entity_no || '') + '</td>');
+        $tr.append('<td class="col-owner">' + (info.owner_full_name || '') + '</td>');
         $tr.append(
-            '<td>' +
+            '<td class="text-center">' +
                 '<input type="date" class="form-control form-control-sm date-input" data-id="' + item.id + '" value="' + getBusinessDetail(item.id, 'date_occurred') + '">' +
             '</td>'
         );
         $tr.append(
-            '<td>' +
+            '<td class="text-center">' +
                 '<select class="form-control form-control-sm nature-select" data-id="' + item.id + '">' +
-                    '<option value=""></option>' +
+                    '<option value="" disabled selected>Select...</option>' +
                     '<option value="PARTIAL">Partial</option>' +
                     '<option value="TOTAL">Total</option>' +
                 '</select>' +
             '</td>'
         );
         $tr.append(
-            '<td>' +
+            '<td class="text-center">' +
                 '<select class="form-control form-control-sm status-select" data-id="' + item.id + '">' +
                     '<option value="PENDING_VERIFICATION">Pending Verification</option>' +
                     '<option value="VERIFIED">Verified</option>' +
@@ -160,20 +160,20 @@ function renderAffectedBusinesses() {
             '</td>'
         );
         $tr.append(
-            '<td>' +
+            '<td class="text-center">' +
                 '<input type="number" step="0.01" min="0" class="form-control form-control-sm damage-input" ' +
                     'data-id="' + item.id + '" value="' + getBusinessDetail(item.id, 'cost') + '" placeholder="0.00">' +
             '</td>'
         );
         $tr.append(
-            '<td>' +
+            '<td class="text-center">' +
                 '<input type="text" class="form-control form-control-sm remarks-input" data-id="' + item.id + '" value="' + getBusinessDetail(item.id, 'remarks') + '" placeholder="Remarks">' +
             '</td>'
         );
         $tr.append(
             '<td style="text-align:center;">' +
                 '<button type="button" class="btn-remove-business" title="Remove" data-id="' + item.id + '">' +
-                    '<i class="fas fa-trash-alt"></i>' +
+                    '<i class="material-icons">delete_outline</i>' +
                 '</button>' +
             '</td>'
         );
