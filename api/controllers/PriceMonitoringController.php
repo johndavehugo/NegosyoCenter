@@ -186,8 +186,8 @@ class PriceMonitoringController
                 c.brand_name,
                 c.unit_of_measure,
                 c.srp,
-c.prevailing_price,
-cc.name AS category_name,
+                c.prevailing_price,
+                cc.name AS category_name,
                 cc.agency_id,
                 a.name AS agency_name,
                 a.code AS agency_code
@@ -225,15 +225,13 @@ cc.name AS category_name,
             'brand_name' => $row['brand_name'],
             'unit_of_measure' => $row['unit_of_measure'],
             'srp' => $row['srp'] !== null && $row['srp'] !== ''
-    ? (float)$row['srp']
-    : null,
-
-'prevailing_price' => $row['prevailing_price'] !== null &&
-                      $row['prevailing_price'] !== ''
-    ? (float)$row['prevailing_price']
-    : null,
-
-'status' => strtoupper((string)($row['status'] ?? 'ACTIVE')),
+                ? (float)$row['srp']
+                : null,
+            'prevailing_price' => $row['prevailing_price'] !== null &&
+                                  $row['prevailing_price'] !== ''
+                ? (float)$row['prevailing_price']
+                : null,
+            'status' => strtoupper((string)($row['status'] ?? 'ACTIVE')),
             'monitored_at' => $row['monitored_at'],
             'agency_id' => $row['agency_id'] !== null
                 ? (int)$row['agency_id']
@@ -242,6 +240,106 @@ cc.name AS category_name,
             'agency_code' => $row['agency_code']
         ];
     }
+
+    public function getPublicCommodities()
+    {
+        try {
+            $stmt = $this->con->prepare("
+                SELECT
+                    c.id AS commodity_id,
+                    c.product_name,
+                    c.category_id,
+                    c.brand_name,
+                    c.unit_of_measure,
+                    c.srp,
+                    c.prevailing_price,
+                    cc.name AS category_name
+                FROM commodities c
+                LEFT JOIN commodity_categories cc
+                    ON c.category_id = cc.id
+                ORDER BY c.product_name ASC
+            ");
+
+            $stmt->execute();
+
+            return $this->success('', $stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (PDOException $e) {
+            error_log('getPublicCommodities: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: ' . $e->getMessage(),
+                []
+            );
+        }
+    }
+
+  public function getCommodityEstablishments($commodityId)
+{
+    $commodityId = $this->id($commodityId);
+
+    if ($commodityId === null) {
+        return $this->error('Commodity ID is required.', []);
+    }
+
+    try {
+        // Retrieve the commodity record directly
+        $commodity = $this->findCommodity($commodityId);
+
+        if (!$commodity) {
+            return $this->error('Commodity not found.', []);
+        }
+
+        $results = [];
+
+        // Check if establishments are stored as a comma-separated string in the commodities table
+        $establishmentField = $commodity['Establishments'] ?? $commodity['establishments'] ?? '';
+
+        if (!empty($establishmentField)) {
+            $estNames = array_map('trim', explode(',', $establishmentField));
+            
+            foreach ($estNames as $index => $estName) {
+                if ($estName !== '') {
+                    $results[] = [
+                        'establishment_id'   => $index + 1,
+                        'establishment_name' => $estName,
+                        'branch'             => null,
+                        'srp'                => $commodity['srp'] ?? 0,
+                        'prevailing_price'   => $commodity['prevailing_price'] ?? $commodity['srp'] ?? 0
+                    ];
+                }
+            }
+        } else {
+            // Fallback: If you have a basic 'establishments' table without 'establishment_prices'
+            $stmt = $this->con->prepare("
+                SELECT 
+                    id AS establishment_id,
+                    name AS establishment_name,
+                    branch,
+                    ? AS srp,
+                    ? AS prevailing_price
+                FROM establishments
+                WHERE (status IS NULL OR UPPER(status) = 'ACTIVE')
+            ");
+            
+            $stmt->execute([
+                $commodity['srp'] ?? 0,
+                $commodity['prevailing_price'] ?? $commodity['srp'] ?? 0
+            ]);
+            
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        return $this->success('', $results);
+
+    } catch (PDOException $e) {
+        error_log('getCommodityEstablishments Error: ' . $e->getMessage());
+
+        return $this->error(
+            'Database error: ' . $e->getMessage(),
+            []
+        );
+    }
+}
 
     public function getAgencies()
     {
@@ -441,7 +539,6 @@ cc.name AS category_name,
         }
     }
 
-
     private function findEstablishment($id)
     {
         $stmt = $this->con->prepare("
@@ -455,10 +552,6 @@ cc.name AS category_name,
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
-    // =========================================================
-    // ESTABLISHMENTS (e.g. Gaisano Fiestamart, Puregold, NCCC)
-    // =========================================================
 
     public function getEstablishments()
     {
@@ -637,10 +730,6 @@ cc.name AS category_name,
         }
     }
 
-    // =========================================================
-    // ESTABLISHMENT PRICES (per-store pricing + comparison)
-    // =========================================================
-
     public function getEstablishmentProducts($establishmentId)
     {
         $establishmentId = $this->id($establishmentId);
@@ -778,7 +867,6 @@ cc.name AS category_name,
         }
     }
 
-
     public function getPrices($agencyId = null)
     {
         $agencyId = $this->id($agencyId);
@@ -833,6 +921,7 @@ cc.name AS category_name,
             );
         }
     }
+
     public function getCommodities($agencyId = null)
     {
         try {
@@ -922,11 +1011,11 @@ cc.name AS category_name,
         );
 
         $srpInput = $this->input($data, ['srp']);
-$prevailingPriceInput = $this->input(
-    $data,
-    ['prevailing_price']
-);
-$statusInput = $this->input($data, ['status'], 'ACTIVE');
+        $prevailingPriceInput = $this->input(
+            $data,
+            ['prevailing_price']
+        );
+        $statusInput = $this->input($data, ['status'], 'ACTIVE');
 
         if ($commodityId === null || $agencyId === null) {
             return $this->error(
@@ -940,13 +1029,13 @@ $statusInput = $this->input($data, ['status'], 'ACTIVE');
         }
 
         $prevailingPriceError = $this->validatePrice(
-    $prevailingPriceInput,
-    'Prevailing Price'
-);
+            $prevailingPriceInput,
+            'Prevailing Price'
+        );
 
-if ($prevailingPriceError) {
-    return $prevailingPriceError;
-}
+        if ($prevailingPriceError) {
+            return $prevailingPriceError;
+        }
 
         try {
             $commodity = $this->findCommodity($commodityId);
@@ -967,24 +1056,24 @@ if ($prevailingPriceError) {
             }
 
             $srp = (float)$srpInput;
-$prevailingPrice = (float)$prevailingPriceInput;
-$status = $this->normalizeStatus($statusInput);
+            $prevailingPrice = (float)$prevailingPriceInput;
+            $status = $this->normalizeStatus($statusInput);
 
             $this->con->beginTransaction();
 
             $stmtSrp = $this->con->prepare("
-    UPDATE commodities
-    SET
-        srp = ?,
-        prevailing_price = ?
-    WHERE id = ?
-");
+                UPDATE commodities
+                SET
+                    srp = ?,
+                    prevailing_price = ?
+                WHERE id = ?
+            ");
 
-$stmtSrp->execute([
-    $srp,
-    $prevailingPrice,
-    $commodityId
-]);
+            $stmtSrp->execute([
+                $srp,
+                $prevailingPrice,
+                $commodityId
+            ]);
 
             $stmt = $this->con->prepare("
                 INSERT INTO price_logs
@@ -1014,8 +1103,8 @@ $stmtSrp->execute([
                     'commodity_id' => $commodityId,
                     'monitored_by_agency_id' => $agencyId,
                     'srp' => $srp,
-'prevailing_price' => $prevailingPrice,
-'status' => $status
+                    'prevailing_price' => $prevailingPrice,
+                    'status' => $status
                 ]
             );
         } catch (PDOException $e) {
@@ -1031,7 +1120,7 @@ $stmtSrp->execute([
         }
     }
 
-   public function updatePrice(array $data)
+    public function updatePrice(array $data)
     {
         $id = $this->id(
             $this->input($data, ['id'])
@@ -1049,18 +1138,18 @@ $stmtSrp->execute([
         );
 
         $srpInput = $this->input(
-    $data,
-    ['srp', 'srp_price'],
-    null
-);
+            $data,
+            ['srp', 'srp_price'],
+            null
+        );
 
-$prevailingPriceInput = $this->input(
-    $data,
-    ['prevailing_price'],
-    null
-);
+        $prevailingPriceInput = $this->input(
+            $data,
+            ['prevailing_price'],
+            null
+        );
 
-$statusInput = $this->input($data, ['status'], 'ACTIVE');
+        $statusInput = $this->input($data, ['status'], 'ACTIVE');
 
         if ($commodityId === null) {
             return $this->error(
@@ -1069,24 +1158,24 @@ $statusInput = $this->input($data, ['status'], 'ACTIVE');
         }
 
         $srpError = $this->validatePrice(
-    $srpInput,
-    'SRP'
-);
+            $srpInput,
+            'SRP'
+        );
 
-if ($srpError) {
-    return $srpError;
-}
+        if ($srpError) {
+            return $srpError;
+        }
 
-$prevailingPriceError = $this->validatePrice(
-    $prevailingPriceInput,
-    'Prevailing Price'
-);
+        $prevailingPriceError = $this->validatePrice(
+            $prevailingPriceInput,
+            'Prevailing Price'
+        );
 
-if ($prevailingPriceError) {
-    return $prevailingPriceError;
-}
+        if ($prevailingPriceError) {
+            return $prevailingPriceError;
+        }
 
-try {
+        try {
             $commodity = $this->findCommodity($commodityId);
 
             if (!$commodity) {
@@ -1100,27 +1189,25 @@ try {
             }
 
             $srp = (float)$srpInput;
-$prevailingPrice = (float)$prevailingPriceInput;
-$status = $this->normalizeStatus($statusInput);
+            $prevailingPrice = (float)$prevailingPriceInput;
+            $status = $this->normalizeStatus($statusInput);
 
             $this->con->beginTransaction();
 
-            // 1. Update SRP in commodities table
-           $stmt = $this->con->prepare("
-    UPDATE commodities
-    SET
-        srp = ?,
-        prevailing_price = ?
-    WHERE id = ?
-");
+            $stmt = $this->con->prepare("
+                UPDATE commodities
+                SET
+                    srp = ?,
+                    prevailing_price = ?
+                WHERE id = ?
+            ");
 
-$stmt->execute([
-    $srp,
-    $prevailingPrice,
-    $commodityId
-]);
+            $stmt->execute([
+                $srp,
+                $prevailingPrice,
+                $commodityId
+            ]);
 
-            // 2. Check if a price log record exists for this commodity
             $checkStmt = $this->con->prepare("
                 SELECT id 
                 FROM price_logs 
@@ -1132,7 +1219,6 @@ $stmt->execute([
             $existingLog = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
             if ($existingLog) {
-                // Update existing log
                 $stmt = $this->con->prepare("
                     UPDATE price_logs
                     SET
@@ -1150,7 +1236,6 @@ $stmt->execute([
 
                 $logId = (int)$existingLog['id'];
             } else {
-                // Insert a new price log if none exists yet
                 $stmt = $this->con->prepare("
                     INSERT INTO price_logs (
                         commodity_id,

@@ -165,14 +165,20 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.9rem 0;
+            padding: 0.9rem 1rem;
             border-bottom: 1px solid #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        .commodity-row:hover {
+            background-color: var(--accent-soft);
         }
         .commodity-row:last-child {
             border-bottom: none;
         }
         .commodity-name {
-            font-weight: 500;
+            font-weight: 600;
         }
         .commodity-meta {
             font-size: 0.82rem;
@@ -185,6 +191,7 @@
             color: var(--accent);
             white-space: nowrap;
             margin-left: 1rem;
+            text-align: right;
         }
         .commodity-empty {
             text-align: center;
@@ -196,6 +203,7 @@
         .commodity-search {
             position: relative;
             margin-bottom: 0.5rem;
+            margin-top: 0.5rem;
         }
         .commodity-search i {
             position: absolute;
@@ -223,6 +231,19 @@
             box-shadow: 0 0 0 3px rgba(2, 128, 144, 0.12);
         }
 
+        /* ── Establishment Table Styling ────────── */
+        .establishment-table th {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            background-color: var(--bg);
+            border-top: none;
+        }
+        .establishment-table td {
+            vertical-align: middle;
+        }
+
         /* ── Footer ─────────────────────────────── */
         .site-footer {
             border-top: 1px solid var(--line);
@@ -246,7 +267,7 @@
             <img src="../../../dist/img/splogo.png" alt="San Carlos City seal" class="seal">
             <div class="kicker">San Carlos City &middot; Negosyo Center</div>
             <h1>Price Monitor</h1>
-            <p class="subtitle">Browse retail prices by category. Select a category to view available commodities.</p>
+            <p class="subtitle">Browse retail prices by category. Select a commodity to view establishment prices.</p>
         </div>
     </header>
 
@@ -282,6 +303,47 @@
                 </div>
 
                 <div class="modal-footer">
+                    <button type="button" class="btn-ghost" data-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Establishment Detail Modal -->
+    <div class="modal fade" id="establishmentDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header align-items-center">
+                    <div>
+                        <h5 class="modal-title mb-0" id="modalCommodityTitle">Commodity Prices</h5>
+                        <small class="text-muted" id="modalCommoditySubtitle"></small>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body p-0">
+                    <div class="table-responsive">
+                       <table class="table establishment-table mb-0">
+    <thead>
+        <tr>
+            <th class="pl-4">Establishment / Store</th>
+            <th class="text-right">SRP</th>
+            <th class="text-right pr-4">Prevailing Price</th>
+        </tr>
+    </thead>
+    <tbody id="establishmentListBody">
+        <!-- Populated dynamically -->
+    </tbody>
+</table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-ghost" id="btnBackToCommodities">Back</button>
                     <button type="button" class="btn-ghost" data-dismiss="modal">Close</button>
                 </div>
 

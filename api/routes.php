@@ -112,6 +112,10 @@ switch ($resource) {
             $action = $_GET['action'] ?? 'commodity_categories';
             if ($action === 'commodity_categories') {
                 $response = $controller->getCategories();
+            } elseif ($action === 'commodity_establishments') {
+                $response = $controller->getCommodityEstablishments(
+                    $_GET['commodity_id'] ?? null
+                );
             } else {
                 http_response_code(400);
                 $response = [
@@ -156,6 +160,7 @@ switch ($resource) {
             ];
         }
         break;
+
     case 'commodity':
         $controller = new PriceMonitoringController();
 
@@ -203,7 +208,7 @@ switch ($resource) {
         }
         break;
 
-        case 'agency':
+    case 'agency':
         $controller = new PriceMonitoringController();
 
         if ($method === 'GET') {
@@ -239,8 +244,7 @@ switch ($resource) {
         }
         break;
 
-
-            case 'establishment':
+    case 'establishment':
         $controller = new PriceMonitoringController();
 
         if ($method === 'GET') {
@@ -276,7 +280,7 @@ switch ($resource) {
         }
         break;
 
-            case 'establishment-price':
+    case 'establishment-price':
         $controller = new PriceMonitoringController();
 
         if ($method === 'GET') {
