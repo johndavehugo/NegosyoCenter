@@ -141,9 +141,17 @@
     shared.baseTile = baseTile;
     shared.dominantCategory = dominantCategory;
 
+    function updatePageTitle() {
+        var title = $('#emapTabs .nav-link.active').attr('data-page-title');
+        if (!title) return;
+        document.title = title;
+        $('#economicMapTitle').text(title);
+    }
+
     function syncActiveTab() {
         var hash = window.location.hash;
         showTabFromHash(hash);
+        updatePageTitle();
         $(window).on('hashchange', function () {
             showTabFromHash(window.location.hash);
         });
@@ -511,6 +519,7 @@
         });
 
         $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+            updatePageTitle();
             syncSidebar();
             var href = $(this).attr('href');
             setTimeout(function () {
