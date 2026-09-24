@@ -15,6 +15,53 @@
         return shared.state.categories;
     }
 
+    function escapeDistributionHtml(value) {
+        return $('<div>').text(value == null ? '' : String(value)).html();
+    }
+
+    function businessClassColor(value) {
+        switch (String(value || '').toLowerCase()) {
+            case 'micro': return '#28a745';
+            case 'small': return '#fd7e14';
+            case 'medium': return '#6f42c1';
+            case 'large': return '#dc3545';
+            default: return '#6c757d';
+        }
+    }
+
+    function buildDistributionBusinessPopup(biz) {
+        var name = escapeDistributionHtml(biz.name || 'Unnamed Business');
+        var street = biz.street
+            ? '<div class="hotspot-business-address"><i class="material-icons">location_on</i><span>' +
+              escapeDistributionHtml(biz.street) + '</span></div>'
+            : '';
+        var entityNo = escapeDistributionHtml(biz.entity_no || '—');
+        var industry = escapeDistributionHtml(biz.industry || '—');
+        var barangay = escapeDistributionHtml(biz.barangay || '—');
+        var registration = biz.reg_type
+            ? (String(biz.reg_type).toUpperCase() === 'NEW' ? 'New' : 'Renewal')
+            : '—';
+        var businessClass = biz.category || 'Unknown';
+        var classColor = businessClassColor(businessClass);
+
+        return '<div class="hotspot-business-popup-content">' +
+               '<div class="hotspot-business-header">' +
+               '<div class="hotspot-business-heading">' +
+               '<div class="hotspot-business-name">' + name + '</div>' + street +
+               '</div>' +
+               '<div class="hotspot-business-class-row">' +
+               '<span class="badge hotspot-class-badge" style="background:' + classColor + ';color:#fff;">MSME Class: ' +
+               escapeDistributionHtml(businessClass) + '</span>' +
+               '</div>' +
+               '</div>' +
+               '<div class="hotspot-business-details">' +
+               '<div class="hotspot-business-detail"><span>Entity No.</span><strong>' + entityNo + '</strong></div>' +
+               '<div class="hotspot-business-detail"><span>Industry</span><strong>' + industry + '</strong></div>' +
+               '<div class="hotspot-business-detail"><span>Registration</span><strong>' + registration + '</strong></div>' +
+               '<div class="hotspot-business-detail"><span>Barangay</span><strong>' + barangay + '</strong></div>' +
+               '</div></div>';
+    }
+
     function initDistMap() {
         mapDist = L.map('mapDistribution', {
             scrollWheelZoom: false
@@ -340,7 +387,10 @@
                     ' MSME' + (row.total !== 1 ? 's' : '') + ' &middot; ' + dom,
                     { direction: 'top', opacity: .9 }
                 );
-                mk.bindPopup(buildBreakdownPopup(row));
+                mk.bindPopup(buildBreakdownPopup(row), {
+                    className: 'hotspot-business-popup distribution-breakdown-popup',
+                    maxWidth: 350
+                });
             } else {
                 var n = row.categories[activeCategory] || 0;
                 if (n === 0) return;
@@ -359,12 +409,16 @@
                     (n !== 1 ? 's' : '') + ' &middot; ' + activeCategory,
                     { direction: 'top', opacity: .9 }
                 );
-                mk2.bindPopup(buildBreakdownPopup(row, activeCategory));
+                mk2.bindPopup(buildBreakdownPopup(row, activeCategory), {
+                    className: 'hotspot-business-popup distribution-breakdown-popup',
+                    maxWidth: 350
+                });
             }
         });
     }
 
     function clearMsmeLayer() {
+        if (mapDist) mapDist.closePopup();
         if (msmeLayer) {
             mapDist.removeLayer(msmeLayer);
             msmeLayer = null;
@@ -405,31 +459,15 @@
                     fillOpacity: 0.88
                 }).addTo(msmeLayer);
 
-                var street = biz.street ? '<br><span class="text-muted" style="font-size:.75rem;">' +
-                             biz.street + '</span>' : '';
-                var regBadge = biz.reg_type === 'NEW'
-                    ? '<span class="badge badge-success ml-1" style="font-size:.65rem;">New</span>'
-                    : '<span class="badge badge-secondary ml-1" style="font-size:.65rem;">Renewal</span>';
-
+                var nameLabel = escapeDistributionHtml(biz.name || 'Unnamed Business');
                 marker.bindTooltip(
-                    '<b>' + biz.name + '</b><br>' + biz.barangay,
+                    '<b>' + nameLabel + '</b><br>' + escapeDistributionHtml(biz.barangay || ''),
                     { direction: 'top', opacity: 0.92 }
                 );
-                marker.bindPopup(
-                    '<div style="min-width:220px;">' +
-                    '<b>' + biz.name + '</b>' + regBadge + street +
-                    '<hr class="my-1" style="border-top:1px solid #e9ecef;">' +
-                    '<table style="font-size:.8rem;width:100%;">' +
-                    '<tr><td class="text-muted">Entity No.</td>' +
-                    '<td style="text-align:right;"><b>' + (biz.entity_no || '—') + '</b></td></tr>' +
-                    '<tr><td class="text-muted">Industry</td>' +
-                    '<td style="text-align:right;">' + (biz.industry || '—') + '</td></tr>' +
-                    '<tr><td class="text-muted">MSME Class</td>' +
-                    '<td style="text-align:right;">' + (biz.category || '—') + '</td></tr>' +
-                    '<tr><td class="text-muted">Barangay</td>' +
-                    '<td style="text-align:right;">' + biz.barangay + '</td></tr>' +
-                    '</table></div>'
-                );
+                marker.bindPopup(buildDistributionBusinessPopup(biz), {
+                    className: 'hotspot-business-popup',
+                    maxWidth: 430
+                });
             });
         }).fail(function () {
             $badge.text('failed to load');
@@ -440,27 +478,47 @@
         var maxN = 1;
         $.each(row.categories, function (_, n) { if (n > maxN) maxN = n; });
 
-        var html = '<div style="min-width:230px;">' +
-                   '<b>' + row.barangay + '</b> &middot; <span class="text-muted">' +
-                   shared.fmt(row.total) + ' MSME' + (row.total !== 1 ? 's' : '') + '</span>' +
-                   '<table class="brgy-breakdown mt-1">';
+        var name = escapeDistributionHtml(row.barangay || 'Unspecified');
+        var total = shared.fmt(row.total) + ' registered MSME' + (row.total !== 1 ? 's' : '');
+        var dominant = shared.dominantCategory(row);
+        var html = '<div class="hotspot-business-popup-content">' +
+                   '<div class="hotspot-business-header">' +
+                   '<div class="hotspot-business-heading">' +
+                   '<div class="hotspot-business-name">' + name + '</div>' +
+                   '<div class="hotspot-business-address"><i class="material-icons">apartment</i><span>' + total + '</span></div>' +
+                   '</div></div>' +
+                   '<div class="hotspot-business-details">' +
+                   '<div class="hotspot-business-detail"><span>Dominant Sector</span><strong>' +
+                   escapeDistributionHtml(dominant) + '</strong></div>';
 
+        if (highlight) {
+            html += '<div class="hotspot-business-detail"><span>Selected Sector</span><strong>' +
+                    escapeDistributionHtml(highlight) + '</strong></div>';
+        }
+
+        html += '<div class="distribution-breakdown-title">Sector Breakdown</div>' +
+                '<div class="distribution-breakdown-scroll"><table class="brgy-breakdown distribution-breakdown">';
+
+        var hasRows = false;
         categories().forEach(function (cat) {
             var n = row.categories[cat] || 0;
             if (n === 0) return;
+            hasRows = true;
             var color = shared.sectorColor(cat);
             var isSel = (highlight === cat) || (!highlight && shared.dominantCategory(row) === cat);
             html += '<tr>' +
-                    '<td style="width:42%;white-space:nowrap;">' +
-                    (isSel ? '<b>' : '') + cat + (isSel ? '</b>' : '') + '</td>' +
-                    '<td style="width:12%;text-align:right;"><b>' + shared.fmt(n) + '</b></td>' +
-                    '<td style="padding-left:8px;">' +
-                    '<span class="breakdown-bar" style="width:' +
-                    Math.round((n / maxN) * 100) + '%;background:' + color + ';"></span>' +
-                    '</td></tr>';
+                    '<td class="distribution-breakdown-category' + (isSel ? ' distribution-breakdown-selected' : '') + '">' +
+                    escapeDistributionHtml(cat) + '</td>' +
+                    '<td class="distribution-breakdown-count"><b>' + shared.fmt(n) + '</b></td>' +
+                    '<td class="distribution-breakdown-bar"><span class="breakdown-bar" style="width:' +
+                    Math.round((n / maxN) * 100) + '%;background:' + color + ';"></span></td></tr>';
         });
 
-        html += '</table></div>';
+        if (!hasRows) {
+            html += '<tr><td colspan="3" class="text-muted small">No sector breakdown available</td></tr>';
+        }
+
+        html += '</table></div></div></div>';
         return html;
     }
 

@@ -32,8 +32,8 @@
     <link rel="icon" type="image/png" sizes="40x16" href="../../dist/img/splogo.png">
 
     <link rel="stylesheet" href="../../dist/css/economic-map/shared/shared.css">
-    <link rel="stylesheet" href="../../dist/css/economic-map/hotspot/hotspot.css">
-    <link rel="stylesheet" href="../../dist/css/economic-map/distribution/distribution.css">
+    <link rel="stylesheet" href="../../dist/css/economic-map/hotspot/hotspot.css?v=4">
+    <link rel="stylesheet" href="../../dist/css/economic-map/distribution/distribution.css?v=4">
     <link rel="stylesheet" href="../../dist/css/economic-map/risk/risk.css">
     <link rel="stylesheet" href="../../dist/css/economic-map/opportunity/opportunity.css">
 </head>
@@ -113,7 +113,7 @@
                                    style="font-size:22px;color:#007bff;vertical-align:middle;">map</i>
                                 San Carlos City Economic Hotspot Map
                             </h5>
-                            <small class="text-muted">MSME-based economic activity &mdash; San Carlos City Negosyo Center</small>
+                            <small class="text-muted">MSME-based Economic Activity &mdash; San Carlos City Negosyo Center</small>
                         </div>
                     </div>
                 </div>
@@ -274,8 +274,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <!-- Economic map logic -->
 <script src="../../scripts/economic-map/shared/shared.js"></script>
-<script src="../../scripts/economic-map/hotspot/hotspot.js"></script>
-<script src="../../scripts/economic-map/distribution/distribution.js"></script>
+<script src="../../scripts/economic-map/hotspot/hotspot.js?v=4"></script>
+<script src="../../scripts/economic-map/distribution/distribution.js?v=6"></script>
 <script src="../../scripts/economic-map/risk/risk.js"></script>
 <script src="../../scripts/economic-map/opportunity/opportunity.js"></script>
 

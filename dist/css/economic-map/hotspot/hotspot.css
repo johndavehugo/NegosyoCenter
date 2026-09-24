@@ -112,3 +112,106 @@
 }
 .rank-detail .rank-info { flex: 1; line-height: 1.4; color: #1e293b; }
 .rank-detail .rank-info b { font-size: .82rem; }
+
+.hotspot-business-popup .leaflet-popup-content-wrapper {
+    position: relative;
+    border-radius: 14px;
+}
+.hotspot-business-popup .leaflet-popup-content {
+    width: 380px;
+    max-width: calc(100vw - 50px);
+    box-sizing: border-box;
+}
+.hotspot-business-popup .hotspot-business-popup-content {
+    width: 380px;
+    max-width: calc(100vw - 50px);
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+    font-family: Roboto, "Segoe UI", Arial, sans-serif;
+    color: #1e293b;
+}
+.hotspot-business-popup .hotspot-business-header {
+    padding: 26px 0 14px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.hotspot-business-popup .hotspot-business-class-row {
+    display: flex;
+    justify-content: flex-start;
+    min-height: 0;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+.hotspot-business-popup .hotspot-business-heading {
+    padding-right: 0;
+}
+.hotspot-business-popup .hotspot-business-name {
+    color: #111827;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+.hotspot-business-popup .hotspot-business-address {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    margin-top: 5px;
+    color: #64748b;
+    font-size: .78rem;
+    line-height: 1.4;
+}
+.hotspot-business-popup .hotspot-business-address i {
+    color: #2563eb;
+    font-size: 16px;
+    line-height: 1.2;
+}
+.hotspot-business-popup .hotspot-class-badge {
+    position: static;
+    min-width: 160px;
+    white-space: nowrap;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: .5rem .75rem;
+    line-height: 1.2;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,.18);
+}
+.hotspot-business-popup .hotspot-business-details {
+    padding: 4px 0 2px;
+}
+.hotspot-business-popup .hotspot-business-detail {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: .82rem;
+    line-height: 1.35;
+}
+.hotspot-business-popup .hotspot-business-detail:last-child {
+    border-bottom: none;
+}
+.hotspot-business-popup .hotspot-business-detail > span {
+    flex-shrink: 0;
+    padding-top: 2px;
+    color: #64748b;
+    font-size: .67rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.hotspot-business-popup .hotspot-business-detail > strong {
+    max-width: 68%;
+    color: #1e293b;
+    font-weight: 600;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+@media (max-width: 520px) {
+    .hotspot-business-popup .hotspot-class-badge {
+        min-width: 145px;
+        font-size: .9rem;
+    }
+}

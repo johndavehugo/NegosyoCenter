@@ -58,3 +58,81 @@
         padding-right: 26px;
     }
 }
+
+.hotspot-business-popup .distribution-breakdown-title {
+    margin: 14px 0 4px;
+    color: #64748b;
+    font-size: .67rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.hotspot-business-popup .distribution-breakdown {
+    width: 100%;
+    table-layout: fixed;
+    font-size: .75rem;
+}
+.hotspot-business-popup .distribution-breakdown td {
+    padding: 6px 3px;
+    vertical-align: middle;
+}
+.hotspot-business-popup .distribution-breakdown-category {
+    width: 48%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    color: #334155;
+}
+.hotspot-business-popup .distribution-breakdown-selected {
+    color: #1e4db7;
+    font-weight: 700;
+}
+.hotspot-business-popup .distribution-breakdown-count {
+    width: 18%;
+    text-align: right;
+    white-space: nowrap;
+}
+.hotspot-business-popup .distribution-breakdown-bar {
+    width: 34%;
+    padding-left: 8px !important;
+}
+
+.hotspot-business-popup.distribution-breakdown-popup .leaflet-popup-content,
+.hotspot-business-popup.distribution-breakdown-popup .hotspot-business-popup-content {
+    width: 300px;
+    max-width: calc(100vw - 50px);
+}
+.hotspot-business-popup.distribution-breakdown-popup .hotspot-business-header {
+    padding: 20px 0 10px;
+}
+.hotspot-business-popup.distribution-breakdown-popup .hotspot-business-name {
+    font-size: .92rem;
+}
+.hotspot-business-popup.distribution-breakdown-popup .hotspot-business-address {
+    margin-top: 3px;
+    font-size: .7rem;
+}
+.hotspot-business-popup.distribution-breakdown-popup .hotspot-business-details {
+    padding: 2px 0 0;
+}
+.hotspot-business-popup.distribution-breakdown-popup .hotspot-business-detail {
+    padding: 5px 0;
+    font-size: .72rem;
+}
+.hotspot-business-popup.distribution-breakdown-popup .hotspot-business-detail > span {
+    font-size: .6rem;
+}
+.hotspot-business-popup.distribution-breakdown-popup .distribution-breakdown-title {
+    margin: 8px 0 3px;
+    font-size: .6rem;
+}
+.hotspot-business-popup.distribution-breakdown-popup .distribution-breakdown-scroll {
+    max-height: 285px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.hotspot-business-popup.distribution-breakdown-popup .distribution-breakdown {
+    font-size: .68rem;
+}
+.hotspot-business-popup.distribution-breakdown-popup .distribution-breakdown td {
+    padding: 3px 2px;
+}

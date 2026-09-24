@@ -288,6 +288,125 @@ class EconomicMapController
         return 'OTHER COMMUNITY, SOCIAL AND PERSONAL SERVICE ACTIVITIES';
     }
 
+    private function normalizeBusinessName($row)
+    {
+        foreach (['juri_name', 'business_name', 'trade_name', 'tradename'] as $field) {
+            $name = trim((string) ($row[$field] ?? ''));
+            if ($name !== '') return $name;
+        }
+        return 'Unnamed Business';
+    }
+
+    private function normalizeBusinessClass($category, $workforce = null)
+    {
+        $labels = [
+            'micro'  => 'Micro',
+            'small'  => 'Small',
+            'medium' => 'Medium',
+            'large'  => 'Large',
+        ];
+        $key = strtolower(trim((string) $category));
+        if (isset($labels[$key])) return $labels[$key];
+
+        $workforce = trim((string) $workforce);
+        if ($workforce !== '' && ctype_digit($workforce)) {
+            $value = (int) $workforce;
+            if ($value <= 9) return 'Micro';
+            if ($value <= 99) return 'Small';
+            if ($value <= 199) return 'Medium';
+            return 'Large';
+        }
+
+        return 'Unknown';
+    }
+
+    private function registeredBusinessRows($refresh = false)
+    {
+        $source = 'scims';
+        $rows = $this->fetchScimsBusinesses($refresh);
+
+        if ($rows === false) {
+            $source = 'local';
+            $stmt = $this->con->query(
+                "SELECT
+                    j.name           AS business_name,
+                    j.entity_no,
+                    j.line_of_industry,
+                    j.category       AS msme_category,
+                    j.registration_type,
+                    COALESCE(NULLIF(TRIM(a.barangay), ''), 'Unspecified') AS barangay,
+                    TRIM(a.street)   AS street,
+                    ''               AS juri_city
+                 FROM juridicals j
+                 LEFT JOIN addresses a ON j.address_id = a.id
+                 WHERE j.bus_status = 'ACTIVE'"
+            );
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        $businesses = [];
+        foreach ($rows as $r) {
+            if ($source === 'scims') {
+                $city = trim((string) ($r['juri_city'] ?? ''));
+                $barangay = trim((string) ($r['juri_barangay'] ?? ''));
+                if (stripos($city, 'San Carlos') === false && !isset(self::$COORDS[$barangay])) {
+                    continue;
+                }
+                if ($barangay === '') {
+                    $barangay = 'Unspecified';
+                }
+                $name = $this->normalizeBusinessName($r);
+                $industry = $r['line_of_industry'] ?? '';
+                $regType = $r['status'] ?? '';
+                $entityNo = $r['entity_no'] ?? '';
+                $msmeCategory = $this->normalizeBusinessClass(
+                    $r['category'] ?? '',
+                    $r['totalworkforce'] ?? null
+                );
+                $street = trim((string) ($r['juri_street'] ?? ''));
+            } else {
+                $barangay = trim((string) ($r['barangay'] ?? ''));
+                if ($barangay === '') {
+                    $barangay = 'Unspecified';
+                }
+                $name = $r['business_name'] ?? '';
+                $industry = $r['line_of_industry'] ?? '';
+                $regType = $r['registration_type'] ?? '';
+                $entityNo = $r['entity_no'] ?? '';
+                $msmeCategory = $this->normalizeBusinessClass($r['msme_category'] ?? '');
+                $street = $r['street'] ?? '';
+            }
+
+            $businesses[] = [
+                'name'      => $name,
+                'entity_no' => $entityNo,
+                'industry'  => $industry,
+                'category'  => $msmeCategory,
+                'reg_type'  => $regType,
+                'barangay'  => $barangay,
+                'street'    => $street,
+            ];
+        }
+
+        return ['source' => $source, 'data' => $businesses];
+    }
+
+    private function businessCoordinates($barangay, $business)
+    {
+        $key = (string) ($business['entity_no'] ?? '');
+        if ($key === '') {
+            $key = (string) ($business['name'] ?? '');
+        }
+        $key .= '|' . $barangay;
+        $latJitter = ((crc32($key . '|lat') % 2001) - 1000) / 1000000;
+        $lngJitter = ((crc32($key . '|lng') % 2001) - 1000) / 1000000;
+
+        return [
+            'lat' => round(self::$COORDS[$barangay][0] + $latJitter, 6),
+            'lng' => round(self::$COORDS[$barangay][1] + $lngJitter, 6),
+        ];
+    }
+
     // ── GET ?action=economic_hotspots ─────────────────────────────────
     public function getHotspots()
     {
@@ -636,7 +755,6 @@ class EconomicMapController
             return ['status' => 'error', 'message' => 'sector parameter is required.'];
         }
 
-        // Validate against canonical list and normalize to UPPERCASE
         $canonical = null;
         foreach (self::sectors() as $s) {
             if ($s === $sector) {
@@ -650,94 +768,81 @@ class EconomicMapController
 
         $refresh = isset($_GET['refresh']);
         try {
+            $registered = $this->registeredBusinessRows($refresh);
             $businesses = [];
             $unmapped = [];
-            $source = 'scims';
 
-            $rows = $this->fetchScimsBusinesses($refresh);
-            if ($rows === false) {
-                $source = 'local';
-                $stmt = $this->con->query(
-                    "SELECT
-                        j.name           AS business_name,
-                        j.entity_no,
-                        j.line_of_industry,
-                        j.category       AS msme_category,
-                        j.registration_type,
-                        COALESCE(NULLIF(TRIM(a.barangay), ''), 'Unspecified') AS barangay,
-                        TRIM(a.street)   AS street,
-                        ''               AS juri_city
-                     FROM juridicals j
-                     LEFT JOIN addresses a ON j.address_id = a.id
-                     WHERE j.bus_status = 'ACTIVE'"
+            foreach ($registered['data'] as $row) {
+                if ($this->categorize($row['industry']) !== $canonical) {
+                    continue;
+                }
+
+                if (!isset(self::$COORDS[$row['barangay']])) {
+                    $unmapped[] = ['barangay' => $row['barangay'], 'name' => $row['name']];
+                    continue;
+                }
+
+                $businesses[] = array_merge(
+                    $row,
+                    $this->businessCoordinates($row['barangay'], $row)
                 );
-                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            }
-
-            foreach ($rows as $r) {
-                if ($source === 'scims') {
-                    $city = trim((string) ($r['juri_city'] ?? ''));
-                    $b = trim((string) ($r['juri_barangay'] ?? ''));
-                    if (stripos($city, 'San Carlos') === false && !isset(self::$COORDS[$b])) {
-                        continue;
-                    }
-                    if ($b === '') {
-                        $b = 'Unspecified';
-                    }
-                    $industry = $r['line_of_industry'] ?? '';
-                    $regType = $r['status'] ?? '';
-                    $name = $r['business_name'] ?? $r['tradename'] ?? 'Unnamed Business';
-                    $entityNo = $r['entity_no'] ?? '';
-                    $msmeCat = $r['category'] ?? '';
-                    $street = trim((string) ($r['juri_street'] ?? ''));
-                } else {
-                    $industry = $r['line_of_industry'] ?? '';
-                    $b = trim((string) ($r['barangay'] ?? ''));
-                    if ($b === '') {
-                        $b = 'Unspecified';
-                    }
-                    $regType = $r['registration_type'] ?? '';
-                    $name = $r['business_name'] ?? '';
-                    $entityNo = $r['entity_no'] ?? '';
-                    $msmeCat = $r['msme_category'] ?? '';
-                    $street = $r['street'] ?? '';
-                }
-
-                if ($this->categorize($industry) !== $canonical) {
-                    continue;
-                }
-
-                if (!isset(self::$COORDS[$b])) {
-                    $unmapped[] = ['barangay' => $b, 'name' => $name];
-                    continue;
-                }
-
-                // Jitter so overlapping pins in the same barangay spread out
-                $jitter = 0.0018;
-                $lat = self::$COORDS[$b][0] + (lcg_value() - 0.5) * $jitter;
-                $lng = self::$COORDS[$b][1] + (lcg_value() - 0.5) * $jitter;
-
-                $businesses[] = [
-                    'name'        => $name,
-                    'entity_no'   => $entityNo,
-                    'industry'    => $industry,
-                    'category'    => $msmeCat,
-                    'reg_type'    => $regType,
-                    'barangay'    => $b,
-                    'street'      => $street,
-                    'lat'         => round($lat, 6),
-                    'lng'         => round($lng, 6),
-                ];
             }
 
             return [
                 'status'   => 'success',
-                'source'   => $source,
+                'source'   => $registered['source'],
                 'sector'   => $canonical,
                 'total'    => count($businesses),
                 'data'     => $businesses,
                 'unmapped' => $unmapped,
                 'unmapped_count' => count($unmapped),
+            ];
+        } catch (PDOException $e) {
+            return ['status' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function barangayBusinesses()
+    {
+        $requested = trim((string) ($_GET['barangay'] ?? ''));
+        if ($requested === '') {
+            return ['status' => 'error', 'message' => 'barangay parameter is required.'];
+        }
+
+        $barangay = null;
+        foreach (array_keys(self::$COORDS) as $knownBarangay) {
+            if (strcasecmp($knownBarangay, $requested) === 0) {
+                $barangay = $knownBarangay;
+                break;
+            }
+        }
+        if ($barangay === null) {
+            return ['status' => 'error', 'message' => 'Unknown barangay.'];
+        }
+
+        $refresh = isset($_GET['refresh']);
+        try {
+            $registered = $this->registeredBusinessRows($refresh);
+            $businesses = [];
+
+            foreach ($registered['data'] as $row) {
+                if (strcasecmp($row['barangay'], $barangay) !== 0) {
+                    continue;
+                }
+
+                $row['barangay'] = $barangay;
+                $businesses[] = array_merge(
+                    $row,
+                    $this->businessCoordinates($barangay, $row)
+                );
+            }
+
+            return [
+                'status'   => 'success',
+                'source'   => $registered['source'],
+                'barangay' => $barangay,
+                'total'    => count($businesses),
+                'data'     => $businesses,
             ];
         } catch (PDOException $e) {
             return ['status' => 'error', 'message' => $e->getMessage()];

@@ -11,6 +11,9 @@
     var mapHotspot = null;
     var hotspotMarkers = {};
     var hotspotRankSelected = null;
+    var hotspotBusinessLayer = null;
+    var hotspotLocationsBarangay = null;
+    var hotspotLocationsRequest = 0;
 
     function hotspotLevel(count, max) {
         var ratio = count / (max || 1);
@@ -20,6 +23,147 @@
             }
         }
         return { label: 'Low', color: '#ffc107' };
+    }
+
+    function escapeHtml(value) {
+        return $('<div>').text(value == null ? '' : String(value)).html();
+    }
+
+    function barangayCenter(name) {
+        var center = null;
+        shared.constants.BARANGAYS.forEach(function (barangay) {
+            if (barangay[0].toLowerCase() === String(name).toLowerCase()) {
+                center = [barangay[1], barangay[2]];
+            }
+        });
+        return center;
+    }
+
+    function removeHotspotBusinessLayer() {
+        if (hotspotBusinessLayer && mapHotspot) {
+            mapHotspot.removeLayer(hotspotBusinessLayer);
+        }
+        hotspotBusinessLayer = null;
+    }
+
+    function clearHotspotLocations() {
+        hotspotLocationsRequest++;
+        removeHotspotBusinessLayer();
+        hotspotLocationsBarangay = null;
+        $('#hotspotLocationsBadge').text('None');
+        $('#hotspotLocationsStatus').text('Select a hotspot or barangay ranking to load its registered MSMEs.');
+        $('#hotspotLocationsClear').prop('disabled', true);
+    }
+
+    function businessClassColor(value) {
+        switch (String(value || '').toLowerCase()) {
+            case 'micro': return '#28a745';
+            case 'small': return '#fd7e14';
+            case 'medium': return '#6f42c1';
+            case 'large': return '#dc3545';
+            default: return '#6c757d';
+        }
+    }
+
+    function buildHotspotBusinessPopup(biz) {
+        var name = escapeHtml(biz.name || 'Unnamed Business');
+        var street = biz.street
+            ? '<div class="hotspot-business-address"><i class="material-icons">location_on</i><span>' +
+              escapeHtml(biz.street) + '</span></div>'
+            : '';
+        var entityNo = escapeHtml(biz.entity_no || '—');
+        var industry = escapeHtml(biz.industry || '—');
+        var barangay = escapeHtml(biz.barangay || '—');
+        var registration = biz.reg_type
+            ? (String(biz.reg_type).toUpperCase() === 'NEW' ? 'New' : 'Renewal')
+            : '—';
+        var businessClass = biz.category || 'Unknown';
+        var classColor = businessClassColor(businessClass);
+
+        return '<div class="hotspot-business-popup-content">' +
+               '<div class="hotspot-business-header">' +
+               '<div class="hotspot-business-heading">' +
+               '<div class="hotspot-business-name">' + name + '</div>' + street +
+               '</div>' +
+               '<div class="hotspot-business-class-row">' +
+               '<span class="badge hotspot-class-badge" style="background:' + classColor + ';color:#fff;">MSME Class: ' +
+               escapeHtml(businessClass) + '</span>' +
+               '</div>' +
+               '</div>' +
+               '<div class="hotspot-business-details">' +
+               '<div class="hotspot-business-detail"><span>Entity No.</span><strong>' + entityNo + '</strong></div>' +
+               '<div class="hotspot-business-detail"><span>Industry</span><strong>' + industry + '</strong></div>' +
+               '<div class="hotspot-business-detail"><span>Registration</span><strong>' + registration + '</strong></div>' +
+               '<div class="hotspot-business-detail"><span>Barangay</span><strong>' + barangay + '</strong></div>' +
+               '</div></div>';
+    }
+
+    function loadHotspotLocations(name) {
+        if (!name || !mapHotspot) return;
+        if (hotspotLocationsBarangay === name && hotspotBusinessLayer) return;
+
+        var requestId = ++hotspotLocationsRequest;
+        removeHotspotBusinessLayer();
+        hotspotLocationsBarangay = null;
+        $('#hotspotLocationsBadge').text('Loading…');
+        $('#hotspotLocationsStatus').text('Loading registered MSME locations for ' + name + '…');
+        $('#hotspotLocationsClear').prop('disabled', true);
+
+        $.getJSON(shared.constants.HANDLER, {
+            action: 'barangay_businesses',
+            barangay: name
+        }).done(function (res) {
+            if (requestId !== hotspotLocationsRequest) return;
+            if (res.status !== 'success') {
+                $('#hotspotLocationsBadge').text('Error');
+                $('#hotspotLocationsStatus').text(res.message || 'Unable to load MSME locations.');
+                $('#hotspotLocationsClear').prop('disabled', false);
+                return;
+            }
+
+            var data = Array.isArray(res.data) ? res.data : [];
+            hotspotBusinessLayer = L.layerGroup().addTo(mapHotspot);
+            data.forEach(function (biz) {
+                if (biz.lat == null || biz.lng == null) return;
+                var marker = L.circleMarker([biz.lat, biz.lng], {
+                    radius: 5,
+                    color: '#1d4ed8',
+                    weight: 1.5,
+                    fillColor: '#60a5fa',
+                    fillOpacity: 0.9
+                }).addTo(hotspotBusinessLayer);
+                var nameLabel = escapeHtml(biz.name || 'Unnamed Business');
+                marker.bindTooltip('<b>' + nameLabel + '</b>', {
+                    direction: 'top',
+                    opacity: 0.92
+                });
+                marker.bindPopup(buildHotspotBusinessPopup(biz), {
+                    className: 'hotspot-business-popup',
+                    maxWidth: 430
+                });
+            });
+
+            var count = typeof res.total === 'number' ? res.total : data.length;
+            var source = res.source === 'scims' ? 'SCIMS registry' : 'Local database';
+            hotspotLocationsBarangay = name;
+            $('#hotspotLocationsBadge').text(shared.fmt(count));
+            $('#hotspotLocationsStatus').text(
+                name + ' · ' + shared.fmt(count) + ' registered MSME' +
+                (count !== 1 ? 's' : '') + ' shown · ' + source
+            );
+            $('#hotspotLocationsClear').prop('disabled', false);
+
+            var center = barangayCenter(name);
+            if (center) {
+                mapHotspot.flyTo(center, 16, { duration: 1.2 });
+            }
+        }).fail(function (xhr) {
+            if (requestId !== hotspotLocationsRequest) return;
+            console.error('barangay_businesses request failed:', xhr.statusText);
+            $('#hotspotLocationsBadge').text('Error');
+            $('#hotspotLocationsStatus').text('Unable to load MSME locations for ' + name + '.');
+            $('#hotspotLocationsClear').prop('disabled', false);
+        });
     }
 
     function initHotspotMap() {
@@ -40,6 +184,10 @@
             }).addTo(mapHotspot)
               .bindTooltip(b[0], { direction: 'top', opacity: .9, className: 'emap-tooltip' });
         });
+
+        $('#hotspotLocationsClear')
+            .off('click.hotspotLocations')
+            .on('click.hotspotLocations', clearHotspotLocations);
     }
 
     function loadHotspots() {
@@ -81,6 +229,9 @@
                     '</div>'
                 );
                 hotspotMarkers[r.barangay] = layer;
+                layer.on('click', function () {
+                    loadHotspotLocations(r.barangay);
+                });
             });
 
             $('#hotspotTotal').text(shared.fmt(res.total));
@@ -111,6 +262,7 @@
         html += '<div><span class="legend-dot" style="background:#dc3545;"></span>High (30%+)</div>';
         html += '<div><span class="legend-dot" style="background:#fd7e14;"></span>Moderate (15%+)</div>';
         html += '<div><span class="legend-dot" style="background:#ffc107;"></span>Low</div>';
+        html += '<div><span class="legend-dot" style="background:#60a5fa;"></span>Individual MSME</div>';
         var legend = L.control({ position: 'bottomright' });
         legend.onAdd = function () {
             var div = L.DomUtil.create('div', 'map-legend');
@@ -214,6 +366,7 @@
                 ).removeClass('d-none');
             }
             shared.flyToBarangay(name);
+            loadHotspotLocations(name);
             var marker = hotspotMarkers[name];
             if (marker) {
                 setTimeout(function () { marker.openPopup(); }, 1300);

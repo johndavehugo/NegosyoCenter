@@ -58,12 +58,15 @@ switch ($resource) {
                 case 'sector_businesses':
                     $response = $controller->sectorBusinesses();
                     break;
+                case 'barangay_businesses':
+                    $response = $controller->barangayBusinesses();
+                    break;
                 case 'sectors':
                     $response = $controller->getSectors();
                     break;
                 default:
                     http_response_code(400);
-                    $response = ['status' => 'error', 'message' => 'Unknown action. Use economic_hotspots, msme_distribution, economic_risk, economic_opportunity, sectors, or sector_businesses.'];
+                    $response = ['status' => 'error', 'message' => 'Unknown action. Use economic_hotspots, msme_distribution, economic_risk, economic_opportunity, sectors, sector_businesses, or barangay_businesses.'];
             }
         } else {
             http_response_code(405);

@@ -53,6 +53,25 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="card card-raised no-hover mt-3" id="hotspotLocationsCard">
+                                    <div class="card-body py-3">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <span class="font-weight-bold" style="font-size:.82rem;">Registered MSME Locations</span>
+                                            <span class="badge badge-pill msme-badge-unknown" id="hotspotLocationsBadge">None</span>
+                                        </div>
+                                        <div class="small text-muted mt-2" id="hotspotLocationsStatus">
+                                            Select a hotspot or barangay ranking to load its registered MSMEs.
+                                        </div>
+                                        <div class="small text-muted mt-1" style="font-size:.68rem;">
+                                            Pins use registry address records; exact GPS coordinates may not be available.
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="hotspotLocationsClear" disabled>
+                                            <i class="material-icons" style="font-size:16px;vertical-align:middle;">clear</i>
+                                            Clear locations
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Map -->
@@ -73,6 +92,7 @@
                         <div class="emap-note mb-3">
                             <i class="material-icons">Info</i>
                             Hotspots reflect the number of registered MSMEs per barangay from the
-                            <b>SCIMS Registry</b> (vamosmobile.app). Larger, Darker Circles indicate Higher Business Concentration.
+                             <b>SCIMS Registry</b> (vamosmobile.app). Larger, Darker Circles indicate Higher Business Concentration.<br>
+                             Select a hotspot circle or barangay ranking to view individual registered MSME locations.
                         </div>
                     </div>
