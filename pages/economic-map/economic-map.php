@@ -600,11 +600,11 @@
                                 <div class="card card-raised no-hover mb-3">
                                     <div class="card-body d-flex align-items-center justify-content-between px-3 py-3 border-bottom">
                                         <span class="font-weight-bold" style="font-size:.82rem;">Barangay Ranking</span>
-                                        <span class="badge badge-pill msme-badge-unknown" id="hotspotRankBadge">top to lowest</span>
+                                        <span class="badge badge-pill msme-badge-unknown" id="hotspotRankBadge">Top to Lowest</span>
                                     </div>
                                     <div class="card-body py-3">
                                         <div class="mb-2" style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;">
-                                            Top barangay to lowest
+                                            Top Barangay to Lowest
                                         </div>
                                         <div class="modern-dd" id="hotspotRankDD">
                                             <button type="button" class="modern-dd-btn" id="hotspotRankBtn">
@@ -614,9 +614,9 @@
                                             </button>
                                             <div class="modern-dd-panel d-none" id="hotspotRankPanel">
                                                 <div class="modern-dd-search">
-                                                    <i class="material-icons">search</i>
+                                                    <i class="material-icons">Search</i>
                                                     <input type="text" id="hotspotRankSearch"
-                                                           placeholder="Search barangay…"
+                                                           placeholder="Search Barangay…"
                                                            autocomplete="off">
                                                 </div>
                                                 <div class="modern-dd-list" id="hotspotRanking"></div>
@@ -624,7 +624,7 @@
                                         </div>
                                         <div id="hotspotRankDetail" class="rank-detail d-none"></div>
                                         <div class="small text-muted mt-2" style="line-height:1.5;">
-                                            Select a barangay to fly to it on the map.
+                                            Select a Barangay to Fly to it on the Map.
                                         </div>
                                     </div>
                                 </div>
@@ -646,9 +646,9 @@
                             </div>
                         </div>
                         <div class="emap-note mb-3">
-                            <i class="material-icons">info</i>
+                            <i class="material-icons">Info</i>
                             Hotspots reflect the number of registered MSMEs per barangay from the
-                            <b>SCIMS registry</b> (vamosmobile.app). Larger, darker circles indicate higher business concentration.
+                            <b>SCIMS Registry</b> (vamosmobile.app). Larger, Darker Circles indicate Higher Business Concentration.
                         </div>
                     </div>
 
@@ -665,17 +665,17 @@
                                     </div>
                                     <div class="card-body py-3">
                                         <div class="mb-2" style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;">
-                                            Filter by sector
+                                            Filter by Sector
                                         </div>
                                         <div class="sector-search mb-2">
-                                            <i class="material-icons">search</i>
+                                            <i class="material-icons">Search</i>
                                             <input type="text" id="distSectorSearch"
-                                                   placeholder="Search sector…"
+                                                   placeholder="Search Sector…"
                                                    autocomplete="off">
                                         </div>
                                         <button class="sector-all-btn active" data-cat="all">
                                             <i class="material-icons">apps</i>
-                                            <span>All sectors</span>
+                                            <span>All Sectors</span>
                                         </button>
                                         <div id="distChips" class="sector-list mb-3">
                                             <!-- sector rows injected by JS -->
@@ -705,7 +705,7 @@
                                         <span>
                                             <i class="material-icons align-middle mr-1"
                                                style="font-size:17px;color:#60a5fa;">pie_chart</i>
-                                            MSME Distribution Map &mdash; dominant sector per barangay
+                                            MSME Distribution Map &mdash; Dominant Sector per Barangay
                                         </span>
                                         <span class="badge badge-pill msme-badge-unknown" id="distBadge">loading…</span>
                                     </div>
@@ -717,7 +717,7 @@
                                     <div class="card-body d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
                                         <div>
                                             <span class="font-weight-bold">Sector Share</span>
-                                            <small class="text-muted ml-2">All barangays combined</small>
+                                            <small class="text-muted ml-2">All Barangays Combined</small>
                                         </div>
                                         <span class="badge badge-pill msme-badge-unknown" id="distPieBadge">loading…</span>
                                     </div>
@@ -740,10 +740,10 @@
                         </div>
 
                         <div class="emap-note mb-3">
-                            <i class="material-icons">info</i>
+                            <i class="material-icons">Info</i>
                             Each circle is coloured by the dominant MSME sector in the barangay; click a circle to see
                             the full sector breakdown. Use the sector filter to focus on a specific industry.
-                            Business counts come from the <b>SCIMS registry</b>.
+                            Business counts come from the <b>SCIMS Registry</b>.
                         </div>
                     </div>
 
@@ -768,7 +768,7 @@
                                 <div class="card card-raised no-hover stat-pill mb-3" style="border-left-color:#6c757d!important;">
                                     <div class="card-body py-3">
                                         <div class="value" id="riskTotalAreas">—</div>
-                                        <div class="label">Barangays assessed</div>
+                                        <div class="label">Barangays Assessed</div>
                                     </div>
                                 </div>
 
@@ -795,9 +795,9 @@
                                             <b>Economic Risk = Business Exposure &times; Hazard Level &times; Historical Damage</b>
                                         </p>
                                         <ul class="small text-muted mb-0 pl-3" style="line-height:1.6;">
-                                            <li><b>Exposure</b> &mdash; number of MSMEs in the area (SCIMS registry)</li>
-                                            <li><b>Hazard</b> &mdash; LGU-assessed flood/hazard rating</li>
-                                            <li><b>Damage</b> &mdash; prior calamity losses recorded in Calamity Monitoring</li>
+                                            <li><b>Exposure</b> &mdash; Number of MSMEs in the Area (SCIMS Registry)</li>
+                                            <li><b>Hazard</b> &mdash; LGU-Assessed Flood/Hazard Rating</li>
+                                            <li><b>Damage</b> &mdash; Prior Calamity Losses Recorded in Calamity Monitoring</li>
                                         </ul>
                                         <hr class="my-2">
                                         <div class="small text-muted">
@@ -831,7 +831,7 @@
                             <span class="legend-dot" style="background:#fd7e14;"></span>High
                             <span class="legend-dot" style="background:#ffc107;"></span>Moderate
                             <span class="legend-dot" style="background:#28a745;"></span>Low
-                            &mdash; click a circle for the full risk breakdown.
+                            &mdash; Click a Circle for the Full Risk Breakdown.
                         </div>
                     </div>
 
@@ -844,19 +844,19 @@
                                 <div class="card card-raised no-hover stat-pill mb-3" style="border-left-color:#198754!important;">
                                     <div class="card-body py-3">
                                         <div class="value" id="oppHighCount">—</div>
-                                        <div class="label">High / Very High areas</div>
+                                        <div class="label">High / Very High Areas</div>
                                     </div>
                                 </div>
                                 <div class="card card-raised no-hover stat-pill mb-3" style="border-left-color:#007bff!important;">
                                     <div class="card-body py-3">
                                         <div class="value" id="oppTotalAreas">—</div>
-                                        <div class="label">Barangays assessed</div>
+                                        <div class="label">Barangays Assessed</div>
                                     </div>
                                 </div>
 
                                 <div class="card card-raised no-hover">
                                     <div class="card-body d-flex align-items-center justify-content-between px-3 py-3 border-bottom">
-                                        <span class="font-weight-bold" style="font-size:.82rem;">Where to invest &amp; support</span>
+                                        <span class="font-weight-bold" style="font-size:.82rem;">Where to Invest &amp; Support</span>
                                     </div>
                                     <div class="card-body py-3">
                                         <div id="oppHighlights"></div>
@@ -867,13 +867,13 @@
                                             How it&rsquo;s calculated
                                         </div>
                                         <ul class="small text-muted mb-0 pl-3" style="line-height:1.6;">
-                                            <li><b>Commercial potential</b> &mdash; MSME concentration (SCIMS registry)</li>
-                                            <li><b>Growth momentum</b> &mdash; new registrations</li>
-                                            <li><b>Tourism potential</b> &mdash; coastal / island assets</li>
-                                            <li><b>Agriculture potential</b> &mdash; land &amp; production capacity</li>
-                                            <li><b>Livelihood gap</b> &mdash; high population, few businesses</li>
-                                            <li><b>Infrastructure gap</b> &mdash; businesses, limited infrastructure</li>
-                                            <li><b>Sector diversity gap</b> &mdash; underrepresented industries</li>
+                                            <li><b>Commercial Potential</b> &mdash; MSME Concentration (SCIMS registry)</li>
+                                            <li><b>Growth Momentum</b> &mdash; New Registrations</li>
+                                            <li><b>Tourism Potential</b> &mdash; Coastal / Island Assets</li>
+                                            <li><b>Agriculture Potential</b> &mdash; Land &amp; Production Capacity</li>
+                                            <li><b>Livelihood Gap</b> &mdash; High Population, Few Businesses</li>
+                                            <li><b>Infrastructure Gap</b> &mdash; Businesses, Limited Infrastructure</li>
+                                            <li><b>Sector Diversity Gap</b> &mdash; Underrepresented Industries</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -896,12 +896,12 @@
                         </div>
                         <div class="emap-note mb-3">
                             <i class="material-icons">info</i>
-                            Opportunity levels:
+                            Opportunity Levels:
                             <span class="legend-dot" style="background:#198754;"></span>Very High
                             <span class="legend-dot" style="background:#28a745;"></span>High
                             <span class="legend-dot" style="background:#ffc107;"></span>Moderate
                             <span class="legend-dot" style="background:#6c757d;"></span>Low
-                            &mdash; click a circle to see which opportunity drivers apply.
+                            &mdash; Click a Circle to See which Opportunity Drivers Apply.
                         </div>
                     </div>
 
