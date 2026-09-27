@@ -1,200 +1,170 @@
-// ─────────────────────────────────────────────────────────────────────────────
 // commodity-update.js
-// Handles the Edit Commodity modal — two tabs:
-//   Tab 1  Commodity Info       (fields + multi-select establishments)
-//   Tab 2  Establishment Prices (inline editable table, single Save All button)
-//
-// Establishments stored as pipe-encoded comma string:
-//   "Store A|120.00|110.00,Store B|135.00|130.00"
-//   format: name|srp|prevailing_price
-// Plain name-only entries ("Store A,Store B") are also supported (legacy).
-// ─────────────────────────────────────────────────────────────────────────────
 
 var _editCommodityId  = null;
 var _editCommoditySrp = null;
 
-// ── Parse / serialise helpers ─────────────────────────────────────────────────
+// ── Parse / serialise ─────────────────────────────────────────────────────────
 
 function parseEstablishments(raw) {
     if (!raw || !raw.trim()) return [];
     return raw.split(',').map(function (chunk) {
         var parts = chunk.split('|');
-        return {
-            name:             (parts[0] || '').trim(),
-            srp:              parts[1] !== undefined ? parts[1].trim() : '',
-            prevailing_price: parts[2] !== undefined ? parts[2].trim() : ''
-        };
+        return { name: (parts[0]||'').trim(), srp: (parts[1]||'').trim(), prev: (parts[2]||'').trim() };
     }).filter(function (e) { return e.name !== ''; });
 }
 
-function serialiseEstablishments(arr) {
-    return arr.map(function (e) {
-        return [e.name, e.srp || '', e.prevailing_price || ''].join('|');
-    }).join(',');
+function serialiseEstablishments(rows) {
+    return rows.map(function (r) { return [r.name, r.srp||'', r.prev||''].join('|'); }).join(',');
 }
 
-// ── Escape helpers ────────────────────────────────────────────────────────────
+// ── Escape ────────────────────────────────────────────────────────────────────
+function escapeHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escapeAttr(s) { return String(s||'').replace(/"/g,'&quot;'); }
 
-function escapeHtml(str) {
-    return String(str || '')
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-function escapeAttr(str) { return String(str || '').replace(/"/g, '&quot;'); }
-
-// ── Dropdown loaders ──────────────────────────────────────────────────────────
-
+// ── Category dropdown ─────────────────────────────────────────────────────────
 function loadCategoryOptions(selectId) {
     return new Promise(function (resolve, reject) {
         $.getJSON('../../api/routes.php/price-monitoring?action=commodity_categories&agency_id=3')
             .done(function (res) {
                 var opts = '<option value="" hidden>Select Category</option>';
-                if (res.status === 'success' && Array.isArray(res.data)) {
+                if (res.status === 'success') {
                     res.data.forEach(function (c) {
                         opts += '<option value="' + c.category_id + '">' + c.category_name + '</option>';
                     });
                 }
                 $('#' + selectId).html(opts);
                 resolve();
-            })
-            .fail(reject);
+            }).fail(reject);
     });
 }
 
-function loadEstablishmentOptionsForEdit(selectId, selectedNames) {
-    return new Promise(function (resolve, reject) {
-        $.getJSON('../../api/routes.php/business', { length: -1 })
-            .done(function (res) {
-                var opts = '';
-                if (res.status === 'success' && Array.isArray(res.data)) {
-                    res.data.forEach(function (item) {
-                        var name = item.juridical && item.juridical.name ? item.juridical.name : '';
-                        if (name) opts += '<option value="' + name + '">' + name + '</option>';
-                    });
-                }
-                $('#' + selectId).html(opts);
+// ── Populate Edit table with pre-existing establishments ──────────────────────
+function populateEditEstTable(estEntries) {
+    var tbody = $('#editEstTableBody');
+    tbody.empty();
+    $('#editEstTableCount').hide();
+    $('#editEstTableEmpty').show();
 
-                if (!$('#' + selectId).hasClass('select2-hidden-accessible')) {
-                    $('#' + selectId).select2({
-                        theme: 'bootstrap4',
-                        width: '100%',
-                        placeholder: '-- Select Establishments --',
-                        allowClear: true,
-                        dropdownParent: $('#updateCommodityModal')
-                    });
-                }
+    // Wait until _allEstablishments + appendEstRow are ready (loaded by commodity-table.js)
+    var attempts = 0;
+    var interval = setInterval(function () {
+        attempts++;
+        if (typeof window.appendEstRow === 'function' && typeof window._allEstablishments !== 'undefined') {
+            clearInterval(interval);
 
-                $('#' + selectId).val(selectedNames).trigger('change');
-                resolve();
-            })
-            .fail(reject);
-    });
+            // Rebuild the editEstSelect options (exclude already-added names)
+            var addedNames = estEntries.map(function (e) { return e.name; });
+            var $sel = $('#editEstSelect');
+            $sel.empty().append('<option value=""></option>');
+            window._allEstablishments.forEach(function (name) {
+                if (addedNames.indexOf(name) === -1) {
+                    $sel.append('<option value="' + escapeAttr(name) + '">' + escapeHtml(name) + '</option>');
+                }
+            });
+            $sel.val(null).trigger('change');
+
+            // Append rows
+            estEntries.forEach(function (e) {
+                window.appendEstRow('editEstTableBody', 'editEstTableCount', 'editEstTableEmpty', e.name, e.srp, e.prev);
+            });
+
+        } else if (attempts > 30) {
+            clearInterval(interval);
+        }
+    }, 100);
 }
 
-// ── Establishment Prices tab ──────────────────────────────────────────────────
-
+// ── Establishment Prices tab (Tab 2) — mirrors data from Tab 1 table ──────────
 function loadEstablishmentPricesTab() {
-    if (!_editCommodityId) return;
+    var rows = [];
+    $('#editEstTableBody tr').each(function () {
+        var $r = $(this);
+        rows.push({
+            name: $r.data('est-name'),
+            srp:  $r.find('.est-srp-input').val().trim(),
+            prev: $r.find('.est-prev-input').val().trim()
+        });
+    });
 
-    var selectedNames = $('#updateCommodityEstablishments').val() || [];
-    var tbody         = $('#estPriceTableBody');
-    var emptyState    = $('#estPriceEmpty');
-    var tableWrap     = $('#estPriceTableWrap');
-    var badge         = $('#estPriceBadge');
-    var saveBtn       = $('#btnSaveAllPrices');
+    var tbody   = $('#estPriceTableBody');
+    var saveBtn = $('#btnSaveAllPrices');
 
-    if (selectedNames.length === 0) {
-        emptyState.show();
-        tableWrap.hide();
-        badge.hide();
+    if (rows.length === 0) {
+        $('#estPriceEmpty').show();
+        $('#estPriceTableWrap').hide();
+        $('#estPriceBadge').hide();
         saveBtn.prop('disabled', true);
         return;
     }
 
-    emptyState.hide();
-    tableWrap.show();
-    badge.text(selectedNames.length).show();
+    $('#estPriceEmpty').hide();
+    $('#estPriceTableWrap').show();
+    $('#estPriceBadge').text(rows.length).show();
     saveBtn.prop('disabled', false);
 
-    tbody.html(
-        '<tr><td colspan="3" class="text-center text-muted py-3">' +
-        '<i class="fas fa-spinner fa-spin mr-1"></i>Loading prices…</td></tr>'
-    );
+    // Fetch saved per-establishment prices to pre-fill
+    tbody.html('<tr><td colspan="3" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-1"></i>Loading…</td></tr>');
 
     fetch('../../api/routes.php/price-monitoring?action=commodity_establishments&commodity_id=' + _editCommodityId)
         .then(function (r) { return r.json(); })
         .then(function (result) {
             var saved = {};
-            if (result.status === 'success' && Array.isArray(result.data)) {
+            if (result.status === 'success') {
                 result.data.forEach(function (row) {
-                    var key = (row.establishment_name || '').trim();
-                    if (key) saved[key] = { srp: row.srp, prevailing_price: row.prevailing_price };
+                    saved[(row.establishment_name||'').trim()] = { srp: row.srp, prevailing_price: row.prevailing_price };
                 });
             }
-            renderEstablishmentPriceRows(selectedNames, saved);
+
+            tbody.empty();
+            rows.forEach(function (r) {
+                var s       = saved[r.name] || {};
+                // Prefer Tab 1 inputs if filled, else saved API values
+                var srpVal  = r.srp  !== '' ? r.srp  : (s.srp  !== undefined && s.srp  !== null ? s.srp  : '');
+                var prevVal = r.prev !== '' ? r.prev : (s.prevailing_price !== undefined && s.prevailing_price !== null ? s.prevailing_price : '');
+                var srpFmt  = srpVal  !== '' ? parseFloat(srpVal).toFixed(2)  : '';
+                var prevFmt = prevVal !== '' ? parseFloat(prevVal).toFixed(2) : '';
+
+                tbody.append(
+                    '<tr data-est-name="' + escapeAttr(r.name) + '">' +
+                    '<td class="pl-3" style="font-size:.875rem;">' + escapeHtml(r.name) + '</td>' +
+                    '<td><div class="input-group input-group-sm">' +
+                        '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.78rem;padding:4px 8px;">₱</span></div>' +
+                        '<input type="number" step="0.01" min="0" class="form-control est-price-inp est-srp-input" value="' + escapeAttr(srpFmt) + '" placeholder="0.00">' +
+                    '</div></td>' +
+                    '<td><div class="input-group input-group-sm">' +
+                        '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.78rem;padding:4px 8px;">₱</span></div>' +
+                        '<input type="number" step="0.01" min="0" class="form-control est-price-inp est-prev-input" value="' + escapeAttr(prevFmt) + '" placeholder="0.00">' +
+                    '</div></td>' +
+                    '</tr>'
+                );
+            });
         })
-        .catch(function () { renderEstablishmentPriceRows(selectedNames, {}); });
+        .catch(function () {
+            tbody.empty();
+            rows.forEach(function (r) {
+                tbody.append(
+                    '<tr data-est-name="' + escapeAttr(r.name) + '">' +
+                    '<td class="pl-3">' + escapeHtml(r.name) + '</td>' +
+                    '<td><div class="input-group input-group-sm"><div class="input-group-prepend"><span class="input-group-text" style="font-size:.78rem;padding:4px 8px;">₱</span></div><input type="number" step="0.01" min="0" class="form-control est-price-inp est-srp-input" placeholder="0.00"></div></td>' +
+                    '<td><div class="input-group input-group-sm"><div class="input-group-prepend"><span class="input-group-text" style="font-size:.78rem;padding:4px 8px;">₱</span></div><input type="number" step="0.01" min="0" class="form-control est-price-inp est-prev-input" placeholder="0.00"></div></td>' +
+                    '</tr>'
+                );
+            });
+        });
 }
 
-function renderEstablishmentPriceRows(names, saved) {
-    var tbody = $('#estPriceTableBody');
-    tbody.empty();
-
-    names.forEach(function (name) {
-        var s       = saved[name] || {};
-        var srpVal  = (s.srp !== undefined && s.srp !== null) ? s.srp : (_editCommoditySrp || '');
-        var prevVal = (s.prevailing_price !== undefined && s.prevailing_price !== null) ? s.prevailing_price : '';
-
-        var srpFmt  = srpVal  !== '' ? parseFloat(srpVal).toFixed(2)  : '';
-        var prevFmt = prevVal !== '' ? parseFloat(prevVal).toFixed(2) : '';
-
-        // No Action column — single Save All button at footer handles all rows
-        tbody.append(
-            '<tr data-est-name="' + escapeAttr(name) + '">' +
-            '<td class="pl-3"><span style="font-size:.875rem;">' + escapeHtml(name) + '</span></td>' +
-            '<td>' +
-                '<div class="input-group input-group-sm">' +
-                    '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.78rem;padding:4px 8px;">₱</span></div>' +
-                    '<input type="number" step="0.01" min="0" class="form-control est-price-input est-srp-input" ' +
-                           'value="' + escapeAttr(srpFmt) + '" placeholder="0.00">' +
-                '</div>' +
-            '</td>' +
-            '<td>' +
-                '<div class="input-group input-group-sm">' +
-                    '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.78rem;padding:4px 8px;">₱</span></div>' +
-                    '<input type="number" step="0.01" min="0" class="form-control est-price-input est-prev-input" ' +
-                           'value="' + escapeAttr(prevFmt) + '" placeholder="0.00">' +
-                '</div>' +
-            '</td>' +
-            '</tr>'
-        );
-    });
-}
-
-// ── Save All Prices (single button, Edit modal Tab 2) ─────────────────────────
-
+// ── Save All Prices ───────────────────────────────────────────────────────────
 function saveAllEstPrices() {
     var allRows = [];
     $('#estPriceTableBody tr').each(function () {
         var $r = $(this);
-        allRows.push({
-            name:             $r.data('est-name'),
-            srp:              $r.find('.est-srp-input').val().trim(),
-            prevailing_price: $r.find('.est-prev-input').val().trim()
-        });
+        allRows.push({ name: $r.data('est-name'), srp: $r.find('.est-srp-input').val().trim(), prev: $r.find('.est-prev-input').val().trim() });
     });
 
-    if (allRows.length === 0) {
-        Swal.fire('Nothing to Save', 'No establishment rows found.', 'info');
-        return;
-    }
-
-    var newEstField = serialiseEstablishments(allRows);
+    if (allRows.length === 0) { Swal.fire('Nothing to Save', 'No establishment rows found.', 'info'); return; }
 
     var $btn = $('#btnSaveAllPrices');
-    $btn.prop('disabled', true).html(
-        '<i class="fas fa-spinner fa-spin mr-1"></i>Saving…'
-    );
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Saving…');
 
     fetch('../../api/routes.php/commodity', {
         method: 'PUT',
@@ -207,51 +177,37 @@ function saveAllEstPrices() {
             unit_of_measure:  $('#updateCommodityUnit').val().trim(),
             srp:              $('#updateCommoditySrp').val(),
             prevailing_price: $('#updateCommodityPrevailingPrice').val(),
-            Establishments:   newEstField
+            Establishments:   serialiseEstablishments(allRows)
         })
     })
     .then(function (r) { return r.json(); })
     .then(function (res) {
-        $btn.prop('disabled', false).html(
-            '<i class="material-icons mr-1" style="font-size:18px;">save</i>Save All Prices'
-        );
+        $btn.prop('disabled', false).html('<i class="material-icons mr-1" style="font-size:18px;">save</i>Save All Prices');
         if (res.status === 'success') {
-            // Flash all rows green
             $('#estPriceTableBody tr').addClass('est-row-saved');
-            setTimeout(function () {
-                $('#estPriceTableBody tr').removeClass('est-row-saved');
-            }, 2000);
-            Swal.fire({ icon: 'success', title: 'Saved!', text: 'All establishment prices updated.', timer: 1400, showConfirmButton: false });
-            if ($.fn.DataTable.isDataTable('#tblCommodity')) {
-                $('#tblCommodity').DataTable().ajax.reload(null, false);
-            }
+            setTimeout(function () { $('#estPriceTableBody tr').removeClass('est-row-saved'); }, 2000);
+            Swal.fire({ icon:'success', title:'Saved!', text:'All establishment prices updated.', timer:1400, showConfirmButton:false });
+            if ($.fn.DataTable.isDataTable('#tblCommodity')) $('#tblCommodity').DataTable().ajax.reload(null, false);
         } else {
             Swal.fire('Error', res.message || 'Unable to save prices.', 'error');
         }
     })
     .catch(function (err) {
         console.error(err);
-        $btn.prop('disabled', false).html(
-            '<i class="material-icons mr-1" style="font-size:18px;">save</i>Save All Prices'
-        );
+        $btn.prop('disabled', false).html('<i class="material-icons mr-1" style="font-size:18px;">save</i>Save All Prices');
         Swal.fire('Error', 'Network error. Please try again.', 'error');
     });
 }
 
 // ── Open Edit modal ───────────────────────────────────────────────────────────
-
 $(document).on('click', '.btn-edit', function () {
     var row = $('#tblCommodity').DataTable().row($(this).closest('tr')).data();
-    if (!row || !row.id) {
-        Swal.fire('Error', 'Unable to retrieve Commodity ID.', 'error');
-        return;
-    }
+    if (!row || !row.id) { Swal.fire('Error', 'Unable to retrieve Commodity ID.', 'error'); return; }
 
     _editCommodityId  = row.id;
     _editCommoditySrp = row.srp || null;
 
-    var estEntries    = parseEstablishments(row.Establishments || '');
-    var selectedNames = estEntries.map(function (e) { return e.name; });
+    var estEntries = parseEstablishments(row.Establishments || '');
 
     $('#tab-info-link').tab('show');
     $('#estPriceBadge').hide();
@@ -260,18 +216,14 @@ $(document).on('click', '.btn-edit', function () {
 
     loadCategoryOptions('updateCommodityCategory')
         .then(function () {
-            return loadEstablishmentOptionsForEdit('updateCommodityEstablishments', selectedNames);
-        })
-        .then(function () {
             $('#updateCommodityId').val(row.id);
             $('#updateCommodityProductName').val(row.product_name);
             $('#updateCommodityCategory').val(row.category_id);
             $('#updateCommodityBrand').val(row.brand_name);
             $('#updateCommodityUnit').val(row.unit_of_measure);
             $('#updateCommoditySrp').val(row.srp !== null && row.srp !== undefined ? row.srp : '');
-            $('#updateCommodityPrevailingPrice').val(
-                row.prevailing_price !== null && row.prevailing_price !== undefined ? row.prevailing_price : ''
-            );
+            $('#updateCommodityPrevailingPrice').val(row.prevailing_price !== null && row.prevailing_price !== undefined ? row.prevailing_price : '');
+            populateEditEstTable(estEntries);
             $('#updateCommodityModal').appendTo('body').modal('show');
         })
         .catch(function (err) {
@@ -280,53 +232,31 @@ $(document).on('click', '.btn-edit', function () {
         });
 });
 
-// ── Switch to Establishment Prices tab → load table ───────────────────────────
-
+// ── Tab 2 shown → load price rows ────────────────────────────────────────────
 $('#tab-est-link').on('shown.bs.tab', function () {
     loadEstablishmentPricesTab();
 });
 
 // ── Reset modal on close ──────────────────────────────────────────────────────
-
 $('#updateCommodityModal').on('hidden.bs.modal', function () {
     document.getElementById('updateCommodityForm').reset();
-    $('#updateCommodityEstablishments').val(null).trigger('change');
-    $('#updateCommoditySubtitle').text('');
+    $('#editEstTableBody').empty();
+    $('#editEstTableCount').hide();
+    $('#editEstTableEmpty').show();
     $('#estPriceTableBody').empty();
     $('#estPriceBadge').hide();
+    $('#updateCommoditySubtitle').text('');
     _editCommodityId  = null;
     _editCommoditySrp = null;
 });
 
-// ── Save Commodity Info (Tab 1 button) ────────────────────────────────────────
-
+// ── Save Commodity Info (Tab 1) ───────────────────────────────────────────────
 function updateCommodity() {
-    var selectedNames = $('#updateCommodityEstablishments').val() || [];
-
-    // Preserve any prices already in Tab 2 rows (if visited)
-    var existingRows = [];
-    $('#estPriceTableBody tr').each(function () {
+    var rows = [];
+    $('#editEstTableBody tr').each(function () {
         var $r = $(this);
-        existingRows.push({
-            name:             $r.data('est-name'),
-            srp:              $r.find('.est-srp-input').val().trim(),
-            prevailing_price: $r.find('.est-prev-input').val().trim()
-        });
+        rows.push({ name: $r.data('est-name'), srp: $r.find('.est-srp-input').val().trim(), prev: $r.find('.est-prev-input').val().trim() });
     });
-
-    var estField;
-    if (existingRows.length > 0) {
-        var existingNames = existingRows.map(function (r) { return r.name; });
-        // Add newly selected names not yet in the table
-        selectedNames.forEach(function (n) {
-            if (existingNames.indexOf(n) === -1) existingRows.push({ name: n, srp: '', prevailing_price: '' });
-        });
-        // Remove de-selected names
-        existingRows = existingRows.filter(function (r) { return selectedNames.indexOf(r.name) !== -1; });
-        estField = serialiseEstablishments(existingRows);
-    } else {
-        estField = selectedNames.join(',');
-    }
 
     var data = {
         id:               $('#updateCommodityId').val(),
@@ -336,7 +266,7 @@ function updateCommodity() {
         unit_of_measure:  $('#updateCommodityUnit').val().trim(),
         srp:              $('#updateCommoditySrp').val(),
         prevailing_price: $('#updateCommodityPrevailingPrice').val(),
-        Establishments:   estField
+        Establishments:   serialiseEstablishments(rows)
     };
 
     if (!data.product_name || !data.category_id || !data.unit_of_measure) {
@@ -352,10 +282,10 @@ function updateCommodity() {
     .then(function (r) { return r.json(); })
     .then(function (res) {
         if (res.status === 'success') {
-            Swal.fire({ icon: 'success', title: 'Saved!', text: 'Commodity info updated.', timer: 1400, showConfirmButton: false })
+            Swal.fire({ icon:'success', title:'Saved!', text:'Commodity info updated.', timer:1400, showConfirmButton:false })
                 .then(function () {
                     $('#tab-est-link').tab('show');
-                    $('#tblCommodity').DataTable().ajax.reload(null, false);
+                    if ($.fn.DataTable.isDataTable('#tblCommodity')) $('#tblCommodity').DataTable().ajax.reload(null, false);
                 });
         } else {
             Swal.fire('Error', res.message || 'Unable to update commodity.', 'error');

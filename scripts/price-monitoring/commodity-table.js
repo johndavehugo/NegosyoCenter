@@ -1,17 +1,175 @@
+// commodity-table.js
 $(function () {
 
-    loadCategories();
-    loadEstablishmentsFromMSME();
+    var _allEstablishments = []; // { id, name } cached once
 
-    // Initialize Select2 on the Add modal establishment multi-select
-    $('#establishments').select2({
-        theme: 'bootstrap4',
-        width: '100%',
-        placeholder: '-- Select Establishments --',
-        allowClear: true,
-        dropdownParent: $('#addCommodityModal')
-    });
+    // ── Escape helpers ────────────────────────────────────────────────────────
+    function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function escAttr(s) { return String(s||'').replace(/"/g,'&quot;'); }
 
+    // ── Load categories into Add modal ────────────────────────────────────────
+    function loadCategories() {
+        $.getJSON('../../api/routes.php/price-monitoring?action=commodity_categories&agency_id=3', function (res) {
+            if (res.status !== 'success') return;
+            var html = '<option value="">-- Select Category --</option>';
+            (res.data || []).forEach(function (c) {
+                html += '<option value="' + c.category_id + '">' + c.category_name + '</option>';
+            });
+            $('#category_id').html(html);
+        });
+    }
+
+    // ── Load all establishments once, then init both Select2 pickers ─────────
+    function loadEstablishments(callback) {
+        $.ajax({
+            url: '../../api/routes.php/business',
+            type: 'GET',
+            data: { length: -1 },
+            dataType: 'json',
+            success: function (res) {
+                _allEstablishments = [];
+                if (res.status === 'success') {
+                    (res.data || []).forEach(function (item) {
+                        var name = item.juridical && item.juridical.name ? item.juridical.name : '';
+                        if (name) _allEstablishments.push(name);
+                    });
+                }
+                window._allEstablishments = _allEstablishments;
+                if (callback) callback();
+            }
+        });
+    }
+
+    // ── Init a single-select Select2 picker for adding establishments ─────────
+    function initEstSelect2(selectId, tableBodyId, countBadgeId, emptyMsgId) {
+        var $sel = $('#' + selectId);
+
+        // Populate options (exclude already-added)
+        function refreshOptions() {
+            var added = getAddedNames(tableBodyId);
+            $sel.empty().append('<option value=""></option>');
+            _allEstablishments.forEach(function (name) {
+                if (added.indexOf(name) === -1) {
+                    $sel.append('<option value="' + escAttr(name) + '">' + escHtml(name) + '</option>');
+                }
+            });
+            $sel.trigger('change.select2');
+        }
+
+        $sel.select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            placeholder: 'Search and select an establishment to add…',
+            allowClear: true,
+            dropdownParent: $sel.closest('.modal')
+        });
+
+        // On select — append a row and reset the dropdown
+        $sel.on('select2:select', function (e) {
+            var name = e.params.data.text;
+            appendEstRow(tableBodyId, countBadgeId, emptyMsgId, name, '', '');
+            // Remove the chosen option so it can't be double-added
+            $sel.find('option[value="' + escAttr(name) + '"]').remove();
+            $sel.val(null).trigger('change');
+            updateCountBadge(tableBodyId, countBadgeId, emptyMsgId);
+        });
+
+        // Expose refresh so we can call it when modal opens
+        $sel.data('refreshOptions', refreshOptions);
+    }
+
+    // ── Returns array of names already in a table body ────────────────────────
+    function getAddedNames(tableBodyId) {
+        var names = [];
+        $('#' + tableBodyId + ' tr').each(function () { names.push($(this).data('est-name')); });
+        return names;
+    }
+
+    // ── Append a row to the establishment table ───────────────────────────────
+    function appendEstRow(tableBodyId, countBadgeId, emptyMsgId, name, srpVal, prevVal) {
+        var tbody  = $('#' + tableBodyId);
+        var rowNum = tbody.find('tr').length + 1;
+
+        var $row = $(
+            '<tr data-est-name="' + escAttr(name) + '">' +
+            '<td class="text-center">' + rowNum + '</td>' +
+            '<td>' + escHtml(name) + '</td>' +
+            '<td>' +
+                '<div class="input-group input-group-sm">' +
+                    '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.78rem;">₱</span></div>' +
+                    '<input type="number" step="0.01" min="0" class="form-control est-price-input est-srp-input"' +
+                           ' value="' + escAttr(srpVal) + '" placeholder="0.00">' +
+                '</div>' +
+            '</td>' +
+            '<td>' +
+                '<div class="input-group input-group-sm">' +
+                    '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.78rem;">₱</span></div>' +
+                    '<input type="number" step="0.01" min="0" class="form-control est-price-input est-prev-input"' +
+                           ' value="' + escAttr(prevVal) + '" placeholder="0.00">' +
+                '</div>' +
+            '</td>' +
+            '<td class="text-center">' +
+                '<button type="button" class="btn-remove-est" title="Remove">' +
+                    '<i class="fas fa-times"></i>' +
+                '</button>' +
+            '</td>' +
+            '</tr>'
+        );
+
+        // Remove button
+        $row.find('.btn-remove-est').on('click', function () {
+            var removedName = $row.data('est-name');
+            $row.remove();
+            renumberRows(tableBodyId);
+            updateCountBadge(tableBodyId, countBadgeId, emptyMsgId);
+            // Put the name back into the dropdown
+            var $sel = tableBodyId === 'addEstTableBody' ? $('#addEstSelect') : $('#editEstSelect');
+            $sel.append('<option value="' + escAttr(removedName) + '">' + escHtml(removedName) + '</option>');
+            $sel.trigger('change.select2');
+        });
+
+        tbody.append($row);
+        updateCountBadge(tableBodyId, countBadgeId, emptyMsgId);
+    }
+
+    // Expose for use in commodity-update.js
+    window.appendEstRow = appendEstRow;
+    window.getAddedNames = getAddedNames;
+
+    // ── Re-number rows after a removal ───────────────────────────────────────
+    function renumberRows(tableBodyId) {
+        $('#' + tableBodyId + ' tr').each(function (i) {
+            $(this).find('td:first').text(i + 1);
+        });
+    }
+
+    // ── Update count badge and empty message ──────────────────────────────────
+    function updateCountBadge(tableBodyId, countBadgeId, emptyMsgId) {
+        var count = $('#' + tableBodyId + ' tr').length;
+        if (count > 0) {
+            $('#' + countBadgeId).text(count).show();
+            $('#' + emptyMsgId).hide();
+        } else {
+            $('#' + countBadgeId).hide();
+            $('#' + emptyMsgId).show();
+        }
+    }
+
+    // ── Collect rows from a table body → pipe-encoded string ─────────────────
+    function collectEstRows(tableBodyId) {
+        var rows = [];
+        $('#' + tableBodyId + ' tr').each(function () {
+            var $r = $(this);
+            rows.push({
+                name: $r.data('est-name'),
+                srp:  $r.find('.est-srp-input').val().trim(),
+                prev: $r.find('.est-prev-input').val().trim()
+            });
+        });
+        return rows;
+    }
+
+    // ── DataTable ─────────────────────────────────────────────────────────────
     const table = $('#tblCommodity').DataTable({
         responsive: true,
         lengthChange: true,
@@ -21,9 +179,9 @@ $(function () {
         ajax: {
             url: '../../api/routes.php/commodity',
             type: 'GET',
-            dataSrc: function (response) {
-                if (response.status === 'success') return response.data || [];
-                Swal.fire('Error', response.message || 'Unable to load commodities.', 'error');
+            dataSrc: function (res) {
+                if (res.status === 'success') return res.data || [];
+                Swal.fire('Error', res.message || 'Unable to load commodities.', 'error');
                 return [];
             },
             error: function (xhr) {
@@ -37,311 +195,112 @@ $(function () {
             { data: 'category_name' },
             { data: 'brand_name' },
             { data: 'unit_of_measure' },
-            {
-                data: 'srp',
-                render: function (data) {
-                    return data ? '₱' + parseFloat(data).toLocaleString('en-PH', { minimumFractionDigits: 2 }) : 'N/A';
-                }
-            },
-            {
-                data: 'prevailing_price',
-                render: function (data) {
-                    return data ? '₱' + parseFloat(data).toLocaleString('en-PH', { minimumFractionDigits: 2 }) : 'N/A';
-                }
-            },
-            {
-                data: 'Establishments',
-                render: function (data) {
-                    if (!data) return '—';
-                    // Strip pipe-encoded prices, show only names
-                    var names = data.split(',').map(function (chunk) {
-                        return chunk.split('|')[0].trim();
-                    }).filter(Boolean);
-                    return names.length ? names.join(', ') : '—';
-                }
-            },
+            { data: 'srp', render: function (d) { return d ? '₱' + parseFloat(d).toLocaleString('en-PH',{minimumFractionDigits:2}) : 'N/A'; } },
+            { data: 'prevailing_price', render: function (d) { return d ? '₱' + parseFloat(d).toLocaleString('en-PH',{minimumFractionDigits:2}) : 'N/A'; } },
+            { data: 'Establishments', render: function (d) {
+                if (!d) return '—';
+                var names = d.split(',').map(function (c) { return c.split('|')[0].trim(); }).filter(Boolean);
+                return names.length ? names.join(', ') : '—';
+            }},
             { data: 'agency_name' },
-            {
-                data: null,
-                orderable: false,
-                searchable: false,
-                render: function (data, type, row) {
-                    return `
-                        <button class="btn btn-sm btn-primary btn-edit" data-id="${row.id}">Edit</button>
-                        <button class="btn btn-sm btn-danger btn-delete" data-id="${row.id}">Delete</button>
-                    `;
-                }
-            }
+            { data: null, orderable: false, searchable: false, render: function (d, t, row) {
+                return '<button class="btn btn-sm btn-primary btn-edit mr-1" data-id="' + row.id + '">Edit</button>' +
+                       '<button class="btn btn-sm btn-danger btn-delete" data-id="' + row.id + '">Delete</button>';
+            }}
         ]
     });
 
-    // ── Reset Add modal on open ───────────────────────────────────────────────
+    // Expose table globally
+    window._commodityTable = table;
+
+    // ── Init both Select2 pickers after establishments load ───────────────────
+    loadCategories();
+    loadEstablishments(function () {
+        initEstSelect2('addEstSelect', 'addEstTableBody', 'addEstTableCount', 'addEstTableEmpty');
+        initEstSelect2('editEstSelect', 'editEstTableBody', 'editEstTableCount', 'editEstTableEmpty');
+    });
+
+    // ── Open Add modal — reset ────────────────────────────────────────────────
     $('#btn_add_commodity').on('click', function () {
-        $('#product_name').val('');
+        $('#product_name, #brand_name, #unit_of_measure').val('');
         $('#category_id').val('');
-        $('#brand_name').val('');
-        $('#unit_of_measure').val('');
-        $('#establishments').val(null).trigger('change');
-        $('#addEstPriceTableBody').empty();
-        $('#addEstPriceEmpty').show();
-        $('#addEstPriceTableWrap').hide();
-        $('#addEstBadge').hide();
-        // Always start on Tab 1
-        $('#add-tab-info-link').tab('show');
-    });
-
-    // ── "Next: Set Prices" button — validate then switch to Tab 2 ────────────
-    $('#btnNextToEstPrices').on('click', function () {
-        var productName   = $('#product_name').val().trim();
-        var categoryId    = $('#category_id').val();
-        var unitOfMeasure = $('#unit_of_measure').val().trim();
-
-        if (!productName) {
-            Swal.fire('Required Field', 'Please enter the Commodity Name.', 'warning');
-            return;
-        }
-        if (!categoryId) {
-            Swal.fire('Required Field', 'Please select a Category.', 'warning');
-            return;
-        }
-        if (!unitOfMeasure) {
-            Swal.fire('Required Field', 'Please enter the Unit of Measure.', 'warning');
-            return;
-        }
-
-        // Switch to Tab 2 — tab shown event will render the table
-        $('#add-tab-est-link').tab('show');
-    });
-
-    // ── Render establishment price rows when Add Tab 2 is shown ──────────────
-    $('#add-tab-est-link').on('shown.bs.tab', function () {
-        var selectedNames = $('#establishments').val() || [];
-        var tbody         = $('#addEstPriceTableBody');
-        var emptyState    = $('#addEstPriceEmpty');
-        var tableWrap     = $('#addEstPriceTableWrap');
-        var badge         = $('#addEstBadge');
-
-        if (selectedNames.length === 0) {
-            emptyState.show();
-            tableWrap.hide();
-            badge.hide();
-            return;
-        }
-
-        emptyState.hide();
-        tableWrap.show();
-        badge.text(selectedNames.length).show();
-
-        // Only rebuild rows for names not already in the table
-        var existingNames = [];
-        tbody.find('tr').each(function () {
-            existingNames.push($(this).data('est-name'));
-        });
-
-        // Remove rows for de-selected names
-        tbody.find('tr').each(function () {
-            var n = $(this).data('est-name');
-            if (selectedNames.indexOf(n) === -1) $(this).remove();
-        });
-
-        // Add rows for newly selected names
-        selectedNames.forEach(function (name) {
-            if (existingNames.indexOf(name) !== -1) return; // already there
-            var row = $(
-                '<tr data-est-name="' + escAttr(name) + '">' +
-                '<td class="pl-3"><span style="font-size:.875rem;">' + escHtml(name) + '</span></td>' +
-                '<td>' +
-                    '<div class="input-group input-group-sm">' +
-                        '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.78rem;padding:4px 8px;">₱</span></div>' +
-                        '<input type="number" step="0.01" min="0" class="form-control est-price-input est-srp-input" placeholder="0.00">' +
-                    '</div>' +
-                '</td>' +
-                '<td>' +
-                    '<div class="input-group input-group-sm">' +
-                        '<div class="input-group-prepend"><span class="input-group-text" style="font-size:.78rem;padding:4px 8px;">₱</span></div>' +
-                        '<input type="number" step="0.01" min="0" class="form-control est-price-input est-prev-input" placeholder="0.00">' +
-                    '</div>' +
-                '</td>' +
-                '</tr>'
-            );
-            tbody.append(row);
-        });
-
-        badge.text(tbody.find('tr').length);
-    });
-
-    // ── "Back" button on Add Tab 2 ────────────────────────────────────────────
-    $('#btnBackToInfo').on('click', function () {
-        $('#add-tab-info-link').tab('show');
-    });
-
-    // ── Delete ────────────────────────────────────────────────────────────────
-    $(document).on('click', '.btn-delete', function () {
-        const id = $(this).data('id');
-        Swal.fire({
-            title: 'Delete Commodity?',
-            text: 'This cannot be undone.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (!result.isConfirmed) return;
-            fetch('../../api/routes.php/commodity?id=' + encodeURIComponent(id), { method: 'DELETE' })
-                .then(r => r.json())
-                .then(res => {
-                    if (res.status === 'success') {
-                        Swal.fire('Deleted!', res.message || 'Commodity deleted successfully.', 'success');
-                        table.ajax.reload(null, false);
-                    } else {
-                        Swal.fire('Error', res.message || 'Unable to delete commodity.', 'error');
-                    }
-                })
-                .catch(() => Swal.fire('Error', 'Network error.', 'error'));
-        });
+        $('#addEstTableBody').empty();
+        $('#addEstTableCount').hide();
+        $('#addEstTableEmpty').show();
+        // Refresh dropdown options (all unchecked)
+        var refresh = $('#addEstSelect').data('refreshOptions');
+        if (refresh) refresh();
+        else { $('#addEstSelect').val(null).trigger('change'); }
     });
 
     // ── Save Commodity (Add) ──────────────────────────────────────────────────
     $('#btnSaveCommodity').on('click', function () {
-        const productName   = $('#product_name').val().trim();
-        const categoryId    = $('#category_id').val() || '';
-        const brandName     = $('#brand_name').val().trim();
-        const unitOfMeasure = $('#unit_of_measure').val().trim();
+        var productName   = $('#product_name').val().trim();
+        var categoryId    = $('#category_id').val() || '';
+        var brandName     = $('#brand_name').val().trim();
+        var unitOfMeasure = $('#unit_of_measure').val().trim();
 
-        if (!productName) { Swal.fire('Required Field', 'Please enter the Commodity Name.', 'warning'); return; }
-        if (!categoryId)  { Swal.fire('Required Field', 'Please select a Category.', 'warning'); return; }
-        if (!unitOfMeasure) { Swal.fire('Required Field', 'Please enter the Unit of Measure.', 'warning'); return; }
+        if (!productName)   { Swal.fire('Required', 'Please enter the Commodity Name.', 'warning'); return; }
+        if (!categoryId)    { Swal.fire('Required', 'Please select a Category.', 'warning'); return; }
+        if (!unitOfMeasure) { Swal.fire('Required', 'Please enter the Unit of Measure.', 'warning'); return; }
 
-        // Collect establishment prices from Tab 2 table (pipe-encoded format)
-        var estRows = [];
-        $('#addEstPriceTableBody tr').each(function () {
-            var $r   = $(this);
-            var name = $r.data('est-name');
-            var srp  = $r.find('.est-srp-input').val().trim();
-            var prev = $r.find('.est-prev-input').val().trim();
-            if (name) estRows.push({ name: name, srp: srp, prevailing_price: prev });
-        });
-
-        // Build Establishments field
-        var establishments = '';
-        if (estRows.length > 0) {
-            establishments = estRows.map(function (e) {
-                return [e.name, e.srp || '', e.prevailing_price || ''].join('|');
-            }).join(',');
-        } else {
-            // No Tab 2 visited — just store selected names
-            var sel = $('#establishments').val() || [];
-            establishments = sel.join(',');
-        }
-
-        // Use the first row's SRP/prevailing as the commodity-level defaults
-        var commoditySrp      = estRows.length > 0 && estRows[0].srp      ? estRows[0].srp      : '';
-        var commodityPrevailing = estRows.length > 0 && estRows[0].prevailing_price ? estRows[0].prevailing_price : '';
-
-        const commodityData = {
-            product_name:     productName,
-            category_id:      categoryId,
-            brand_name:       brandName,
-            unit_of_measure:  unitOfMeasure,
-            srp:              commoditySrp,
-            prevailing_price: commodityPrevailing,
-            Establishments:   establishments
-        };
+        var estRows = collectEstRows('addEstTableBody');
+        var estField = estRows.map(function (r) { return [r.name, r.srp, r.prev].join('|'); }).join(',');
+        var firstSrp  = estRows.length && estRows[0].srp  ? estRows[0].srp  : '';
+        var firstPrev = estRows.length && estRows[0].prev ? estRows[0].prev : '';
 
         $.ajax({
             url: '../../api/routes.php/commodity',
             type: 'POST',
             contentType: 'application/json',
             dataType: 'json',
-            data: JSON.stringify(commodityData),
-            success: function (response) {
-                if (response.status !== 'success') {
-                    Swal.fire('Error', response.message || 'Unable to save commodity.', 'error');
-                    return;
-                }
-                Swal.fire('Success', response.message || 'Commodity added successfully.', 'success');
+            data: JSON.stringify({
+                product_name:     productName,
+                category_id:      categoryId,
+                brand_name:       brandName,
+                unit_of_measure:  unitOfMeasure,
+                srp:              firstSrp,
+                prevailing_price: firstPrev,
+                Establishments:   estField
+            }),
+            success: function (res) {
+                if (res.status !== 'success') { Swal.fire('Error', res.message || 'Unable to save.', 'error'); return; }
+                Swal.fire('Success', res.message || 'Commodity added.', 'success');
                 $('#addCommodityModal').modal('hide');
                 table.ajax.reload(null, false);
             },
             error: function (xhr) {
-                console.error(xhr.responseText);
-                let message = 'Unable to save commodity.';
-                try { const e = JSON.parse(xhr.responseText); if (e.message) message = e.message; } catch (_) {}
-                Swal.fire('Error', message, 'error');
+                var msg = 'Unable to save commodity.';
+                try { var e = JSON.parse(xhr.responseText); if (e.message) msg = e.message; } catch(_) {}
+                Swal.fire('Error', msg, 'error');
             }
         });
     });
 
     // ── Reset Add modal on close ──────────────────────────────────────────────
     $('#addCommodityModal').on('hidden.bs.modal', function () {
-        $('#product_name').val('');
+        $('#product_name, #brand_name, #unit_of_measure').val('');
         $('#category_id').val('');
-        $('#brand_name').val('');
-        $('#unit_of_measure').val('');
-        $('#establishments').val(null).trigger('change');
-        $('#addEstPriceTableBody').empty();
-        $('#addEstPriceEmpty').show();
-        $('#addEstPriceTableWrap').hide();
-        $('#addEstBadge').hide();
-        $('#add-tab-info-link').tab('show');
+        $('#addEstTableBody').empty();
+        $('#addEstTableCount').hide();
+        $('#addEstTableEmpty').show();
     });
 
-    // ── Load categories ───────────────────────────────────────────────────────
-    function loadCategories() {
-        $.ajax({
-            url: '../../api/routes.php/price-monitoring?action=commodity_categories&agency_id=3',
-            type: 'GET',
-            dataType: 'json',
-            success: function (response) {
-                if (response.status !== 'success') {
-                    Swal.fire('Error', response.message || 'Unable to load DOE categories.', 'error');
-                    return;
-                }
-                let html = '<option value="">-- Select Category --</option>';
-                $.each(response.data || [], function (i, item) {
-                    html += `<option value="${item.category_id}">${item.category_name}</option>`;
-                });
-                $('#category_id').html(html);
-            },
-            error: function (xhr) {
-                console.error(xhr.responseText);
-                Swal.fire('Error', 'Unable to load DOE categories.', 'error');
-            }
+    // ── Delete ────────────────────────────────────────────────────────────────
+    $(document).on('click', '.btn-delete', function () {
+        var id = $(this).data('id');
+        Swal.fire({ title:'Delete Commodity?', text:'This cannot be undone.', icon:'warning',
+            showCancelButton:true, confirmButtonColor:'#d33', cancelButtonColor:'#3085d6', confirmButtonText:'Yes, delete it!'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+            fetch('../../api/routes.php/commodity?id=' + encodeURIComponent(id), { method:'DELETE' })
+                .then(function (r) { return r.json(); })
+                .then(function (res) {
+                    if (res.status === 'success') { Swal.fire('Deleted!', res.message || 'Deleted.', 'success'); table.ajax.reload(null, false); }
+                    else Swal.fire('Error', res.message || 'Unable to delete.', 'error');
+                })
+                .catch(function () { Swal.fire('Error', 'Network error.', 'error'); });
         });
-    }
-
-    // ── Load establishments ───────────────────────────────────────────────────
-    function loadEstablishmentsFromMSME() {
-        $.ajax({
-            url: '../../api/routes.php/business',
-            type: 'GET',
-            data: { length: -1 },
-            dataType: 'json',
-            success: function (response) {
-                if (response.status !== 'success') {
-                    Swal.fire('Error', response.message || 'Unable to load establishments.', 'error');
-                    return;
-                }
-                let html = '';
-                $.each(response.data || [], function (i, item) {
-                    const name = item.juridical && item.juridical.name ? item.juridical.name : '';
-                    if (name) html += `<option value="${name}">${name}</option>`;
-                });
-                $('#establishments').html(html).trigger('change');
-                $('#updateCommodityEstablishments').html(html);
-            },
-            error: function (xhr) {
-                console.error(xhr.responseText);
-                Swal.fire('Error', 'Unable to load establishments.', 'error');
-            }
-        });
-    }
-
-    // ── Tiny escape helpers (used in row building above) ─────────────────────
-    function escHtml(str) {
-        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-    function escAttr(str) { return String(str || '').replace(/"/g,'&quot;'); }
+    });
 
 });
