@@ -43,11 +43,14 @@
         </li>
 
         <!-- Price Monitoring -->
-        <li id="module_price_monitoring" class="nav-item has-treeview">
+        <?php
+            $pm_pages = ['price-monitoring.php'];
+            $pm_active = in_array(basename($_SERVER['PHP_SELF']), $pm_pages);
+        ?>
+        <li id="module_price_monitoring" class="nav-item has-treeview <?= $pm_active ? 'menu-open' : '' ?>">
 
-          <a href="#" class="nav-link">
+          <a href="../price-monitoring/price-monitoring.php" class="nav-link <?= $pm_active ? 'active' : '' ?>">
             <i class="nav-icon fas fa-tags"></i>
-
             <p>
               PRICE MONITORING
               <i class="right fas fa-angle-left"></i>
@@ -57,36 +60,41 @@
           <ul class="nav nav-treeview">
 
             <li class="nav-item">
-              <a href="../price-monitoring/price-monitoring.php" class="nav-link">
-                
+              <a href="../price-monitoring/price-monitoring.php"
+                 class="nav-link pm-sub-link" data-pm-tab="pm">
+                <i class="fas fa-fw fa-list-alt nav-icon" style="font-size:13px;"></i>
                 <p>Price Monitoring</p>
               </a>
             </li>
 
             <li class="nav-item">
-              <a href="../price-monitoring/category.php" class="nav-link">
-                <i class=""></i>
+              <a href="../price-monitoring/price-monitoring.php"
+                 class="nav-link pm-sub-link" data-pm-tab="categories">
+                <i class="fas fa-fw fa-layer-group nav-icon" style="font-size:13px;"></i>
                 <p>Categories</p>
               </a>
             </li>
 
             <li class="nav-item">
-              <a href="../price-monitoring/commodity.php" class="nav-link">
-                <i class=""></i>
+              <a href="../price-monitoring/price-monitoring.php"
+                 class="nav-link pm-sub-link" data-pm-tab="commodities">
+                <i class="fas fa-fw fa-boxes nav-icon" style="font-size:13px;"></i>
                 <p>Commodities</p>
               </a>
             </li>
 
             <li class="nav-item">
-              <a href="../price-monitoring/Agency.php" class="nav-link">
-                <i class=""></i>
+              <a href="../price-monitoring/price-monitoring.php"
+                 class="nav-link pm-sub-link" data-pm-tab="agencies">
+                <i class="fas fa-fw fa-building nav-icon" style="font-size:13px;"></i>
                 <p>Agencies</p>
               </a>
             </li>
 
             <li class="nav-item">
-              <a href="../price-monitoring/price-view/price-view.php" class="nav-link">
-                <i class=""></i>
+              <a href="../price-monitoring/price-view/price-view.php"
+                 class="nav-link <?= (basename($_SERVER['PHP_SELF']) === 'price-view.php') ? 'active' : '' ?>">
+                <i class="fas fa-fw fa-store nav-icon" style="font-size:13px;"></i>
                 <p>Price View</p>
               </a>
             </li>
