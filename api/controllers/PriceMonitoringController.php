@@ -1095,15 +1095,18 @@ class PriceMonitoringController
                 (
                     commodity_id,
                     monitored_by_agency_id,
+                    prevailing_price,
                     status,
+                    is_voided,
                     monitored_at
                 )
-                VALUES (?, ?, ?, NOW())
+                VALUES (?, ?, ?, ?, 0, NOW())
             ");
 
             $stmt->execute([
                 $commodityId,
                 $agencyId,
+                $prevailingPrice,
                 $status
             ]);
 
@@ -1209,6 +1212,7 @@ class PriceMonitoringController
 
             $this->con->beginTransaction();
 
+            // Update the commodity's current SRP / prevailing price
             $stmt = $this->con->prepare("
                 UPDATE commodities
                 SET
@@ -1223,58 +1227,34 @@ class PriceMonitoringController
                 $commodityId
             ]);
 
-            $checkStmt = $this->con->prepare("
-                SELECT id 
-                FROM price_logs 
-                WHERE commodity_id = ? 
-                ORDER BY id DESC 
-                LIMIT 1
+            // Always INSERT a new price_log row — never overwrite.
+            // This preserves full history; wrong entries can be voided later.
+            $stmt = $this->con->prepare("
+                INSERT INTO price_logs (
+                    commodity_id,
+                    monitored_by_agency_id,
+                    prevailing_price,
+                    status,
+                    is_voided,
+                    monitored_at
+                ) VALUES (?, ?, ?, ?, 0, NOW())
             ");
-            $checkStmt->execute([$commodityId]);
-            $existingLog = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($existingLog) {
-                $stmt = $this->con->prepare("
-                    UPDATE price_logs
-                    SET
-                        monitored_by_agency_id = ?,
-                        status = ?,
-                        monitored_at = NOW()
-                    WHERE id = ?
-                ");
+            $stmt->execute([
+                $commodityId,
+                $agencyId,
+                $prevailingPrice,
+                $status
+            ]);
 
-                $stmt->execute([
-                    $agencyId,
-                    $status,
-                    $existingLog['id']
-                ]);
-
-                $logId = (int)$existingLog['id'];
-            } else {
-                $stmt = $this->con->prepare("
-                    INSERT INTO price_logs (
-                        commodity_id,
-                        monitored_by_agency_id,
-                        status,
-                        monitored_at
-                    ) VALUES (?, ?, ?, NOW())
-                ");
-
-                $stmt->execute([
-                    $commodityId,
-                    $agencyId,
-                    $status
-                ]);
-
-                $logId = (int)$this->con->lastInsertId();
-            }
+            $logId = (int)$this->con->lastInsertId();
 
             $this->con->commit();
 
             $updated = $this->getPriceRecord($logId);
 
             return $this->success(
-                'Price record and SRP updated successfully.',
+                'Price recorded successfully.',
                 $this->formatPriceRecord($updated)
             );
         } catch (PDOException $e) {
@@ -2044,6 +2024,139 @@ class PriceMonitoringController
             );
         } catch (PDOException $e) {
             error_log('deletePrice: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: ' . $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * Returns the price history for a commodity, newest-first.
+     * Only non-voided rows are returned (voided = encoder mistakes).
+     * Supports range: 7d, 30d, 90d, all
+     */
+    public function getPriceHistory($commodityId, $range = '30d')
+    {
+        $commodityId = $this->id($commodityId);
+
+        if ($commodityId === null) {
+            return $this->error('Commodity ID is required.', []);
+        }
+
+        $allowed = ['7d', '30d', '90d', 'all'];
+        if (!in_array($range, $allowed, true)) {
+            $range = '30d';
+        }
+
+        $dateFilter = '';
+        if ($range !== 'all') {
+            $days = (int) filter_var($range, FILTER_SANITIZE_NUMBER_INT);
+            $dateFilter = "AND p.monitored_at >= DATE_SUB(NOW(), INTERVAL {$days} DAY)";
+        }
+
+        try {
+            $stmt = $this->con->prepare("
+                SELECT
+                    p.id,
+                    p.commodity_id,
+                    p.prevailing_price,
+                    c.srp,
+                    p.status,
+                    p.is_voided,
+                    p.void_reason,
+                    p.monitored_at,
+                    a.name AS agency_name,
+                    a.code AS agency_code
+                FROM price_logs p
+                LEFT JOIN commodities c
+                    ON p.commodity_id = c.id
+                LEFT JOIN agencies a
+                    ON p.monitored_by_agency_id = a.id
+                WHERE p.commodity_id = ?
+                    AND p.is_voided = 0
+                    {$dateFilter}
+                ORDER BY p.monitored_at ASC
+            ");
+
+            $stmt->execute([$commodityId]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $history = array_map(function ($row) {
+                return [
+                    'id'               => (int)$row['id'],
+                    'commodity_id'     => (int)$row['commodity_id'],
+                    'prevailing_price' => $row['prevailing_price'] !== null
+                                            ? (float)$row['prevailing_price'] : null,
+                    'srp'              => $row['srp'] !== null
+                                            ? (float)$row['srp'] : null,
+                    'status'           => strtoupper((string)($row['status'] ?? 'ACTIVE')),
+                    'monitored_at'     => $row['monitored_at'],
+                    'agency_name'      => $row['agency_name'],
+                    'agency_code'      => $row['agency_code']
+                ];
+            }, $rows);
+
+            return $this->success('', $history);
+        } catch (PDOException $e) {
+            error_log('getPriceHistory: ' . $e->getMessage());
+
+            return $this->error(
+                'Database error: ' . $e->getMessage(), []
+            );
+        }
+    }
+
+    /**
+     * Marks a price_log entry as voided (encoder mistake correction).
+     * The row stays in the DB for audit but is excluded from history/display.
+     */
+    public function voidPrice(array $data)
+    {
+        $id = $this->id(
+            $this->input($data, ['id'])
+        );
+
+        $reason = trim($this->input($data, ['reason', 'void_reason'], ''));
+
+        if ($id === null) {
+            return $this->error('Invalid price record ID.');
+        }
+
+        if ($reason === '') {
+            return $this->error('A reason is required to void a price entry.');
+        }
+
+        try {
+            $stmt = $this->con->prepare("
+                SELECT id, is_voided
+                FROM price_logs
+                WHERE id = ?
+                LIMIT 1
+            ");
+            $stmt->execute([$id]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$row) {
+                return $this->error('Price record not found.');
+            }
+
+            if ((int)$row['is_voided'] === 1) {
+                return $this->error('This entry is already voided.');
+            }
+
+            $stmt = $this->con->prepare("
+                UPDATE price_logs
+                SET
+                    is_voided   = 1,
+                    void_reason = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([$reason, $id]);
+
+            return $this->success('Price entry voided successfully.');
+        } catch (PDOException $e) {
+            error_log('voidPrice: ' . $e->getMessage());
 
             return $this->error(
                 'Database error: ' . $e->getMessage()

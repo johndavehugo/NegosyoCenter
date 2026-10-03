@@ -331,8 +331,6 @@
                                             <th>Brand / Unit</th>
                                             <th>Establishments</th>
                                             <th>Agency</th>
-                                            <th>SRP (₱)</th>
-                                            <th>Prevailing Price (₱)</th>
                                             <th>Status</th>
                                             <th>Options</th>
                                         </tr>
@@ -482,20 +480,19 @@
      MODALS — shared across all tabs
 ═══════════════════════════════════════════════════════════════════ -->
 
-<!-- ── Price (add / edit) modal ─────────────────────────────────────── -->
+<!-- ── Price (set / record new) modal ───────────────────────────────── -->
 <div class="modal fade" id="priceModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content msme-modal-content">
             <div class="modal-header msme-modal-header">
                 <h5 class="modal-title d-flex align-items-center">
                     <i class="material-icons text-primary mr-2" style="font-size:22px;">local_offer</i>
-                    <span id="priceModalLabel">Set Price &amp; Status</span>
+                    <span id="priceModalLabel">Set Price</span>
                 </h5>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <form id="priceForm">
                 <div class="modal-body">
-                    <input type="hidden" id="priceId">
                     <input type="hidden" id="priceCommodityId">
                     <div class="form-group">
                         <label class="msme-label">SRP (₱) <span class="text-danger">*</span></label>

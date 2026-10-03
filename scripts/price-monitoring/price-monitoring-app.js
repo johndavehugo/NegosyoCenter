@@ -60,8 +60,6 @@ window.PM = (function ($) {
                     data: null,
                     render: function (d, t, row) { return row.agency_name || row.agency_code || '—'; }
                 },
-                { data: 'srp', render: function (d) { return d ? peso(d) : '—'; } },
-                { data: 'prevailing_price', render: function (d) { return d ? peso(d) : '—'; } },
                 {
                     data: 'status',
                     render: function (d) {
@@ -75,9 +73,21 @@ window.PM = (function ($) {
                     orderable: false,
                     render: function (d, t, row) {
                         if (!row.id) {
-                            return '<button class="btn btn-success btn-sm btn-add-price" data-id="' + row.commodity_id + '"><i class="fas fa-plus"></i></button>';
+                            /* No log entry yet — show Add button only */
+                            return '<div class="d-flex justify-content-center" style="gap:5px;">' +
+                                   '<button class="btn btn-sm btn-add-price" data-id="' + row.commodity_id + '" title="Set Price" ' +
+                                   'style="background:#e6f4ea;color:#1e7e34;border:none;border-radius:6px;padding:4px 9px;transition:background .15s;"' +
+                                   ' onmouseover="this.style.background=\'#c3e6cb\'" onmouseout="this.style.background=\'#e6f4ea\'">' +
+                                   '<i class="material-icons" style="font-size:16px;vertical-align:middle;">add_circle</i></button>' +
+                                   '</div>';
                         }
-                        return '<button class="btn btn-primary btn-sm btn-edit-price" data-id="' + row.id + '"><i class="fas fa-edit"></i></button>';
+                        /* Log entry exists — show Edit button only */
+                        return '<div class="d-flex justify-content-center" style="gap:5px;">' +
+                               '<button class="btn btn-sm btn-edit-price" data-id="' + row.commodity_id + '" title="Record New Price" ' +
+                               'style="background:#e8f0fe;color:#1a73e8;border:none;border-radius:6px;padding:4px 9px;transition:background .15s;"' +
+                               ' onmouseover="this.style.background=\'#c5d8fb\'" onmouseout="this.style.background=\'#e8f0fe\'">' +
+                               '<i class="material-icons" style="font-size:16px;vertical-align:middle;">price_change</i></button>' +
+                               '</div>';
                     }
                 }
             ]
@@ -94,30 +104,29 @@ window.PM = (function ($) {
             _priceTable.column(1).search(this.value).draw();
         });
 
-        /* Price modal — add */
+        /* Price modal — add (no log entry yet) */
         $(document).on('click', '.btn-add-price', function () {
             var row = _priceTable.row($(this).closest('tr')).data();
             $('#priceForm')[0].reset();
-            $('#priceId').val('');
             $('#priceCommodityId').val($(this).data('id'));
             $('#priceSrp').val(row.srp || '');
             $('#pricePrevailingPrice').val(row.prevailing_price || '');
             $('#priceStatus').val('ACTIVE');
-            $('#priceModalLabel').text('Add Price / Set Status');
+            $('#priceModalLabel').text('Set Price');
             $('#priceModal').appendTo('body').modal('show');
         });
 
-        /* Price modal — edit */
+        /* Price modal — record new price (log entry exists; pre-fill current values) */
         $(document).on('click', '.btn-edit-price', function () {
             var row = _priceTable.row($(this).closest('tr')).data();
             if (!row) { Swal.fire('Error', 'Unable to retrieve row data.', 'error'); return; }
             $('#priceForm')[0].reset();
-            $('#priceId').val(row.id || 0);
+            /* Always a new entry — no id passed */
             $('#priceCommodityId').val(row.commodity_id || '');
             $('#priceSrp').val(row.srp != null ? row.srp : '');
             $('#pricePrevailingPrice').val(row.prevailing_price != null ? row.prevailing_price : '');
             $('#priceStatus').val(String(row.status || 'ACTIVE').toUpperCase());
-            $('#priceModalLabel').text('Edit SRP, Prevailing Price & Status');
+            $('#priceModalLabel').text('Record New Price');
             $('#priceModal').appendTo('body').modal('show');
         });
 
@@ -175,22 +184,19 @@ window.PM = (function ($) {
         $('#selected_agency_name').text(name);
     }
 
-    /* Public: save price (add / edit) */
+    /* Public: save price — always POSTs a new log entry (INSERT-always) */
     function savePrice() {
-        var id = $('#priceId').val();
-        var isEdit = id !== '' && id !== null && id !== '0' && Number(id) !== 0;
         var data = {
-            commodity_id: $('#priceCommodityId').val(),
-            agency_id: $('#price_agency').val(),
-            monitored_by_agency_id: $('#price_agency').val(),
-            srp: $('#priceSrp').val(),
-            prevailing_price: $('#pricePrevailingPrice').val(),
-            status: $('#priceStatus').val()
+            commodity_id:            $('#priceCommodityId').val(),
+            agency_id:               $('#price_agency').val(),
+            monitored_by_agency_id:  $('#price_agency').val(),
+            srp:                     $('#priceSrp').val(),
+            prevailing_price:        $('#pricePrevailingPrice').val(),
+            status:                  $('#priceStatus').val()
         };
-        if (isEdit) data.id = id;
 
         fetch('../../api/routes.php/price', {
-            method: isEdit ? 'PUT' : 'POST',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
@@ -198,7 +204,7 @@ window.PM = (function ($) {
         .then(function (res) {
             if (res.status === 'success') {
                 $('#priceModal').modal('hide');
-                Swal.fire('Success!', res.message || 'Price record updated successfully.', 'success')
+                Swal.fire('Success!', res.message || 'Price recorded successfully.', 'success')
                     .then(function () { _loadPrices(); });
             } else {
                 Swal.fire('Error', res.message || 'Unable to save price.', 'error');

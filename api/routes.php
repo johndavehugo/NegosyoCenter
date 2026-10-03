@@ -104,7 +104,7 @@ switch ($resource) {
         }
         break;
 
-
+ // Price Monitoring Routes
     case 'price-monitoring':
         $controller = new PriceMonitoringController();
 
@@ -116,10 +116,15 @@ switch ($resource) {
                 $response = $controller->getCommodityEstablishments(
                     $_GET['commodity_id'] ?? null
                 );
+            } elseif ($action === 'price_history') {
+                $response = $controller->getPriceHistory(
+                    $_GET['commodity_id'] ?? null,
+                    $_GET['range']         ?? '30d'
+                );
             } else {
                 http_response_code(400);
                 $response = [
-                    'status' => 'error',
+                    'status'  => 'error',
                     'message' => 'Invalid action.'
                 ];
             }
@@ -127,12 +132,12 @@ switch ($resource) {
             $action = $_GET['action'] ?? ($input['action'] ?? '');
             if ($action === 'add_category') {
                 $response = $controller->addCategory($input);
+            } elseif ($action === 'void_price') {
+                $response = $controller->voidPrice($input);
             } else {
-
                 http_response_code(400);
-
                 $response = [
-                    'status' => 'error',
+                    'status'  => 'error',
                     'message' => 'Invalid action.'
                 ];
             }
@@ -371,6 +376,8 @@ switch ($resource) {
         }
 
         break;
+
+// End of Price Monitoring Routes
 
     default:
         http_response_code(404);
