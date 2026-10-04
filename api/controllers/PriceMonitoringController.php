@@ -117,7 +117,6 @@ class PriceMonitoringController
                 c.id,
                 c.product_name,
                 c.category_id,
-                c.agency_id,
                 c.brand_name,
                 c.unit_of_measure,
                 c.srp,
@@ -405,20 +404,10 @@ cc.name AS category_name,
                 );
             }
 
-            $stmt = $this->con->prepare("
-                SELECT COUNT(*) AS total
-                FROM commodities
-                WHERE agency_id = ?
-            ");
-            $stmt->execute([$id]);
-            $commodityCount = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
-
-            if ($commodityCount > 0) {
-                return $this->error(
-                    "This agency cannot be deleted because it is used by {$commodityCount} commodit" .
-                    ($commodityCount === 1 ? 'y' : 'ies') . '. Reassign or delete those first.'
-                );
-            }
+            // No separate commodities.agency_id check needed anymore:
+            // every commodity belongs to a category, and every category
+            // belongs to an agency, so if no categories reference this
+            // agency, no commodities can reference it either.
 
             $stmt = $this->con->prepare("
                 DELETE FROM agencies
@@ -1096,7 +1085,7 @@ try {
             }
 
             if ($agencyId === null) {
-                $agencyId = (int)($commodity['agency_id'] ?? $commodity['category_agency_id']);
+                $agencyId = (int)$commodity['category_agency_id'];
             }
 
             $srp = (float)$srpInput;
@@ -1413,7 +1402,7 @@ $stmt->execute([
                     c.srp,
                     c.prevailing_price,
                     c.Establishments,
-                    c.agency_id,
+                    cc.agency_id,
                     a.name AS agency_name,
                     a.code AS agency_code
                 FROM commodities c
@@ -1456,20 +1445,20 @@ $stmt->execute([
                     c.id,
                     c.product_name,
                     c.category_id,
-                    c.agency_id,
                     c.brand_name,
                     c.unit_of_measure,
                     c.srp,
                     c.prevailing_price,
                     c.Establishments,
                     cc.name AS category_name,
+                    cc.agency_id,
                     a.name AS agency_name,
                     a.code AS agency_code
                 FROM commodities c
                 LEFT JOIN commodity_categories cc
                     ON c.category_id = cc.id
                 LEFT JOIN agencies a
-                    ON c.agency_id = a.id
+                    ON cc.agency_id = a.id
                 WHERE c.id = ?
                 LIMIT 1
             ");
@@ -1606,25 +1595,26 @@ $stmt->execute([
                 );
             }
 
+            // Note: agency is NOT stored on commodities directly —
+            // it's always derived via category_id -> commodity_categories.agency_id.
+            // $agencyId above is only used to validate the category has one.
             $stmt = $this->con->prepare("
                 INSERT INTO commodities
                 (
                     product_name,
                     category_id,
-                    agency_id,
                     brand_name,
                     unit_of_measure,
                     srp,
                     prevailing_price,
                     Establishments
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
                 $productName,
                 $categoryId,
-                $agencyId,
                 $brandName,
                 $unitOfMeasure,
                 $srp,
@@ -1795,12 +1785,14 @@ $stmt->execute([
                 );
             }
 
+            // Note: agency is NOT stored on commodities directly —
+            // it's always derived via category_id -> commodity_categories.agency_id.
+            // $agencyId above is only used to validate the category has one.
             $stmt = $this->con->prepare("
                 UPDATE commodities
                 SET
                     product_name = ?,
                     category_id = ?,
-                    agency_id = ?,
                     brand_name = ?,
                     unit_of_measure = ?,
                     srp = ?,
@@ -1812,7 +1804,6 @@ $stmt->execute([
             $stmt->execute([
                 $productName,
                 $categoryId,
-                $agencyId,
                 $brandName,
                 $unitOfMeasure,
                 $srp,
