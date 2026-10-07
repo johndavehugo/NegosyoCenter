@@ -117,7 +117,6 @@ class PriceMonitoringController
                 c.id,
                 c.product_name,
                 c.category_id,
-                c.agency_id,
                 c.brand_name,
                 c.unit_of_measure,
                 c.srp,
@@ -520,8 +519,9 @@ class PriceMonitoringController
 
             $stmt = $this->con->prepare("
                 SELECT COUNT(*) AS total
-                FROM commodities
-                WHERE agency_id = ?
+                FROM commodities c
+                INNER JOIN commodity_categories cc ON c.category_id = cc.id
+                WHERE cc.agency_id = ?
             ");
             $stmt->execute([$id]);
             $commodityCount = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
@@ -1203,7 +1203,7 @@ class PriceMonitoringController
             }
 
             if ($agencyId === null) {
-                $agencyId = (int)($commodity['agency_id'] ?? $commodity['category_agency_id']);
+                $agencyId = (int)($commodity['category_agency_id']);
             }
 
             $srp = (float)$srpInput;
@@ -1491,9 +1491,8 @@ class PriceMonitoringController
                     c.brand_name,
                     c.unit_of_measure,
                     c.srp,
-                    c.prevailing_price,
                     c.Establishments,
-                    c.agency_id,
+                    cc.agency_id,
                     a.name AS agency_name,
                     a.code AS agency_code
                 FROM commodities c
@@ -1536,20 +1535,18 @@ class PriceMonitoringController
                     c.id,
                     c.product_name,
                     c.category_id,
-                    c.agency_id,
                     c.brand_name,
                     c.unit_of_measure,
                     c.srp,
-                    c.prevailing_price,
-                    c.Establishments,
                     cc.name AS category_name,
+                    cc.agency_id,
                     a.name AS agency_name,
                     a.code AS agency_code
                 FROM commodities c
                 LEFT JOIN commodity_categories cc
                     ON c.category_id = cc.id
                 LEFT JOIN agencies a
-                    ON c.agency_id = a.id
+                    ON cc.agency_id = a.id
                 WHERE c.id = ?
                 LIMIT 1
             ");
@@ -1676,39 +1673,25 @@ class PriceMonitoringController
                 );
             }
 
-            $agencyId = $this->getAgencyFromCategory(
-                $categoryId
-            );
-
-            if ($agencyId === null) {
-                return $this->error(
-                    'The selected category has no valid agency.'
-                );
-            }
-
             $stmt = $this->con->prepare("
                 INSERT INTO commodities
                 (
                     product_name,
                     category_id,
-                    agency_id,
                     brand_name,
                     unit_of_measure,
                     srp,
-                    prevailing_price,
                     Establishments
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
                 $productName,
                 $categoryId,
-                $agencyId,
                 $brandName,
                 $unitOfMeasure,
                 $srp,
-                $prevailingPrice,
                 $establishments
             ]);
 
@@ -1865,22 +1848,11 @@ class PriceMonitoringController
                 );
             }
 
-            $agencyId = $this->getAgencyFromCategory(
-                $categoryId
-            );
-
-            if ($agencyId === null) {
-                return $this->error(
-                    'The selected category has no valid agency.'
-                );
-            }
-
             $stmt = $this->con->prepare("
                 UPDATE commodities
                 SET
                     product_name = ?,
                     category_id = ?,
-                    agency_id = ?,
                     brand_name = ?,
                     unit_of_measure = ?,
                     srp = ?,
@@ -1892,7 +1864,6 @@ class PriceMonitoringController
             $stmt->execute([
                 $productName,
                 $categoryId,
-                $agencyId,
                 $brandName,
                 $unitOfMeasure,
                 $srp,

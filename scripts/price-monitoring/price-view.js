@@ -387,9 +387,9 @@ function phLoad(range) {
             var chartH = canvas.offsetHeight || 220;
 
             var grad = ctx.createLinearGradient(0, 0, 0, chartH);
-            grad.addColorStop(0,   'rgba(2,128,144,0.20)');
-            grad.addColorStop(0.65,'rgba(2,128,144,0.04)');
-            grad.addColorStop(1,   'rgba(2,128,144,0)');
+            grad.addColorStop(0,   'rgba(0,212,232,0.22)');
+            grad.addColorStop(0.65,'rgba(0,212,232,0.04)');
+            grad.addColorStop(1,   'rgba(0,212,232,0)');
 
             var ptR = (range === 'all' || range === '90d') ? 0 : (range === '30d' ? 2.5 : 4);
 
@@ -402,12 +402,12 @@ function phLoad(range) {
                         {
                             label: 'SRP',
                             data: srpVals,
-                            borderColor: '#3b82f6',
+                            borderColor: '#6366f1',
                             borderDash: [6, 4],
                             borderWidth: 1.6,
                             pointRadius: ptR * 0.7,
                             pointHoverRadius: 5,
-                            pointBackgroundColor: '#3b82f6',
+                            pointBackgroundColor: '#6366f1',
                             backgroundColor: 'transparent',
                             tension: 0.4,
                             order: 2
@@ -415,12 +415,12 @@ function phLoad(range) {
                         {
                             label: 'Prevailing Price',
                             data: prevVals,
-                            borderColor: '#028090',
-                            borderWidth: 2.8,
+                            borderColor: '#00d4e8',
+                            borderWidth: 2.5,
                             pointRadius: ptR,
                             pointHoverRadius: 6,
-                            pointBackgroundColor: '#028090',
-                            pointBorderColor: '#fff',
+                            pointBackgroundColor: '#00d4e8',
+                            pointBorderColor: 'rgba(13,15,20,.8)',
                             pointBorderWidth: 1.5,
                             backgroundColor: grad,
                             fill: true,
@@ -438,8 +438,8 @@ function phLoad(range) {
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#0f172a',
-                            titleColor: '#f1f5f9',
+                            backgroundColor: 'rgba(13,15,20,.96)',
+                            titleColor: '#f0f2f6',
                             bodyColor: '#94a3b8',
                             borderColor: '#1e293b',
                             borderWidth: 1,
@@ -465,7 +465,7 @@ function phLoad(range) {
                             grid: { display: false },
                             border: { display: false },
                             ticks: {
-                                color: '#9ca3af',
+                                color: 'rgba(240,242,246,.35)',
                                 font: { size: 10, family: 'Inter, sans-serif' },
                                 maxRotation: 0, autoSkip: true,
                                 maxTicksLimit: range === '7d' ? 7 : (range === '30d' ? 10 : 12)
@@ -473,10 +473,10 @@ function phLoad(range) {
                         },
                         y: {
                             position: 'right',
-                            grid: { color: '#f1f5f9' },
+                            grid: { color: 'rgba(255,255,255,.06)' },
                             border: { display: false },
                             ticks: {
-                                color: '#9ca3af',
+                                color: 'rgba(240,242,246,.35)',
                                 font: { size: 10, family: 'Inter, sans-serif' },
                                 maxTicksLimit: 5,
                                 callback: function (v) { return '\u20B1' + v.toFixed(2); }
