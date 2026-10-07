@@ -802,7 +802,7 @@ if ($action === 'economic_opportunity') {
 
     $OPP_LEVELS = [
         ['level' => 'Very High', 'color' => '#198754', 'min' => 0.66],
-        ['level' => 'High',      'color' => '#28a745', 'min' => 0.40],
+            ['level' => 'High',      'color' => '#8BC34A', 'min' => 0.40],
         ['level' => 'Moderate',  'color' => '#ffc107', 'min' => 0.20],
         ['level' => 'Low',       'color' => '#6c757d', 'min' => 0.00],
     ];

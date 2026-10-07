@@ -1,46 +1,60 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
 
-  <a class="brand-link user-panel pb-3 mb-3 d-flex">
-    <img src="../../dist/img/nclogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
-      style="opacity:.8">
+    <!-- Brand -->
+    <a href="/NegosyoCenter/pages/msme/msme.php" class="brand-link sidebar-brand-link d-flex align-items-center">
+        <img src="/NegosyoCenter/dist/img/nclogo.png"
+             alt="Negosyo Center Logo"
+             class="brand-image img-circle elevation-2 sidebar-brand-img">
+        <div class="sidebar-brand-text-wrap ml-2">
+            <span class="sidebar-brand-name">Negosyo Center</span>
+            <span class="sidebar-brand-sub">San Carlos City</span>
+        </div>
+    </a>
 
-    <span class="brand-text font-weight-light text-lg">
-      Negosyo Center
-    </span>
-  </a>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <nav class="mt-1 pb-3">
+            <ul class="nav nav-pills nav-sidebar flex-column sidebar-nav-list"
+                data-widget="treeview" role="menu" data-accordion="false">
 
-  <!-- Sidebar -->
-  <div class="sidebar">
+                <!-- ── MAIN ──────────────────────────────────── -->
+                <li class="sidebar-section-label">Main</li>
 
-    <nav class="mt-2">
-      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a href="/NegosyoCenter/pages/msme/dashboard.php"
+                       class="nav-link sidebar-nav-link cursor-e <?= (basename($_SERVER['PHP_SELF']) === 'dashboard.php') ? 'active' : '' ?>">
+                        <span class="sidebar-nav-icon">
+                            <i class="fas fa-tachometer-alt sidebar-icon"></i>
+                        </span>
+                        <p class="sidebar-nav-text">Dashboard</p>
+                    </a>
+                </li>
 
-        <!-- Dashboard -->
-        <li class="nav-item">
-          <a href="../msme/dashboard.php"
-            class="nav-link cursor-e <?= (basename($_SERVER['PHP_SELF']) === 'dashboard.php') ? 'active' : '' ?>">
-            <i class="nav-icon material-icons" style="font-size:19px;vertical-align:middle;">dashboard</i>
-            <p>Dashboard</p>
-          </a>
-        </li>
+                <!-- ── MODULES ───────────────────────────────── -->
+                <li class="sidebar-section-label">Modules</li>
 
-        <!-- MSME Master List -->
-        <li id="module_msme" class="nav-item">
-          <a href="../msme/msme.php"
-            class="nav-link sidebar-statistics cursor-e <?= (basename($_SERVER['PHP_SELF']) === 'msme.php') ? 'active' : '' ?>">
-            <i class="nav-icon fas fa-xlg fa-chart-line"></i>
-            <p class="pt-2">MSME</p>
-          </a>
-        </li>
+                <!-- MSME -->
+                <li id="module_msme" class="nav-item">
+                    <a href="/NegosyoCenter/pages/msme/msme.php"
+                       class="nav-link sidebar-nav-link cursor-e <?= in_array(basename($_SERVER['PHP_SELF']), ['msme.php', 'page-view.php']) ? 'active' : '' ?>">
+                        <span class="sidebar-nav-icon">
+                            <i class="fas fa-store sidebar-icon"></i>
+                        </span>
+                        <p class="sidebar-nav-text">MSME</p>
+                    </a>
+                </li>
 
-        <!-- Calamity -->
-        <li id="module_calamity" class="nav-item">
-          <a href="../calamity/calamity.php"
-            class="nav-link <?= (basename($_SERVER['PHP_SELF']) === 'calamity.php') ? 'active' : '' ?>">
-            <i class="nav-icon fas fa-chart-line"></i>
-            <p>CALAMITY MONITORING</p>
-          </a>
-        </li>
+                <!-- Calamity Monitoring -->
+                <li id="module_calamity" class="nav-item">
+                    <a href="/NegosyoCenter/pages/calamity/calamity.php"
+                       class="nav-link sidebar-nav-link <?= (basename($_SERVER['PHP_SELF']) === 'calamity.php') ? 'active' : '' ?>">
+                        <span class="sidebar-nav-icon">
+                            <i class="fas fa-exclamation-triangle sidebar-icon"></i>
+                        </span>
+                        <p class="sidebar-nav-text">Calamity Monitoring</p>
+                    </a>
+                </li>
 
         <!-- Price Monitoring -->
         <li id="module_price_monitoring" class="nav-item has-treeview">
@@ -145,7 +159,6 @@
                         </li>
 
                     </ul>
-
                 </li>
 
       </ul>

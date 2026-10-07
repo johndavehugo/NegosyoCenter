@@ -2,11 +2,13 @@ var affectedDataTable = null;
 var calamityTable = null;
 
 function statusBadge(status) {
-    var badge = 'secondary';
-    if (status === 'PENDING_VERIFICATION') badge = 'warning';
-    else if (status === 'VERIFIED') badge = 'info';
-    else if (status === 'AID_RELEASED') badge = 'success';
-    return '<span class="badge badge-' + badge + '">' + status.replace(/_/g, ' ') + '</span>';
+    var map = {
+        'PENDING_VERIFICATION': { cls: 'msme-badge-status-pending',  label: 'Pending Verification' },
+        'VERIFIED':             { cls: 'msme-badge-status-approved',  label: 'Verified'             },
+        'AID_RELEASED':         { cls: 'msme-badge-status-active',    label: 'Aid Released'         }
+    };
+    var entry = map[status] || { cls: 'msme-badge-unknown', label: status ? status.replace(/_/g, ' ') : '—' };
+    return '<span class="badge badge-pill ' + entry.cls + '">' + entry.label + '</span>';
 }
 
 function formatMoney(amount) {
@@ -36,7 +38,15 @@ $(function () {
         "data": [],
         "columns": [
             { "data": "name" },
-            { "data": "calamity_type" },
+            {
+                "data": "calamity_type",
+                "render": function (data) {
+                    if (!data) return '—';
+                    var key = data.toLowerCase();
+                    var cls = 'cal-type-' + (['typhoon','flood','earthquake','fire','landslide'].indexOf(key) !== -1 ? key : 'other');
+                    return '<span class="cal-type-badge ' + cls + '">' + data.charAt(0).toUpperCase() + data.slice(1).toLowerCase() + '</span>';
+                }
+            },
             { "data": "declaration_date" },
             { "data": "affected_count", "orderable": true },
             {
@@ -44,12 +54,18 @@ $(function () {
                 "orderable": false,
                 "render": function (data, type, row) {
                     var safeName = row.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                    return '<div style="display:flex;justify-content:center;gap:4px;">' +
-                        '<button class="btn btn-warning btn-sm" onclick="fillEditCalamity(' + row.id + ')">' +
-                        '<i class="fas fa-pen mr-1"></i>Edit</button>' +
-                        '<button class="btn btn-info btn-sm btn-outline-info-custom" onclick="viewAffectedBusinesses(' + row.id + ',\'' + safeName + '\')">' +
-                        '<i class="fas fa-building mr-1"></i>View Businesses</button>' +
-                        '</div>';
+                    return '<div class="d-flex justify-content-center dropdown">' +
+                        '<button class="btn btn-text-secondary btn-sm tbl-action-btn" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Actions">' +
+                        '<i class="material-icons" style="font-size:20px;vertical-align:middle;">more_vert</i>' +
+                        '</button>' +
+                        '<div class="dropdown-menu dropdown-menu-right tbl-action-menu">' +
+                        '<a class="dropdown-item" href="#" onclick="event.preventDefault();fillEditCalamity(' + row.id + ');return false;">' +
+                        '<i class="material-icons tbl-action-icon">edit</i>Edit Calamity' +
+                        '</a>' +
+                        '<a class="dropdown-item" href="#" onclick="event.preventDefault();viewAffectedBusinesses(' + row.id + ',\'' + safeName + '\');return false;">' +
+                        '<i class="material-icons tbl-action-icon">domain</i>View Businesses' +
+                        '</a>' +
+                        '</div></div>';
                 }
             }
         ]
@@ -109,11 +125,18 @@ function viewAffectedBusinesses(calamityId, calamityName) {
                     "data": null,
                     "orderable": false,
                     "render": function (data, type, row) {
-                        return '<div style="display:flex;justify-content:center;gap:4px;">' +
-                            '<button class="btn btn-warning btn-sm" onclick="fillUpdateIncident(' + row.id + ')">' +
-                            '<i class="fas fa-pen mr-1"></i>Update</button>' +
-                            '<button class="btn btn-danger btn-sm" onclick="deleteAffectedBusiness(' + row.affected_id + ')">' +
-                            '<i class="fas fa-trash-alt mr-1"></i>Delete</button></div>';
+                        return '<div class="d-flex justify-content-center dropdown">' +
+                            '<button class="btn btn-text-secondary btn-sm tbl-action-btn" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Actions">' +
+                            '<i class="material-icons" style="font-size:20px;vertical-align:middle;">more_vert</i>' +
+                            '</button>' +
+                            '<div class="dropdown-menu dropdown-menu-right tbl-action-menu">' +
+                            '<a class="dropdown-item" href="#" onclick="event.preventDefault();fillUpdateIncident(' + row.id + ');return false;">' +
+                            '<i class="material-icons tbl-action-icon">edit_note</i>Update' +
+                            '</a>' +
+                            '<a class="dropdown-item text-danger" href="#" onclick="event.preventDefault();deleteAffectedBusiness(' + row.affected_id + ');return false;">' +
+                            '<i class="material-icons tbl-action-icon" style="color:#dc3545;">delete_outline</i>Delete' +
+                            '</a>' +
+                            '</div></div>';
                     }
                 }
             ]

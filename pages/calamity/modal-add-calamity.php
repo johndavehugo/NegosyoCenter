@@ -1,25 +1,28 @@
 <form id="addCalamityForm" method="POST">
 <div class="modal fade" id="addCalamityModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content" style="background-color: #1a3a6b; color: white; border: 2px solid #b91c1c; border-radius: 10px;">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content msme-modal-content">
 
-            <div class="modal-header border-0" style="background: linear-gradient(90deg, #1a3a6b 60%, #b91c1c 100%); border-radius: 8px 8px 0 0;">
-                <h5 class="modal-title"><i class="fas fa-cloud-rain mr-2"></i>Add Calamity</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            <div class="modal-header msme-modal-header">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="material-icons text-primary align-middle mr-2" style="font-size:22px;">cloud</i>
+                    Add Calamity
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
 
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Calamity Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="addCalamityName" name="addCalamityName">
+                            <label class="msme-label">Calamity Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control msme-input" id="addCalamityName" name="addCalamityName">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Type of Calamity <span class="text-danger">*</span></label>
-                            <select class="form-control" id="addCalamityType" name="addCalamityType">
+                            <label class="msme-label">Type of Calamity <span class="text-danger">*</span></label>
+                            <select class="form-control msme-input" id="addCalamityType" name="addCalamityType">
                                 <option value="" hidden>Select Type</option>
                                 <option value="TYPHOON">Typhoon</option>
                                 <option value="FLOOD">Flood</option>
@@ -34,23 +37,23 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Declaration Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="addCalamityDate" name="addCalamityDate">
+                            <label class="msme-label">Declaration Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control msme-input" id="addCalamityDate" name="addCalamityDate">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Description</label>
-                            <textarea class="form-control" id="addCalamityDescription" name="addCalamityDescription" rows="1"></textarea>
+                            <label class="msme-label">Description</label>
+                            <textarea class="form-control msme-input" id="addCalamityDescription" name="addCalamityDescription" rows="2"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="modal-footer border-0" style="background: rgba(0,0,0,0.15); border-radius: 0 0 8px 8px;">
-                <button type="button" class="btn btn-outline-light" data-dismiss="modal">Close</button>
-                <button type="button" class="btn" style="background:#b91c1c;color:#fff;border:none;" id="btnSaveCalamity" onclick="addCalamity()">
-                    <i class="fas fa-save mr-1"></i>Save
+            <div class="modal-footer msme-modal-footer">
+                <button type="button" class="btn btn-text-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-raised-success d-flex align-items-center" id="btnSaveCalamity" onclick="addCalamity()">
+                    <i class="material-icons mr-1" style="font-size:18px;">save</i>Save
                 </button>
             </div>
 

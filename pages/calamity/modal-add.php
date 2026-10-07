@@ -1,50 +1,101 @@
 <style>
-    .cal-modal .select2-container--bootstrap4 .select2-selection--single {
-        background-color: #fff; border: 1px solid #ced4da;
-        border-radius: 4px; height: 38px;
+    /* ── Add Incident Modal — scoped styles ─────────────────── */
+
+    /* Affected businesses inline table */
+    #addIncidentModal .affected-table {
+        background: #fff;
+        color: #343a40;
+        font-size: 0.85rem;
+        table-layout: auto;
     }
-    .cal-modal .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
-        color: #343a40; line-height: 36px; padding-left: 10px; padding-right: 30px;
+    #addIncidentModal .affected-table thead th {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+        color: #495057;
+        font-size: 0.70rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+        vertical-align: middle;
+        text-align: center;
+        padding: 8px 10px;
     }
-    .cal-modal .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow { height: 36px; }
-    .cal-modal .select2-container--bootstrap4 .select2-selection--single .select2-selection__placeholder { color: #6c757d; }
-    .cal-modal .select2-container--bootstrap4 .select2-selection--single .select2-selection__clear {
-        color: #dc3545; font-size: 18px; font-weight: bold; margin-right: 6px; cursor: pointer;
+    #addIncidentModal .affected-table tbody td {
+        font-size: 0.84rem;
+        vertical-align: middle;
+        text-align: center;
+        padding: 6px 8px;
     }
-    .cal-modal .select2-container--bootstrap4 .select2-selection--multiple {
-        background-color: #fff; border: 1px solid #ced4da; border-radius: 4px; min-height: 38px;
+    /* Left-align text-heavy columns */
+    #addIncidentModal .affected-table tbody td.col-name,
+    #addIncidentModal .affected-table tbody td.col-owner {
+        text-align: left;
+        white-space: normal;
+        max-width: 160px;
+        word-break: break-word;
     }
-    .cal-modal .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__rendered { padding: 3px 8px; }
-    .cal-modal .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice {
-        background-color: #1a3a6b; border: 1px solid #0f2a52; color: #fff;
-        border-radius: 4px; padding: 2px 6px; margin-top: 3px; font-size: 13px;
-        display: none;
+    #addIncidentModal .affected-table tfoot th {
+        background-color: #f8f9fa;
+        font-size: 0.85rem;
+        color: #495057;
+        padding: 8px 10px;
     }
-    .cal-modal .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice__remove { color: #f87171; margin-right: 5px; }
-    .cal-modal .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__placeholder { color: #6c757d; margin-top: 7px; }
-    .cal-modal .select2-results__options { max-height: 250px; overflow-y: auto; }
-    .cal-modal .affected-table { background: #fff; color: #343a40; }
-    .cal-modal .affected-table thead th { background: #1a3a6b; color: #fff; border: none; font-size: 13px; white-space: nowrap; }
-    .cal-modal .affected-table tbody td { font-size: 13px; vertical-align: middle; }
-    .cal-modal .btn-remove-business { color: #b91c1c; background: none; border: none; cursor: pointer; font-size: 15px; }
-    .cal-modal .btn-remove-business:hover { color: #7f1212; }
+    /* Uniform compact form controls inside the table */
+    #addIncidentModal .affected-table .form-control-sm {
+        height: 32px;
+        font-size: 0.82rem;
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
+    #addIncidentModal .affected-table .date-input    { min-width: 130px; }
+    #addIncidentModal .affected-table .nature-select { min-width: 110px; }
+    #addIncidentModal .affected-table .status-select { min-width: 140px; }
+    #addIncidentModal .affected-table .damage-input  { min-width: 110px; text-align: right; }
+    #addIncidentModal .affected-table .remarks-input { min-width: 130px; }
+
+    /* Remove button */
+    #addIncidentModal .btn-remove-business {
+        color: #dc3545;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 6px;
+        border-radius: 4px;
+        transition: background-color 0.1s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #addIncidentModal .btn-remove-business:hover {
+        background-color: #fff5f5;
+        color: #b91c1c;
+    }
+    #addIncidentModal .btn-remove-business .material-icons {
+        font-size: 17px !important;
+    }
 </style>
 
 <form id="addIncidentForm" method="POST">
-<div class="modal fade cal-modal" id="addIncidentModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content" style="background-color: #1a3a6b; color: white; border: 2px solid #b91c1c; border-radius: 10px;">
+<div class="modal fade" id="addIncidentModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content msme-modal-content">
 
-            <div class="modal-header border-0" style="background: linear-gradient(90deg, #1a3a6b 60%, #b91c1c 100%); border-radius: 8px 8px 0 0;">
-                <h5 class="modal-title"><i class="fas fa-plus-circle mr-2"></i>Add Calamity Incident</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            <div class="modal-header msme-modal-header">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="material-icons text-primary align-middle mr-2" style="font-size:22px;">add_circle</i>
+                    Add Calamity Incident
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
 
             <div class="modal-body">
+
+                <!-- Calamity + Business selects -->
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Type of Calamity <span class="text-danger">*</span></label>
+                            <label class="msme-label">Type of Calamity <span class="text-danger">*</span></label>
                             <select id="addIncidentCalamity" name="addIncidentCalamity" style="width:100%">
                                 <option value=""></option>
                             </select>
@@ -52,52 +103,63 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Business Affected <span class="text-danger">*</span></label>
-                            <select id="addIncidentJuridical" name="addIncidentJuridical" multiple="multiple" style="width:100%">
-                            </select>
-                            <small class="text-white-50">Type to search businesses from MSME records. You can select multiple.</small>
+                            <label class="msme-label">Business Affected <span class="text-danger">*</span></label>
+                            <select id="addIncidentJuridical" name="addIncidentJuridical" multiple="multiple" style="width:100%"></select>
+                            <small class="form-text text-muted">Type to search businesses. You can select multiple.</small>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <label>Selected Affected Businesses <span class="text-danger">*</span></label>
-                        <div class="table-responsive" style="border-radius: 6px; overflow: hidden;">
+
+                <!-- Affected businesses table -->
+                <div class="card msme-section-card mt-2">
+                    <div class="card-header msme-section-header">
+                        <i class="material-icons text-primary align-middle mr-1" style="font-size:16px;">list_alt</i>
+                        Selected Affected Businesses <span class="text-danger">*</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
                             <table class="table table-bordered table-hover affected-table mb-0" id="affectedBusinessesTable">
                                 <thead>
                                     <tr>
-                                        <th style="width:40px;">#</th>
-                                        <th>Business Name</th>
-                                        <th>Entity No.</th>
-                                        <th>Owner</th>
+                                        <th style="width:36px;">#</th>
+                                        <th style="min-width:130px; text-align:left;">Business Name</th>
+                                        <th style="min-width:110px;">Entity No.</th>
+                                        <th style="min-width:120px; text-align:left;">Owner</th>
                                         <th style="min-width:140px;">Date of Occurrence</th>
-                                        <th style="min-width:110px;">Nature of Damage</th>
+                                        <th style="min-width:120px;">Nature of Damage</th>
                                         <th style="min-width:150px;">Status</th>
-                                        <th style="min-width:150px;">Estimated Damage (PHP)</th>
-                                        <th style="min-width:160px;">Remarks</th>
-                                        <th style="width:60px; text-align:center;">Action</th>
+                                        <th style="min-width:140px;">Est. Damage (PHP)</th>
+                                        <th style="min-width:140px;">Remarks</th>
+                                        <th style="width:52px;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
                                 <tfoot>
                                     <tr>
-                                        <th colspan="7" style="text-align:right;">Total Estimated Damages:</th>
-                                        <th id="affectedBusinessesTotal" style="text-align:right;">0.00</th>
-                                        <th colspan="2"></th>
+                                        <th colspan="7" class="text-right" style="background:#f8f9fa; font-size:0.82rem; color:#495057; padding:8px 10px;">
+                                            Total Estimated Damages:
+                                        </th>
+                                        <th id="affectedBusinessesTotal" class="text-right" style="background:#f8f9fa; font-size:0.85rem; color:#212529; padding:8px 10px;">
+                                            0.00
+                                        </th>
+                                        <th colspan="2" style="background:#f8f9fa;"></th>
                                     </tr>
                                 </tfoot>
                             </table>
                         </div>
-                        <small class="text-white-50" id="affectedBusinessesEmpty">No businesses selected yet.</small>
-                        <small class="text-white-50" style="display:block;">Enter the date, nature of damage, status, estimated damage, and remarks for each affected business.</small>
+                        <div class="px-3 py-2 border-top" style="background:#fafafa;">
+                            <small class="text-muted" id="affectedBusinessesEmpty">No businesses selected yet.</small>
+                            <small class="text-muted d-block">Enter the date, nature of damage, status, estimated damage, and remarks for each business.</small>
+                        </div>
                     </div>
                 </div>
+
             </div>
 
-            <div class="modal-footer border-0" style="background: rgba(0,0,0,0.15); border-radius: 0 0 8px 8px;">
-                <button type="button" class="btn btn-outline-light" data-dismiss="modal">Close</button>
-                <button type="button" class="btn" style="background:#b91c1c;color:#fff;border:none;" id="btnSaveIncident" onclick="addIncident()">
-                    <i class="fas fa-save mr-1"></i>Save
+            <div class="modal-footer msme-modal-footer">
+                <button type="button" class="btn btn-text-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-raised-success d-flex align-items-center" id="btnSaveIncident" onclick="addIncident()">
+                    <i class="material-icons mr-1" style="font-size:18px;">save</i>Save
                 </button>
             </div>
 
