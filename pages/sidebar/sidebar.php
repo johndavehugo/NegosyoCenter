@@ -57,12 +57,13 @@
                 </li>
 
         <!-- Price Monitoring -->
-        <li id="module_price_monitoring" class="nav-item has-treeview">
+        <li id="module_price_monitoring" class="nav-item">
 
-          <a href="#" class="nav-link">
-            <i class="nav-icon fas fa-tags"></i>
+          <a href="#" class="nav-link sidebar-nav-link">
+            <span class="sidebar-nav-icon"><i class="fas fa-tags sidebar-icon"></i></span>
+            
 
-            <p>
+            <p class="sidebar-nav-text">
               PRICE MONITORING
               <i class="right fas fa-angle-left"></i>
             </p>
@@ -112,10 +113,11 @@
         <!-- Economic Map -->
                 <li id="module_economic_map" class="nav-item has-treeview <?= (basename($_SERVER['PHP_SELF']) === 'economic-map.php') ? 'menu-open' : '' ?>">
 
-                    <a href="#" class="nav-link <?= (basename($_SERVER['PHP_SELF']) === 'economic-map.php') ? 'active' : '' ?>">
-                        <i class="nav-icon fas fa-map-marked-alt"></i>
+                    <a href="#" class="nav-link sidebar-nav-link <?= (basename($_SERVER['PHP_SELF']) === 'economic-map.php') ? 'active' : '' ?>">
+                        <span class="sidebar-nav-icon"><i class="fas fa-map-marked-alt sidebar-icon"></i></span>
+                    
 
-                        <p>
+                        <p class="sidebar-nav-text">
                             ECONOMIC MAP
                             <i class="right fas fa-angle-left"></i>
                         </p>
