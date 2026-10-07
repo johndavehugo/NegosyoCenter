@@ -227,11 +227,20 @@
                            placeholder="Actual observed selling price" autocomplete="off">
                 </div>
                 <div class="form-group mb-0">
-                    <label class="msme-label">Establishment</label>
-                    <select id="establishments" name="establishments" class="form-control msme-input">
-                        <option value="">-- Select Establishment --</option>
-                    </select>
-                </div>
+    <label class="msme-label">Establishment</label>
+    <select id="establishments" name="establishments" class="form-control msme-input">
+        <option value="">-- Select Establishment --</option>
+    </select>
+</div>
+
+<div class="form-group" id="otherEstablishmentGroup" style="display:none;">
+    <label class="msme-label">Other Establishment</label>
+    <input type="text"
+           id="otherEstablishment"
+           class="form-control msme-input"
+           placeholder="Type establishment name"
+           autocomplete="off">
+</div>
             </div>
 
             <div class="modal-footer msme-modal-footer">
@@ -298,12 +307,21 @@
                         <input type="number" step="0.01" min="0" id="updateCommodityPrevailingPrice"
                                class="form-control msme-input" autocomplete="off">
                     </div>
-                    <div class="form-group mb-0">
-                        <label class="msme-label">Establishment</label>
-                        <select id="updateCommodityEstablishments" class="form-control msme-input">
-                            <option value="">-- Select Establishment --</option>
-                        </select>
-                    </div>
+                    <div class="form-group">
+    <label class="msme-label">Establishment</label>
+    <select id="updateCommodityEstablishments" class="form-control msme-input">
+        <option value="">-- Select Establishment --</option>
+    </select>
+</div>
+
+<div class="form-group mb-0" id="updateOtherEstablishmentGroup" style="display:none;">
+    <label class="msme-label">Other Establishment</label>
+    <input type="text"
+           id="updateOtherEstablishment"
+           class="form-control msme-input"
+           placeholder="Type establishment name"
+           autocomplete="off">
+</div>
                 </div>
 
                 <div class="modal-footer msme-modal-footer">

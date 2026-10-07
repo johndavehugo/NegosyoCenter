@@ -1388,46 +1388,51 @@ $stmt->execute([
         }
     }
 
-    public function getCommodityList()
-    {
-        try {
-            $stmt = $this->con->prepare("
-                SELECT
-                    c.id,
-                    c.product_name,
-                    c.category_id,
-                    cc.name AS category_name,
-                    c.brand_name,
-                    c.unit_of_measure,
-                    c.srp,
-                    c.prevailing_price,
-                    c.Establishments,
-                    cc.agency_id,
-                    a.name AS agency_name,
-                    a.code AS agency_code
-                FROM commodities c
-                INNER JOIN commodity_categories cc
-                    ON c.category_id = cc.id
-                INNER JOIN agencies a
-                    ON cc.agency_id = a.id
-                ORDER BY c.product_name ASC
-            ");
+public function getCommodityList()
+{
+    try {
+        $stmt = $this->con->prepare("
+            SELECT
+                c.id,
+                c.product_name,
+                c.category_id,
+                cc.name AS category_name,
+                c.brand_name,
+                c.unit_of_measure,
+                c.srp,
+                c.prevailing_price,
+                c.Establishments,
+                cc.agency_id,
+                a.name AS agency_name,
+                a.code AS agency_code
+            FROM commodities c
+            INNER JOIN commodity_categories cc
+                ON c.category_id = cc.id
+            INNER JOIN agencies a
+                ON cc.agency_id = a.id
+            ORDER BY c.product_name ASC
+        ");
 
-            $stmt->execute();
+        $stmt->execute();
 
-            return $this->success(
-                '',
-                $stmt->fetchAll(PDO::FETCH_ASSOC)
-            );
-        } catch (PDOException $e) {
-            error_log('getCommodityList: ' . $e->getMessage());
+        return $this->success(
+            '',
+            $stmt->fetchAll(PDO::FETCH_ASSOC)
+        );
+    } catch (PDOException $e) {
+        error_log('getCommodityList: ' . $e->getMessage());
 
-            return $this->error(
-                'Database error: ' . $e->getMessage(),
-                []
-            );
-        }
+        return $this->error(
+            'Database error: ' . $e->getMessage(),
+            []
+        );
     }
+}
+
+public function getPublicCommodities()
+{
+    return $this->getCommodityList();
+}
 
     public function getCommodityById($id)
     {
