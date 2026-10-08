@@ -1,3 +1,19 @@
+<style>
+    .cal-update-modal .select2-container--default .select2-selection--single {
+        background-color: #fff; border: 1px solid #ced4da;
+        border-radius: 4px; height: 38px;
+    }
+    .cal-update-modal .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #343a40; line-height: 36px; padding-left: 10px; padding-right: 30px;
+    }
+    .cal-update-modal .select2-container--default .select2-selection--single .select2-selection__arrow { height: 36px; }
+    .cal-update-modal .select2-container--default .select2-selection--single .select2-selection__placeholder { color: #6c757d; }
+    .cal-update-modal .select2-container--default .select2-selection--single .select2-selection__clear {
+        color: #dc3545; font-size: 18px; font-weight: bold; margin-right: 6px; cursor: pointer;
+    }
+    .cal-update-modal .select2-results__options { max-height: 250px; overflow-y: auto; }
+</style>
+
 <form id="updateIncidentForm" method="POST">
 <div class="modal fade" id="updateIncidentModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">

@@ -56,67 +56,118 @@
                     </a>
                 </li>
 
-                <!-- Price Monitoring -->
-                <li id="module_price_monitoring" class="nav-item has-treeview <?= in_array(basename($_SERVER['PHP_SELF']), ['price-monitoring.php','category.php','commodity.php','price-view.php']) ? 'menu-open' : '' ?>">
+        <!-- Price Monitoring -->
+        <li id="module_price_monitoring" class="nav-item">
 
-                    <a href="#" class="nav-link sidebar-nav-link <?= in_array(basename($_SERVER['PHP_SELF']), ['price-monitoring.php','category.php','commodity.php','price-view.php']) ? 'active' : '' ?>">
-                        <span class="sidebar-nav-icon">
-                            <i class="fas fa-tags sidebar-icon"></i>
-                        </span>
+          <a href="#" class="nav-link sidebar-nav-link">
+            <span class="sidebar-nav-icon"><i class="fas fa-tags sidebar-icon"></i></span>
+            
+
+            <p class="sidebar-nav-text">
+              PRICE MONITORING
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+
+          <ul class="nav nav-treeview">
+
+            <li class="nav-item">
+              <a href="../price-monitoring/price-monitoring.php" class="nav-link">
+                
+                <p>Price Monitoring</p>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="../price-monitoring/category.php" class="nav-link">
+                <i class=""></i>
+                <p>Categories</p>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="../price-monitoring/commodity.php" class="nav-link">
+                <i class=""></i>
+                <p>Commodities</p>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="../price-monitoring/Agency.php" class="nav-link">
+                <i class=""></i>
+                <p>Agencies</p>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="../price-monitoring/price-view/price-view.php" class="nav-link">
+                <i class=""></i>
+                <p>Price View</p>
+              </a>
+            </li>
+
+          </ul>
+
+        </li>
+
+        <!-- Economic Map -->
+                <li id="module_economic_map" class="nav-item has-treeview <?= (basename($_SERVER['PHP_SELF']) === 'economic-map.php') ? 'menu-open' : '' ?>">
+
+                    <a href="#" class="nav-link sidebar-nav-link <?= (basename($_SERVER['PHP_SELF']) === 'economic-map.php') ? 'active' : '' ?>">
+                        <span class="sidebar-nav-icon"><i class="fas fa-map-marked-alt sidebar-icon"></i></span>
+                    
+
                         <p class="sidebar-nav-text">
-                            Price Monitoring
-                            <i class="fas fa-angle-left sidebar-arrow"></i>
+                            ECONOMIC MAP
+                            <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
 
-                    <ul class="nav nav-treeview sidebar-sub-nav">
+                    <ul class="nav nav-treeview">
 
                         <li class="nav-item">
-                            <a href="/NegosyoCenter/pages/price-monitoring/price-monitoring.php"
-                               class="nav-link sidebar-nav-link sidebar-sub-link <?= (basename($_SERVER['PHP_SELF']) === 'price-monitoring.php') ? 'active' : '' ?>">
-                                <span class="sidebar-sub-icon">
-                                    <i class="fas fa-chart-line sidebar-icon"></i>
-                                </span>
-                                <p class="sidebar-nav-text">Price Monitoring</p>
+                            <a href="../economic-map/economic-map.php#hotspot" class="nav-link">
+                                <i class="fas fa-fire nav-icon"></i>
+                                <p>Economic Hotspot Map</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="/NegosyoCenter/pages/price-monitoring/category.php"
-                               class="nav-link sidebar-nav-link sidebar-sub-link <?= (basename($_SERVER['PHP_SELF']) === 'category.php') ? 'active' : '' ?>">
-                                <span class="sidebar-sub-icon">
-                                    <i class="fas fa-th-large sidebar-icon"></i>
-                                </span>
-                                <p class="sidebar-nav-text">Categories</p>
+                            <a href="../economic-map/economic-map.php#distribution" class="nav-link">
+                                <i class="fas fa-chart-pie nav-icon"></i>
+                                <p>MSME Distribution Map</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="/NegosyoCenter/pages/price-monitoring/commodity.php"
-                               class="nav-link sidebar-nav-link sidebar-sub-link <?= (basename($_SERVER['PHP_SELF']) === 'commodity.php') ? 'active' : '' ?>">
-                                <span class="sidebar-sub-icon">
-                                    <i class="fas fa-box sidebar-icon"></i>
-                                </span>
-                                <p class="sidebar-nav-text">Commodities</p>
+                            <a href="../economic-map/economic-map.php#risk" class="nav-link">
+                                <i class="fas fa-shield-alt nav-icon"></i>
+                                <p>Economic Risk Map</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a href="/NegosyoCenter/pages/price-monitoring/price-view/price-view.php"
-                               class="nav-link sidebar-nav-link sidebar-sub-link <?= (basename($_SERVER['PHP_SELF']) === 'price-view.php') ? 'active' : '' ?>">
-                                <span class="sidebar-sub-icon">
-                                    <i class="fas fa-chart-bar sidebar-icon"></i>
-                                </span>
-                                <p class="sidebar-nav-text">Price View</p>
+                            <a href="../economic-map/economic-map.php#pressure" class="nav-link">
+                                <i class="fas fa-chart-line nav-icon"></i>
+                                <p>Price / Economic Pressure Map</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="../economic-map/economic-map.php#opportunity" class="nav-link">
+                                <i class="fas fa-lightbulb nav-icon"></i>
+                                <p>Economic Opportunity Map</p>
                             </a>
                         </li>
 
                     </ul>
                 </li>
 
-            </ul>
-        </nav>
-    </div>
-    <!-- /.sidebar -->
+      </ul>
+
+    </nav>
+
+  </div>
+  <!-- /.sidebar -->
 
 </aside>

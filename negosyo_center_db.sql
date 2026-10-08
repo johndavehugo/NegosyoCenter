@@ -224,10 +224,11 @@ CREATE TABLE `commodities` (
   `brand_name` varchar(100) DEFAULT NULL,
   `unit_of_measure` varchar(50) NOT NULL DEFAULT '1 kg',
   `srp` decimal(10,2) DEFAULT NULL,
-  `agency_id` bigint(20) UNSIGNED NOT NULL,
+  `prevailing_price` decimal(10,2) DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `Establishments` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -268,7 +269,7 @@ CREATE TABLE `commodity_categories` (
 INSERT INTO `commodity_categories` (`id`, `agency_id`, `name`, `created_at`) VALUES
 (1, 1, 'Canned Goods & Processed Foods', '2026-08-03 05:15:08'),
 (2, 2, 'Grains & Rice', '2026-08-03 05:15:08'),
-(3, 2, 'Vegetables & Root Crops', '2026-08-03 05:15:08'),
+(3, 2, 'Vegetables', '2026-08-03 05:15:08'),
 (4, 2, 'Livestock & Poultry Products', '2026-08-03 05:15:08'),
 (5, 3, 'Fuel & Petroleum Products', '2026-08-03 05:15:08'),
 (8, 2, 'Fruits', '2026-08-20 06:09:59'),
@@ -465,7 +466,7 @@ ALTER TABLE `price_logs`
 -- AUTO_INCREMENT for table `agencies`
 --
 ALTER TABLE `agencies`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `calamities`

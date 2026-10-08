@@ -100,6 +100,7 @@ function loadCommodities() {
         })
         .catch(function (error) {
             console.error('[PRICE VIEW] Error:', error);
+            commoditiesCache = [];
             loadCategories();
         });
 }

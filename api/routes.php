@@ -203,6 +203,115 @@ switch ($resource) {
         }
         break;
 
+        case 'agency':
+        $controller = new PriceMonitoringController();
+
+        if ($method === 'GET') {
+            $response = $controller->getAgencies();
+        } elseif ($method === 'POST') {
+            $response = $controller->addAgency($input);
+        } elseif ($method === 'PUT') {
+            $response = $controller->updateAgency($input);
+        } elseif ($method === 'DELETE') {
+            $id = $_GET['id'] ?? ($segments[2] ?? null);
+            if (
+                $id === null ||
+                $id === '' ||
+                !is_numeric($id)
+            ) {
+                http_response_code(400);
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Missing or invalid agency ID.'
+                ];
+            } else {
+                $response = $controller->deleteAgency(
+                    (int) $id
+                );
+            }
+        } else {
+            http_response_code(405);
+            $response = [
+                'status' => 'error',
+                'message' =>
+                    'Invalid request method for /agency.'
+            ];
+        }
+        break;
+
+
+            case 'establishment':
+        $controller = new PriceMonitoringController();
+
+        if ($method === 'GET') {
+            $response = $controller->getEstablishments();
+        } elseif ($method === 'POST') {
+            $response = $controller->addEstablishment($input);
+        } elseif ($method === 'PUT') {
+            $response = $controller->updateEstablishment($input);
+        } elseif ($method === 'DELETE') {
+            $id = $_GET['id'] ?? ($segments[2] ?? null);
+            if (
+                $id === null ||
+                $id === '' ||
+                !is_numeric($id)
+            ) {
+                http_response_code(400);
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Missing or invalid establishment ID.'
+                ];
+            } else {
+                $response = $controller->deleteEstablishment(
+                    (int) $id
+                );
+            }
+        } else {
+            http_response_code(405);
+            $response = [
+                'status' => 'error',
+                'message' =>
+                    'Invalid request method for /establishment.'
+            ];
+        }
+        break;
+
+            case 'establishment-price':
+        $controller = new PriceMonitoringController();
+
+        if ($method === 'GET') {
+            $response = $controller->getEstablishmentProducts(
+                $_GET['establishment_id'] ?? null
+            );
+        } elseif ($method === 'POST') {
+            $response = $controller->setEstablishmentPrice($input);
+        } else {
+            http_response_code(405);
+            $response = [
+                'status' => 'error',
+                'message' =>
+                    'Invalid request method for /establishment-price.'
+            ];
+        }
+        break;
+
+    case 'price-comparison':
+        $controller = new PriceMonitoringController();
+
+        if ($method === 'GET') {
+            $response = $controller->getPriceComparison(
+                $_GET['commodity_id'] ?? null
+            );
+        } else {
+            http_response_code(405);
+            $response = [
+                'status' => 'error',
+                'message' =>
+                    'Invalid request method for /price-comparison.'
+            ];
+        }
+        break;
+
     case 'price':
         $controller = new PriceMonitoringController();
 

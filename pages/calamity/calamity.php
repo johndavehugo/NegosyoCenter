@@ -38,6 +38,8 @@
             text-transform: uppercase;
             letter-spacing: 0.04em;
             text-align: center;
+            font-weight: 600;
+            letter-spacing: 0.03em;
         }
         #tblCalamityIncidents.dataTable tbody td {
             text-align: center;
@@ -97,15 +99,18 @@
                         </a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link text-sm pt-0 pb-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button">
+                        <a class="nav-link text-sm pt-0 pb-0" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false" role="button">
                             <div class="image pt-0 pb-0">
-                                <img src="../../dist/img/default.jfif" class="img-circle portrait-sidebar elevation-2" alt="User Image">
+                                <img src="../../dist/img/default.jfif" class="img-circle portrait-sidebar elevation-2"
+                                    alt="User Image">
                             </div>
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink" style="background-color:#495057 !important">
                             <div class="user-panel d-flex">
                                 <div class="image">
-                                    <img src="../../dist/img/default.jfif" class="img-circle elevation-2" alt="User Image">
+                                    <img src="../../dist/img/default.jfif" class="img-circle elevation-2"
+                                        alt="User Image">
                                 </div>
                                 <div class="info">
                                     <a href="#" class="d-block text-white text-sm">BEN GANAGANAG</a>
